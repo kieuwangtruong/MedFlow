@@ -6,7 +6,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from app.ml.features import create_features
+from ..ml.features import create_features
 
 
 def create_future_day(

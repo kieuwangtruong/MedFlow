@@ -5,11 +5,11 @@ from pathlib import Path
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Request
 
-from app.schemas.forecast import (
+from ..schemas.forecast import (
     ForecastRequest,
     ForecastResponse,
 )
-from app.services.forecast_service import (
+from ..services.forecast_service import (
     forecast_multiple_days,
 )
 
@@ -31,10 +31,18 @@ DATA_PATH = (
 @router.get("/health")
 def health_check(request: Request) -> dict:
     container = request.app.state.model_container
+    routing_service = getattr(
+        request.app.state,
+        "routing_service",
+        None,
+    )
 
     return {
         "status": "ok",
-        "model_loaded": container.is_ready(),
+        "services": {
+            "peak_hour_prediction": container.is_ready(),
+            "symptom_routing": routing_service is not None,
+        },
     }
 
 
