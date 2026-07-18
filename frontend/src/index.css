@@ -1,17 +1,17 @@
 @import "tailwindcss" source(".");
 
 @theme {
-  --color-background: #f6f9fb;
-  --color-foreground: #102a2d;
+  --color-background: #f5f7f9;
+  --color-foreground: #172b3a;
   --color-card: #ffffff;
-  --color-card-foreground: #102a2d;
-  --color-primary: #087f78;
+  --color-card-foreground: #172b3a;
+  --color-primary: #176b9b;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #eaf7f5;
-  --color-secondary-foreground: #075e59;
-  --color-muted: #eef3f5;
-  --color-muted-foreground: #647b80;
-  --color-border: #dce7e9;
+  --color-secondary: #eaf3f9;
+  --color-secondary-foreground: #164e70;
+  --color-muted: #eef2f5;
+  --color-muted-foreground: #657785;
+  --color-border: #dce3e8;
   --color-destructive: #d13c45;
   --font-sans: "Inter", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
 }
@@ -19,15 +19,15 @@
 :root { font-family: var(--font-sans); color: var(--color-foreground); background: var(--color-background); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(circle at 78% -10%, rgba(13,148,136,.09), transparent 27rem), #f6f9fb; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #f5f7f9; }
 button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-::selection { background: rgba(13,148,136,.18); color: #064e4a; }
-.card { @apply rounded-2xl border border-border/80 bg-card p-5 text-card-foreground shadow-[0_1px_2px_rgba(15,23,42,.03),0_8px_24px_rgba(15,23,42,.04)] transition-shadow duration-200 hover:shadow-[0_12px_32px_rgba(15,23,42,.07)]; }
-.icon-box { @apply grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-primary/10 bg-primary/8 text-primary shadow-sm; }
+::selection { background: rgba(23,107,155,.18); color: #123b55; }
+.card { @apply rounded-xl border border-border bg-card p-5 text-card-foreground shadow-[0_1px_3px_rgba(15,23,42,.04)]; }
+.icon-box { @apply grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-primary/10 bg-primary/8 text-primary; }
 .section-title { @apply flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground; }
 .form-control { @apply w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground/65 hover:border-primary/30 focus:border-primary focus:ring-4 focus:ring-primary/10; }
 .field-label { @apply mb-1.5 block text-sm font-semibold text-foreground/80; }
-.health-grid { background-image: linear-gradient(rgba(8,127,120,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(8,127,120,.035) 1px, transparent 1px); background-size: 28px 28px; }
+.health-grid { background: transparent; }
 @media (max-width: 640px) { .card { @apply p-4; } body { font-size: 16px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
