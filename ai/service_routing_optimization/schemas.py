@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 class OptimizeSequenceRequest(BaseModel):
-    journey_id: str
+    clinic_specialities: List[str]
     patient_token: str
 
 class SequenceItem(BaseModel):

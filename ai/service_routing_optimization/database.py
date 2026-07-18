@@ -19,6 +19,7 @@ from sqlalchemy import (
     String,
     create_engine,
     desc,
+    or_,
 )
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
@@ -72,6 +73,7 @@ class PatientJourneyTask(Base):
     patient_token = Column(String, nullable=False)
     service_type = Column(String, nullable=False)
     clinical_priority = Column(String, nullable=False, default="NORMAL")
+    specialty_id = Column(String)
     room_id = Column(String)
     status = Column(String, nullable=False)
     sequence_order = Column(Integer)
@@ -163,15 +165,30 @@ def get_journey_info(db: Session, journey_id: str) -> PatientJourney | None:
     )
 
 
+def get_journey_by_token(db: Session, patient_token: str) -> PatientJourney | None:
+    """Return the latest journey info for a given patient_token."""
+    return (
+        db.query(PatientJourney)
+        .filter(PatientJourney.patient_token == patient_token)
+        .order_by(desc(PatientJourney.created_at))
+        .first()
+    )
+
+
 def get_pending_tasks(
-    db: Session, journey_id: str
+    db: Session, journey_id: str, clinic_specialities: list[str]
 ) -> list[PatientJourneyTask]:
-    """Return tasks with status PENDING or READY for a given journey."""
+    """Return tasks with status PENDING or READY for a given journey and matching clinic_specialities."""
     return (
         db.query(PatientJourneyTask)
+        .outerjoin(ClinicRoom, PatientJourneyTask.room_id == ClinicRoom.id)
         .filter(
             PatientJourneyTask.journey_id == journey_id,
             PatientJourneyTask.status.in_(["PENDING", "READY"]),
+            or_(
+                PatientJourneyTask.specialty_id.in_(clinic_specialities),
+                ClinicRoom.specialty_id.in_(clinic_specialities),
+            ),
         )
         .all()
     )

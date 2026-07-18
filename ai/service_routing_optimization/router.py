@@ -9,7 +9,7 @@ from .database import (
     get_db,
     get_equipment_statuses,
     get_hospital_edges,
-    get_journey_info,
+    get_journey_by_token,
     get_patient_current_location,
     get_pending_tasks,
     get_queue_wait_times,
@@ -42,16 +42,18 @@ def optimize_sequence(
     request: OptimizeSequenceRequest,
     db: Session = Depends(get_db),
 ) -> OptimizeSequenceResponse:
-    journey_id = request.journey_id
+    clinic_specialities = request.clinic_specialities
     patient_token = request.patient_token
 
-    # 1. Validate journey exists
-    journey = get_journey_info(db, journey_id)
+    # 1. Validate journey exists by patient_token
+    journey = get_journey_by_token(db, patient_token)
     if not journey:
         raise HTTPException(status_code=404, detail="Patient journey not found")
+    
+    journey_id = journey.id
 
     # 2. Fetch pending / ready tasks
-    tasks = get_pending_tasks(db, journey_id)
+    tasks = get_pending_tasks(db, journey_id, clinic_specialities)
     if not tasks:
         return OptimizeSequenceResponse(
             journey_id=journey_id,
