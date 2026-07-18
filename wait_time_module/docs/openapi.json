@@ -1,0 +1,1078 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI-Native Wait-Time & Queue Engine",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events": {
+      "post": {
+        "summary": "Event",
+        "operationId": "event_api_v1_events_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Event"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/patients/{patient_token}/estimate": {
+      "get": {
+        "summary": "Patient",
+        "operationId": "patient_api_v1_patients__patient_token__estimate_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patient_token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Patient Token"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientEstimate"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/queues/{queue_id}/estimates": {
+      "get": {
+        "summary": "Queue",
+        "operationId": "queue_api_v1_queues__queue_id__estimates_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "queue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Queue Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/journeys/{journey_id}/estimate": {
+      "get": {
+        "summary": "Journey",
+        "operationId": "journey_api_v1_journeys__journey_id__estimate_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "journey_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Journey Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rooms/status": {
+      "get": {
+        "summary": "Rooms Status",
+        "operationId": "rooms_status_api_v1_rooms_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/queues/{queue_id}/summary": {
+      "get": {
+        "summary": "Queue Summary",
+        "operationId": "queue_summary_api_v1_queues__queue_id__summary_get",
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "queue_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Queue Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/estimates/room-options": {
+      "post": {
+        "summary": "Room Options",
+        "operationId": "room_options_api_v1_estimates_room_options_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoomOptionsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/estimates/assignment-impact": {
+      "post": {
+        "summary": "Assignment Impact",
+        "operationId": "assignment_impact_api_v1_estimates_assignment_impact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignmentImpactRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    },
+    "/api/v1/simulations/scenario": {
+      "post": {
+        "summary": "Scenario",
+        "operationId": "scenario_api_v1_simulations_scenario_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "APIKeyHeader": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssignmentImpactRequest": {
+        "properties": {
+          "patient_token": {
+            "type": "string",
+            "title": "Patient Token"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "service_code": {
+            "type": "string",
+            "title": "Service Code"
+          },
+          "clinical_priority": {
+            "$ref": "#/components/schemas/ClinicalPriority"
+          },
+          "ready_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ready At"
+          },
+          "room_id": {
+            "type": "string",
+            "title": "Room Id"
+          },
+          "predicted_minutes": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Predicted Minutes",
+            "default": 12
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_token",
+          "task_type",
+          "service_code",
+          "clinical_priority",
+          "ready_at",
+          "room_id"
+        ],
+        "title": "AssignmentImpactRequest"
+      },
+      "ClinicalPriority": {
+        "type": "string",
+        "enum": [
+          "EMERGENCY",
+          "URGENT",
+          "NORMAL"
+        ],
+        "title": "ClinicalPriority"
+      },
+      "EstimateStatus": {
+        "type": "string",
+        "enum": [
+          "OK",
+          "STALE_DATA",
+          "RESOURCE_UNAVAILABLE",
+          "REQUOTE_REQUIRED",
+          "INVALID_CANDIDATE_ROOM",
+          "MODEL_FALLBACK"
+        ],
+        "title": "EstimateStatus"
+      },
+      "Event": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "event_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Event Time"
+          },
+          "journey_id": {
+            "type": "string",
+            "title": "Journey Id"
+          },
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "patient_token": {
+            "type": "string",
+            "title": "Patient Token"
+          },
+          "queue_id": {
+            "type": "string",
+            "title": "Queue Id"
+          },
+          "event_type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType",
+            "default": "INITIAL_CONSULT"
+          },
+          "clinical_priority": {
+            "$ref": "#/components/schemas/ClinicalPriority",
+            "default": "NORMAL"
+          },
+          "resource_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Id"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "based_on_estimate_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Based On Estimate Version"
+          },
+          "actor_id": {
+            "type": "string",
+            "title": "Actor Id",
+            "default": "unknown"
+          },
+          "actor_type": {
+            "type": "string",
+            "title": "Actor Type",
+            "default": "SERVICE"
+          },
+          "correlation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation Id"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "event_time",
+          "journey_id",
+          "task_id",
+          "patient_token",
+          "queue_id",
+          "event_type"
+        ],
+        "title": "Event"
+      },
+      "EventResponse": {
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "title": "Accepted"
+          },
+          "duplicate": {
+            "type": "boolean",
+            "title": "Duplicate"
+          },
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "estimate_version": {
+            "type": "integer",
+            "title": "Estimate Version"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "OK"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted",
+          "duplicate",
+          "event_id",
+          "estimate_version"
+        ],
+        "title": "EventResponse"
+      },
+      "EventType": {
+        "type": "string",
+        "enum": [
+          "PATIENT_CHECKED_IN",
+          "SERVICE_ORDERED",
+          "ARRIVED_QUEUE",
+          "SERVICE_STARTED",
+          "SERVICE_COMPLETED",
+          "RESULT_READY",
+          "RETURN_STARTED",
+          "RETURN_ARRIVED",
+          "PRIORITY_CHANGED",
+          "NO_SHOW_CONFIRMED",
+          "RESOURCE_AVAILABLE",
+          "RESOURCE_FAILED",
+          "EMERGENCY_ARRIVED",
+          "TASK_CANCELLED",
+          "TASK_ASSIGNED_TO_QUEUE",
+          "TASK_REASSIGNED_TO_QUEUE",
+          "PATIENT_ARRIVED",
+          "PATIENT_CHECKED_IN_EARLY",
+          "TASK_BECAME_ELIGIBLE",
+          "PATIENT_READY_AT_QUEUE",
+          "PATIENT_LEFT_FOR_OTHER_SERVICE",
+          "OTHER_SERVICE_STARTED",
+          "OTHER_SERVICE_COMPLETED",
+          "PATIENT_RETURNING_TO_QUEUE",
+          "PATIENT_RETURNED_TO_QUEUE",
+          "PATIENT_LOCATION_UPDATED",
+          "TASK_MISSED_CALL"
+        ],
+        "title": "EventType"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PatientEstimate": {
+        "properties": {
+          "patient_token": {
+            "type": "string",
+            "title": "Patient Token"
+          },
+          "journey_id": {
+            "type": "string",
+            "title": "Journey Id"
+          },
+          "queue_id": {
+            "type": "string",
+            "title": "Queue Id"
+          },
+          "task_type": {
+            "type": "string",
+            "title": "Task Type"
+          },
+          "clinical_priority": {
+            "type": "string",
+            "title": "Clinical Priority"
+          },
+          "readiness_status": {
+            "type": "string",
+            "title": "Readiness Status"
+          },
+          "estimate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Quantiles"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "estimate_status": {
+            "$ref": "#/components/schemas/EstimateStatus",
+            "default": "OK"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence",
+            "default": "MEDIUM"
+          },
+          "reason_codes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Reason Codes"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Valid Until"
+          },
+          "estimate_version": {
+            "type": "integer",
+            "title": "Estimate Version"
+          },
+          "eta": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Eta"
+          },
+          "eligibility": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eligibility"
+          },
+          "wait_breakdown": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wait Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patient_token",
+          "journey_id",
+          "queue_id",
+          "task_type",
+          "clinical_priority",
+          "readiness_status",
+          "estimate",
+          "generated_at",
+          "valid_until",
+          "estimate_version"
+        ],
+        "title": "PatientEstimate"
+      },
+      "PresenceStatus": {
+        "type": "string",
+        "enum": [
+          "NOT_ARRIVED",
+          "CHECKED_IN_EARLY",
+          "AVAILABLE_ON_SITE",
+          "READY_AT_ROOM",
+          "IN_OTHER_SERVICE",
+          "RETURNING",
+          "ARRIVED_AT_ROOM",
+          "UNKNOWN",
+          "LEFT_HOSPITAL"
+        ],
+        "title": "PresenceStatus"
+      },
+      "Quantiles": {
+        "properties": {
+          "ewt_p50_minutes": {
+            "type": "integer",
+            "title": "Ewt P50 Minutes"
+          },
+          "ewt_p80_minutes": {
+            "type": "integer",
+            "title": "Ewt P80 Minutes"
+          },
+          "ewt_p90_minutes": {
+            "type": "integer",
+            "title": "Ewt P90 Minutes"
+          },
+          "display_min_minutes": {
+            "type": "integer",
+            "title": "Display Min Minutes"
+          },
+          "display_max_minutes": {
+            "type": "integer",
+            "title": "Display Max Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ewt_p50_minutes",
+          "ewt_p80_minutes",
+          "ewt_p90_minutes",
+          "display_min_minutes",
+          "display_max_minutes"
+        ],
+        "title": "Quantiles"
+      },
+      "RoomOptionsRequest": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id"
+          },
+          "patient_token": {
+            "type": "string",
+            "title": "Patient Token"
+          },
+          "task_type": {
+            "$ref": "#/components/schemas/TaskType"
+          },
+          "service_code": {
+            "type": "string",
+            "title": "Service Code"
+          },
+          "clinical_priority": {
+            "$ref": "#/components/schemas/ClinicalPriority"
+          },
+          "ready_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ready At"
+          },
+          "candidate_room_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Candidate Room Ids"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": true
+          },
+          "appointment_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointment Start"
+          },
+          "appointment_window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointment Window Start"
+          },
+          "appointment_window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appointment Window End"
+          },
+          "physical_arrival_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Physical Arrival At"
+          },
+          "checkin_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkin At"
+          },
+          "eligible_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eligible At"
+          },
+          "presence_status": {
+            "$ref": "#/components/schemas/PresenceStatus",
+            "default": "READY_AT_ROOM"
+          },
+          "predicted_available_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted Available At"
+          },
+          "dependency_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Dependency Task Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id",
+          "patient_token",
+          "task_type",
+          "service_code",
+          "clinical_priority",
+          "ready_at",
+          "candidate_room_ids"
+        ],
+        "title": "RoomOptionsRequest"
+      },
+      "ScenarioRequest": {
+        "properties": {
+          "scenario_type": {
+            "$ref": "#/components/schemas/ScenarioType"
+          },
+          "queue_id": {
+            "type": "string",
+            "title": "Queue Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "resource_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resource Id"
+          },
+          "minutes": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Minutes",
+            "default": 10
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type",
+          "queue_id"
+        ],
+        "title": "ScenarioRequest"
+      },
+      "ScenarioType": {
+        "type": "string",
+        "enum": [
+          "EMERGENCY_INSERT",
+          "NO_SHOW",
+          "RESOURCE_FAILURE",
+          "SERVICE_SLOWDOWN",
+          "RESULT_DELAY",
+          "RETURN_URGENT",
+          "RETURN_NORMAL"
+        ],
+        "title": "ScenarioType"
+      },
+      "TaskType": {
+        "type": "string",
+        "enum": [
+          "INITIAL_CONSULT",
+          "DIAGNOSTIC_SERVICE",
+          "RETURN_REVIEW",
+          "FOLLOW_UP_CONSULT"
+        ],
+        "title": "TaskType"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "1",
+  "features": [
+    "service_type",
+    "queue_id",
+    "doctor_id",
+    "device_id",
+    "hour",
+    "day_of_week",
+    "case_complexity",
+    "resource_status",
+    "arrival_rate_15m",
+    "avg_service_30m",
+    "recent_emergency_count"
+  ],
+  "target": "active_service_duration",
+  "leakage_excluded": [
+    "service_start",
+    "service_end",
+    "active_service_duration",
+    "elapsed_service_duration"
+  ]
+}

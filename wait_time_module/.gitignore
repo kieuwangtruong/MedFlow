@@ -1,0 +1,9 @@
+data/sample/*.csv
+artifacts/*.joblib
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.venv/
+data/*.db
+data/*.db-*
+.env

@@ -1,0 +1,10 @@
+{
+  "info": {"name": "AI-Native Wait-Time & Queue Engine", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"},
+  "variable": [{"key": "baseUrl", "value": "http://127.0.0.1:8000"}, {"key": "apiKey", "value": ""}],
+  "item": [
+    {"name": "Health", "request": {"method": "GET", "url": "{{baseUrl}}/health"}},
+    {"name": "Room status", "request": {"method": "GET", "header": [{"key": "X-API-Key", "value": "{{apiKey}}"}], "url": "{{baseUrl}}/api/v1/rooms/status"}},
+    {"name": "Room options - early arrival", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "X-API-Key", "value": "{{apiKey}}"}], "body": {"mode": "raw", "raw": "{\n  \"request_id\": \"REQ-EARLY-001\",\n  \"patient_token\": \"A173\",\n  \"task_type\": \"INITIAL_CONSULT\",\n  \"service_code\": \"CLINICAL_CONSULT\",\n  \"clinical_priority\": \"NORMAL\",\n  \"appointment_start\": \"2026-07-18T10:00:00+07:00\",\n  \"physical_arrival_at\": \"2026-07-18T07:30:00+07:00\",\n  \"eligible_at\": \"2026-07-18T09:40:00+07:00\",\n  \"ready_at\": \"2026-07-18T09:40:00+07:00\",\n  \"presence_status\": \"CHECKED_IN_EARLY\",\n  \"dependency_task_ids\": [],\n  \"candidate_room_ids\": [\"ROOM-A\", \"ROOM-B\"],\n  \"dry_run\": true\n}"}, "url": "{{baseUrl}}/api/v1/estimates/room-options"}},
+    {"name": "Patient left for other service", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "X-API-Key", "value": "{{apiKey}}"}], "body": {"mode": "raw", "raw": "{\n  \"event_id\": \"EVT-LEFT-A-001\",\n  \"event_time\": \"2026-07-18T09:05:00+07:00\",\n  \"event_type\": \"PATIENT_LEFT_FOR_OTHER_SERVICE\",\n  \"patient_token\": \"A173\",\n  \"task_id\": \"TASK-A\",\n  \"journey_id\": \"JOURNEY-001\",\n  \"queue_id\": \"ROOM-A\",\n  \"actor_id\": \"ROUTING-AGENT-01\",\n  \"actor_type\": \"SERVICE\",\n  \"metadata\": {\"destination_task_id\": \"TASK-B\", \"destination_queue_id\": \"ROOM-B\", \"predicted_available_at\": \"2026-07-18T09:30:00+07:00\"}\n}"}, "url": "{{baseUrl}}/api/v1/events"}}
+  ]
+}

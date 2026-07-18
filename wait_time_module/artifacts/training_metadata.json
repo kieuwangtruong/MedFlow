@@ -1,0 +1,12 @@
+{
+  "model_version": "20260718041056",
+  "training_data_type": "SYNTHETIC",
+  "trained_at": "2026-07-18T04:10:56.434031+00:00",
+  "feature_schema_version": "1",
+  "split": "time 70/15/15",
+  "train_rows": 7000,
+  "validation_rows": 1500,
+  "test_rows": 1500,
+  "fallback_if_model_load_fails": true,
+  "production_policy": "model"
+}
