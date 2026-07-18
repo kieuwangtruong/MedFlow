@@ -1,3 +1,8 @@
-import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
-export function PageHeader({ title, description, action }: { title: string; description?: string; action?: ReactNode }) { return <motion.header initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .28 }} className="mb-7 flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div className="max-w-3xl"><div className="mb-2 flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_0_5px_rgba(13,148,136,.1)]"/><span className="text-xs font-bold uppercase tracking-[.16em] text-primary">MedFlow workspace</span></div><h1 className="text-2xl font-extrabold tracking-[-.03em] text-foreground sm:text-3xl lg:text-[2rem]">{title}</h1>{description && <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{description}</p>}</div>{action && <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>}</motion.header> }
+
+export function PageHeader({ title, action }: { title: string; description?: string; action?: ReactNode }) {
+  return <header className="mb-6 flex flex-col justify-between gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-center">
+    <h1 className="min-w-0 text-2xl font-extrabold leading-tight tracking-tight text-slate-950 sm:text-3xl">{title}</h1>
+    {action && <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>}
+  </header>
+}
