@@ -8,19 +8,22 @@
     "start": "node src/server.js",
     "lint": "eslint src",
     "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "test": "echo \"No tests configured yet\" && exit 0"
+    "test": "node --test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
     "express": "^5.0.0",
     "helmet": "^8.0.0",
+    "pg": "^8.22.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {

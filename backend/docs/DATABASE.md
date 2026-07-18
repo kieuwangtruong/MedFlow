@@ -2,6 +2,9 @@
 
 This backend uses Prisma. The default datasource is PostgreSQL.
 
+The Prisma CLI reads the connection URL from `prisma.config.ts`. At runtime,
+Prisma 7 connects through `@prisma/adapter-pg`.
+
 ## Configure
 
 Copy `.env.example` to `.env` and update:
@@ -21,3 +24,7 @@ npm run prisma:generate
 ```bash
 npm run prisma:migrate -- --name init
 ```
+
+Committed migrations live in `prisma/migrations`. Run `npm test` to validate
+the Prisma schema and verify that generated migration SQL contains all VAIC
+module tables and key constraints.

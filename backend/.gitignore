@@ -1,8 +1,9 @@
 # Dependencies
 node_modules/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
+.npm-cache/
+.tmp/
 
 # Environment variables
 .env
@@ -27,5 +28,5 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# Prisma
-prisma/migrations/
+# Prisma Client generated artifacts (migrations are source-controlled)
+src/generated/prisma/
