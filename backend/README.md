@@ -27,6 +27,8 @@ Server starts at `http://localhost:3000` by default.
 - `npm run prisma:generate`: generate Prisma client
 - `npm run prisma:validate`: validate the Prisma schema
 - `npm run prisma:migrate`: run Prisma migration
+- `npm run prisma:deploy`: deploy committed migrations
+- `npm run prisma:seed`: idempotently seed the repository CSV datasets
 - `npm run prisma:studio`: open Prisma Studio
 - `npm test`: validate the schema and its generated migration SQL contract
 

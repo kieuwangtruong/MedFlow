@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 
 const DEFAULT_PORT = 3000;
 const parsedPort = Number(process.env.PORT);

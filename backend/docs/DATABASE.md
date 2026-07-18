@@ -28,3 +28,13 @@ npm run prisma:migrate -- --name init
 Committed migrations live in `prisma/migrations`. Run `npm test` to validate
 the Prisma schema and verify that generated migration SQL contains all VAIC
 module tables and key constraints.
+
+## Seed Repository Datasets
+
+After deploying migrations, seed the bundled department, patient journey, queue,
+and check-in slot datasets. The seed uses upserts and is safe to run repeatedly:
+
+```bash
+npm run prisma:deploy
+npm run prisma:seed
+```

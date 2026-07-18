@@ -36,6 +36,26 @@ test('Prisma Client initializes with the PostgreSQL driver adapter', async () =>
   await prisma.$disconnect();
 });
 
+test('seed datasets parse and satisfy their source contract', () => {
+  const result = spawnSync(process.execPath, [path.join(projectRoot, 'prisma', 'seed.js'), '--dry-run'], {
+    cwd: projectRoot,
+    encoding: 'utf8',
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const summary = JSON.parse(result.stdout);
+  assert.deepEqual(summary.sourceSummary, {
+    departments: 15,
+    serviceQueues: 3,
+    patients: 5,
+    journeys: 5,
+    journeyTasks: 20,
+    taskDependencies: 15,
+    queueEntries: 20,
+    checkinSlots: 7300,
+  });
+});
+
 test('migration SQL contains the documented VAIC module tables and constraints', () => {
   const sql = runPrisma([
     'migrate',
