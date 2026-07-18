@@ -28,6 +28,7 @@ def test_red_flag_routes_to_emergency() -> None:
     )
     assert result.is_red_flag
     assert result.recommendations[0].department_code == "ER"
+    assert result.recommendations[0].clinic_room == "Phòng cấp cứu tổng hợp"
     assert result.requires_human_review
 
 
@@ -47,6 +48,7 @@ def test_returns_top_three_departments() -> None:
     )
     assert not result.is_red_flag
     assert 2 <= len(result.recommendations) <= 3
+    assert all(item.clinic_room.startswith("Phòng ") for item in result.recommendations)
 
 
 def test_child_is_routed_to_pediatrics() -> None:
@@ -59,3 +61,4 @@ def test_child_is_routed_to_pediatrics() -> None:
         )
     )
     assert result.recommendations[0].department_code == "PED"
+    assert result.recommendations[0].clinic_room.startswith("Phòng khám nhi")

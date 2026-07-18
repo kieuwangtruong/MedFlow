@@ -1,24 +1,24 @@
 # Hợp đồng API
 
-Mọi timestamp là ISO 8601 có offset và được chuẩn hóa về `Asia/Ho_Chi_Minh`. Public API chỉ dùng `patient_token`, không nhận PII. Khi `AUTH_ENABLED=true`, gửi `X-API-Key` có scope phù hợp.
+Mọi timestamp là ISO 8601 có offset và được chuẩn hóa về `Asia/Ho_Chi_Minh`. Toàn bộ endpoint Wait Time & Queue là public, không yêu cầu API key và không sử dụng `patient_token`.
 
-| Phương thức | Endpoint | Scope |
+| Phương thức | Endpoint | Truy cập |
 |---|---|---|
 | GET | `/health` | công khai |
-| POST | `/api/v1/events` | `events.write` |
-| GET | `/api/v1/patients/{patient_token}/estimate` | `wait.read` |
-| GET | `/api/v1/queues/{queue_id}/estimates` | `wait.read` |
-| GET | `/api/v1/journeys/{journey_id}/estimate` | `wait.read` |
-| POST | `/api/v1/simulations/scenario` | `simulation.run` |
-| GET | `/api/v1/rooms/status` | `wait.read` |
-| GET | `/api/v1/queues/{queue_id}/summary` | `wait.read` |
-| POST | `/api/v1/estimates/room-options` | `wait.read` |
-| POST | `/api/v1/estimates/assignment-impact` | `simulation.run` |
+| POST | `/api/v1/events` | công khai |
+| GET | `/api/v1/tasks/{task_id}/estimate` | công khai |
+| GET | `/api/v1/queues/{queue_id}/estimates` | công khai |
+| GET | `/api/v1/journeys/{journey_id}/estimate` | công khai |
+| POST | `/api/v1/simulations/scenario` | công khai |
+| GET | `/api/v1/rooms/status` | công khai |
+| GET | `/api/v1/queues/{queue_id}/summary` | công khai |
+| POST | `/api/v1/estimates/room-options` | công khai |
+| POST | `/api/v1/estimates/assignment-impact` | công khai |
 
 ## Room options
 
 ```json
-{"request_id":"REQ-001","patient_token":"A173","task_type":"INITIAL_CONSULT","service_code":"CLINICAL_CONSULT","clinical_priority":"NORMAL","ready_at":"2026-07-18T09:20:00+07:00","candidate_room_ids":["ROOM-A","ROOM-B"],"dry_run":true}
+{"request_id":"REQ-001","task_type":"INITIAL_CONSULT","service_code":"CLINICAL_CONSULT","clinical_priority":"NORMAL","ready_at":"2026-07-18T09:20:00+07:00","candidate_room_ids":["ROOM-A","ROOM-B"],"dry_run":true}
 ```
 
 Mỗi option trả status, `queue_ahead`, `active_resources`, `future_task_count`, EWT P50/P80/P90, operational display band, service duration, ETA start/completion, assignment impact, reason codes và `estimate_version`. Response tuyệt đối không có `selected_room`. Room không tồn tại trả option `INVALID_CANDIDATE_ROOM`; không có resource trả `RESOURCE_UNAVAILABLE` và estimate null.
@@ -36,15 +36,13 @@ Event mới: `PATIENT_ARRIVED`, `PATIENT_CHECKED_IN_EARLY`, `TASK_BECAME_ELIGIBL
 ## Assignment/reassignment
 
 ```json
-{"event_id":"EVT-ASSIGN-001","event_time":"2026-07-18T09:21:00+07:00","event_type":"TASK_ASSIGNED_TO_QUEUE","patient_token":"A173","task_id":"TASK-001","journey_id":"JOURNEY-001","queue_id":"ROOM-B","task_type":"INITIAL_CONSULT","clinical_priority":"NORMAL","based_on_estimate_version":21,"actor_id":"ROUTING-AGENT-01","actor_type":"SERVICE","metadata":{"service_type":"CLINICAL_CONSULT"}}
+{"event_id":"EVT-ASSIGN-001","event_time":"2026-07-18T09:21:00+07:00","event_type":"TASK_ASSIGNED_TO_QUEUE","task_id":"TASK-001","journey_id":"JOURNEY-001","queue_id":"ROOM-B","task_type":"INITIAL_CONSULT","clinical_priority":"NORMAL","based_on_estimate_version":21,"actor_id":"ROUTING-AGENT-01","actor_type":"SERVICE","metadata":{"service_type":"CLINICAL_CONSULT"}}
 ```
 
 Nếu version hiện tại khác `based_on_estimate_version`, API trả HTTP 409 với `status=REQUOTE_REQUIRED` và current version; event bị từ chối được audit. Duplicate event trả `accepted=false`, `duplicate=true`, kể cả sau restart.
 
 ## Lỗi
 
-- HTTP 401: thiếu/sai API key.
-- HTTP 403: key thiếu scope.
 - HTTP 409: timestamp cũ hoặc cần requote.
 - HTTP 422: schema sai, candidate limit vượt cấu hình hoặc room impact không hợp lệ.
 - Estimate status: `OK`, `STALE_DATA`, `RESOURCE_UNAVAILABLE`, `INVALID_CANDIDATE_ROOM`, `MODEL_FALLBACK`.

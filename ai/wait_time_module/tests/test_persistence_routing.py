@@ -47,9 +47,10 @@ def test_routing_agent_integration_flow(persistent_store):
     assigned=event("route-assign","TASK_ASSIGNED_TO_QUEUE","route-task","ROOM-B",version).model_dump(mode="json");assigned["patient_token"]="PX"
     response=client.post("/api/v1/events",json=assigned);assert response.status_code==200 and persistent_store.tasks["route-task"].queue_id=="ROOM-B" and response.json()["estimate_version"]==version+1
 
-def test_auth_unauthorized_and_forbidden(persistent_store,monkeypatch):
-    monkeypatch.setenv("AUTH_ENABLED","true");monkeypatch.setenv("SERVICE_API_KEYS",json.dumps({"read":{"actor_id":"reader","scopes":["wait.read"]}}));client=TestClient(main.app)
-    assert client.get("/api/v1/rooms/status").status_code==401;assert client.post("/api/v1/simulations/scenario",headers={"X-API-Key":"read"},json={"scenario_type":"NO_SHOW","queue_id":"Q"}).status_code==403;assert client.get("/api/v1/rooms/status",headers={"X-API-Key":"read"}).status_code==200
+def test_wait_time_endpoints_are_public(persistent_store):
+    client=TestClient(main.app)
+    assert client.get("/api/v1/rooms/status").status_code==200
+    assert client.post("/api/v1/simulations/scenario",json={"scenario_type":"NO_SHOW","queue_id":"Q"}).status_code==200
 
 def test_result_pending_is_future_workload():
     engine=QueueEngine();resource=[Resource(resource_id="r",queue_id="Q")];target=Task(task_id="target",journey_id="j",patient_token="P",queue_id="Q",task_type="INITIAL_CONSULT",readiness_status="READY",ready_at=NOW+timedelta(minutes=20),predicted_minutes=10,created_seq=2)

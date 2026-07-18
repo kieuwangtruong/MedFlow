@@ -26,7 +26,7 @@ def test_journey_a_b_return_a():
  r=estimate_journey(NOW,5,12,3,10,15,3,20,NOW+timedelta(minutes=70),5);assert r["ready_for_review"]==max(r["physical_return"],r["result_ready"]) and r["journey_completion"]>r["review_start"]
 def test_duplicate_event_idempotent_and_api_schema():
  store.reset();e={"event_id":"e1","event_time":NOW.isoformat(),"journey_id":"j","task_id":"t1","patient_token":"P1","queue_id":"Q","event_type":"PATIENT_CHECKED_IN","task_type":"INITIAL_CONSULT","clinical_priority":"NORMAL","resource_id":"r1","metadata":{}}
- c=TestClient(app);assert c.post("/api/v1/events",json=e).json()["accepted"];assert c.post("/api/v1/events",json=e).json()["duplicate"];assert len(store.tasks)==1;assert c.get("/api/v1/patients/P1/estimate").status_code==200
+ c=TestClient(app);assert c.post("/api/v1/events",json=e).json()["accepted"];assert c.post("/api/v1/events",json=e).json()["duplicate"];assert len(store.tasks)==1;assert c.get("/api/v1/tasks/t1/estimate").status_code==200
 def test_timestamp_without_timezone_rejected():
  bad={"event_id":"e","event_time":"2026-01-01T10:00:00","journey_id":"j","task_id":"t","patient_token":"P","queue_id":"Q","event_type":"PATIENT_CHECKED_IN","task_type":"INITIAL_CONSULT","clinical_priority":"NORMAL"};assert TestClient(app).post("/api/v1/events",json=bad).status_code==422
 
@@ -48,7 +48,7 @@ def test_scenario_dry_run_never_mutates_state():
 
 def test_resource_unavailable_schema():
  store.reset();apply_event(store,Event(event_id="e",event_time=NOW,journey_id="j",task_id="t",patient_token="P",queue_id="Q",event_type="PATIENT_CHECKED_IN",task_type="INITIAL_CONSULT",clinical_priority="NORMAL"))
- response=TestClient(app).get("/api/v1/patients/P/estimate").json();assert response["estimate_status"]=="RESOURCE_UNAVAILABLE" and response["estimate"] is None
+ response=TestClient(app).get("/api/v1/tasks/t/estimate").json();assert response["estimate_status"]=="RESOURCE_UNAVAILABLE" and response["estimate"] is None
 
 def test_full_journey_event_integration():
  store.reset();client=TestClient(app);base={"journey_id":"journey-e2e","patient_token":"TOKEN","clinical_priority":"NORMAL","resource_id":"r1","metadata":{}}

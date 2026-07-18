@@ -1,7 +1,7 @@
 from __future__ import annotations
 import heapq, os, random
 from datetime import datetime, timedelta
-from app.domain.models import *
+from ..domain.models import *
 
 PRIORITY={ClinicalPriority.EMERGENCY:0,ClinicalPriority.URGENT:1,ClinicalPriority.NORMAL:2}
 ELIGIBLE={ReadinessStatus.WAITING,ReadinessStatus.READY,ReadinessStatus.ARRIVED,ReadinessStatus.RETURNING}

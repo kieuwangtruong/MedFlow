@@ -1,8 +1,8 @@
 """Migration local idempotent cho JSON snapshot. Không thay thế Alembic production."""
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from app.domain.models import Task
-from app.storage.database import Base,MetaRecord,TaskRecord,make_engine
+from ..domain.models import Task
+from .database import Base,MetaRecord,TaskRecord,make_engine
 
 LOCAL_SCHEMA_VERSION="2"
 def migrate(database_url:str)->dict:

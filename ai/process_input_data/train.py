@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import joblib
@@ -18,12 +18,12 @@ from process_input_data.app.red_flags import detect_red_flag
 
 
 ROOT = Path(__file__).resolve().parent
-DATA_PATH = ROOT / "data" / "symptom_routing_cases.csv"
+DATA_PATH = ROOT / "data" / "unified_symptom_routing.csv"
 RED_FLAG_PATH = ROOT / "data" / "red_flag_cases.csv"
 DEPARTMENTS_PATH = ROOT / "data" / "departments.csv"
 MODELS_DIR = ROOT / "models"
 REPORTS_DIR = ROOT / "reports"
-MODEL_PATH = MODELS_DIR / "department_router.joblib"
+MODEL_PATH = MODELS_DIR / "clinic_room_router.joblib"
 METADATA_PATH = MODELS_DIR / "model_metadata.json"
 REPORT_PATH = REPORTS_DIR / "evaluation.json"
 
@@ -71,7 +71,7 @@ def top_k_accuracy(y_true: np.ndarray, probabilities: np.ndarray, classes: np.nd
 
 def evaluate(pipeline: Pipeline, frame: pd.DataFrame) -> dict:
     texts = frame["patient_text"].map(model_text)
-    labels = frame["gold_department_code"].to_numpy()
+    labels = frame["clinic_room"].to_numpy()
     predictions = pipeline.predict(texts)
     probabilities = pipeline.predict_proba(texts)
     classes = pipeline.classes_
@@ -128,10 +128,11 @@ def main() -> None:
     REPORTS_DIR.mkdir(exist_ok=True)
 
     frame = pd.read_csv(DATA_PATH, encoding="utf-8-sig")
-    required = {"patient_text", "gold_department_code", "split"}
+    required = {"symptom_input", "clinic_room", "department_code", "split"}
     missing = required.difference(frame.columns)
     if missing:
         raise ValueError(f"Dataset thiếu cột: {', '.join(sorted(missing))}")
+    frame = frame.rename(columns={"symptom_input": "patient_text"})
 
     train = frame[frame["split"] == "train"].copy()
     validation = frame[frame["split"] == "validation"].copy()
@@ -140,7 +141,7 @@ def main() -> None:
     validation_model = build_pipeline()
     validation_model.fit(
         train["patient_text"].map(model_text),
-        train["gold_department_code"],
+        train["clinic_room"],
     )
     validation_metrics = evaluate(validation_model, validation)
 
@@ -148,7 +149,7 @@ def main() -> None:
     final_model = build_pipeline()
     final_model.fit(
         final_training["patient_text"].map(model_text),
-        final_training["gold_department_code"],
+        final_training["clinic_room"],
     )
     test_metrics = evaluate(final_model, test)
     red_flag_metrics = evaluate_red_flags()
@@ -159,12 +160,19 @@ def main() -> None:
     department_names = dict(
         zip(departments["department_code"], departments["department_name"])
     )
+    clinic_departments = (
+        frame[["clinic_room", "department_code"]]
+        .drop_duplicates()
+        .set_index("clinic_room")["department_code"]
+        .to_dict()
+    )
     metadata = {
         "algorithm": "FeatureUnion(TF-IDF word + TF-IDF char) + LogisticRegression",
-        "task": "department_routing_not_medical_diagnosis",
+        "task": "clinic_room_routing_not_medical_diagnosis",
         "language": "vi",
         "classes": final_model.classes_.tolist(),
         "department_names": department_names,
+        "clinic_departments": clinic_departments,
         "data_path": DATA_PATH.relative_to(ROOT).as_posix(),
         "data_rows": len(frame),
         "training_rows": len(final_training),
@@ -174,7 +182,7 @@ def main() -> None:
         "test_metrics": test_metrics,
         "red_flag_metrics": red_flag_metrics,
         "scikit_learn_version": sklearn.__version__,
-        "trained_at": datetime.now(UTC).isoformat(),
+        "trained_at": datetime.now(timezone.utc).isoformat(),
         "data_notice": "Synthetic and unvalidated; not for autonomous clinical decisions.",
     }
     METADATA_PATH.write_text(

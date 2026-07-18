@@ -29,6 +29,7 @@ class DepartmentPrediction(BaseModel):
     rank: int
     department_code: str
     department_name: str
+    clinic_room: str
     confidence: float
     eligible: bool = True
 

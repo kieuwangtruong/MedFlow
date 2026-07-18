@@ -1,18 +1,21 @@
 from __future__ import annotations
 import json, os
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
-from app.domain.models import JourneyTimestamps, Resource, Task
-from app.storage.database import AuditRecord, Base, EventRecord, JourneyRecord, MetaRecord, ResourceRecord, TaskRecord, make_engine
+from ..domain.models import JourneyTimestamps, Resource, Task
+from .database import AuditRecord, Base, EventRecord, JourneyRecord, MetaRecord, ResourceRecord, TaskRecord, make_engine
 
 TZ=ZoneInfo("Asia/Ho_Chi_Minh")
 
 class Store:
     def __init__(self,database_url:str|None=None):
-        self.database_url=database_url or os.getenv("DATABASE_URL","sqlite:///./data/wait_time.db")
-        if self.database_url.startswith("sqlite:///./"): os.makedirs("data",exist_ok=True)
+        default_database = Path(__file__).resolve().parents[2] / "data" / "wait_time.db"
+        self.database_url=database_url or os.getenv("DATABASE_URL",f"sqlite:///{default_database}")
+        if self.database_url.startswith("sqlite:///"):
+            Path(self.database_url.removeprefix("sqlite:///")).parent.mkdir(parents=True,exist_ok=True)
         self.engine=make_engine(self.database_url);Base.metadata.create_all(self.engine)
         self.tasks={};self.resources={};self.events=set();self.journeys={};self.version=0;self.updated_at=datetime.now(TZ);self.entity_event_times={}
         self.load()

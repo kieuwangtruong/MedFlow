@@ -56,31 +56,21 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
+        }
       }
     },
-    "/api/v1/patients/{patient_token}/estimate": {
+    "/api/v1/tasks/{task_id}/estimate": {
       "get": {
-        "summary": "Patient",
-        "operationId": "patient_api_v1_patients__patient_token__estimate_get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
+        "summary": "Task Estimate",
+        "operationId": "task_estimate_api_v1_tasks__task_id__estimate_get",
         "parameters": [
           {
-            "name": "patient_token",
+            "name": "task_id",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Patient Token"
+              "title": "Task Id"
             }
           }
         ],
@@ -112,11 +102,6 @@
       "get": {
         "summary": "Queue",
         "operationId": "queue_api_v1_queues__queue_id__estimates_get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
         "parameters": [
           {
             "name": "queue_id",
@@ -154,11 +139,6 @@
       "get": {
         "summary": "Journey",
         "operationId": "journey_api_v1_journeys__journey_id__estimate_get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
         "parameters": [
           {
             "name": "journey_id",
@@ -205,23 +185,13 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/queues/{queue_id}/summary": {
       "get": {
         "summary": "Queue Summary",
         "operationId": "queue_summary_api_v1_queues__queue_id__summary_get",
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ],
         "parameters": [
           {
             "name": "queue_id",
@@ -288,12 +258,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/estimates/assignment-impact": {
@@ -329,12 +294,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/simulations/scenario": {
@@ -370,12 +330,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "APIKeyHeader": []
-          }
-        ]
+        }
       }
     }
   },
@@ -383,10 +338,6 @@
     "schemas": {
       "AssignmentImpactRequest": {
         "properties": {
-          "patient_token": {
-            "type": "string",
-            "title": "Patient Token"
-          },
           "task_type": {
             "$ref": "#/components/schemas/TaskType"
           },
@@ -420,7 +371,6 @@
         },
         "type": "object",
         "required": [
-          "patient_token",
           "task_type",
           "service_code",
           "clinical_priority",
@@ -468,10 +418,6 @@
           "task_id": {
             "type": "string",
             "title": "Task Id"
-          },
-          "patient_token": {
-            "type": "string",
-            "title": "Patient Token"
           },
           "queue_id": {
             "type": "string",
@@ -554,7 +500,6 @@
           "event_time",
           "journey_id",
           "task_id",
-          "patient_token",
           "queue_id",
           "event_type"
         ],
@@ -641,9 +586,9 @@
       },
       "PatientEstimate": {
         "properties": {
-          "patient_token": {
+          "task_id": {
             "type": "string",
-            "title": "Patient Token"
+            "title": "Task Id"
           },
           "journey_id": {
             "type": "string",
@@ -747,7 +692,7 @@
         },
         "type": "object",
         "required": [
-          "patient_token",
+          "task_id",
           "journey_id",
           "queue_id",
           "task_type",
@@ -813,10 +758,6 @@
           "request_id": {
             "type": "string",
             "title": "Request Id"
-          },
-          "patient_token": {
-            "type": "string",
-            "title": "Patient Token"
           },
           "task_type": {
             "$ref": "#/components/schemas/TaskType"
@@ -944,7 +885,6 @@
         "type": "object",
         "required": [
           "request_id",
-          "patient_token",
           "task_type",
           "service_code",
           "clinical_priority",
@@ -1049,13 +989,6 @@
           "type": {
             "type": "string",
             "title": "Error Type"
-          },
-          "input": {
-            "title": "Input"
-          },
-          "ctx": {
-            "type": "object",
-            "title": "Context"
           }
         },
         "type": "object",
@@ -1065,13 +998,6 @@
           "type"
         ],
         "title": "ValidationError"
-      }
-    },
-    "securitySchemes": {
-      "APIKeyHeader": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-API-Key"
       }
     }
   }

@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     port: int = 8001
     confidence_threshold: float = 0.45
     top_k_default: int = 3
-    model_path: str = "models/department_router.joblib"
+    model_path: str = "models/clinic_room_router.joblib"
     metadata_path: str = "models/model_metadata.json"
     departments_path: str = "data/departments.csv"
 
