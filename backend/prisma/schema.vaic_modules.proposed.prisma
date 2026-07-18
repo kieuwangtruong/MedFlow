@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum JourneyStep {
+  INITIAL_CONSULT
+  DIAGNOSTIC_SERVICE
+  RESULT_PENDING
+  RETURN_REVIEW
+}
+
+enum PatientTaskType {
+  INITIAL_CONSULT
+  DIAGNOSTIC_SERVICE
+  RETURN_REVIEW
+}
+
+enum PatientTaskStatus {
+  PENDING
+  READY
+  IN_QUEUE
+  IN_SERVICE
+  WAITING_RESULT
+  COMPLETED
+  CANCELLED
+  SKIPPED
+}
+
+enum ServiceType {
+  CLINICAL_CONSULT
+  XRAY
+  ABDOMINAL_ULTRASOUND
+  RESULT_REVIEW
+}
+
+enum ClinicalPriority {
+  NORMAL
+  URGENT
+}
+
+enum ReadinessStatus {
+  COMPLETED
+  RESULT_PENDING
+}
+
+enum SchedulingMode {
+  FAIR_QUEUE
+  SCHEDULED_WINDOW
+}
+
+enum ResultUrgency {
+  NORMAL
+  URGENT
+}
+
+enum ReturnTiming {
+  EARLY
+  ON_TIME
+  LATE
+}
+
+enum ResourceStatus {
+  AVAILABLE
+}
+
+enum CaseComplexity {
+  SIMPLE
+  NORMAL
+  COMPLEX
+}
+
+enum QueueEntryStatus {
+  WAITING
+  CALLED
+  IN_SERVICE
+  DONE
+  CANCELLED
+  NO_SHOW
+}
+
+model ClinicRoom {
+  id          String       @id
+  name        String
+  serviceType ServiceType? @map("service_type")
+  isActive    Boolean      @default(true) @map("is_active")
+
+  queues ServiceQueue[]
+  tasks  PatientJourneyTask[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([serviceType])
+  @@map("clinic_rooms")
+}
+
+model ServiceQueue {
+  id          String       @id
+  name        String
+  roomId      String?      @map("room_id")
+  serviceType ServiceType? @map("service_type")
+  isActive    Boolean      @default(true) @map("is_active")
+
+  room    ClinicRoom?         @relation(fields: [roomId], references: [id])
+  tasks   PatientJourneyTask[]
+  entries PatientQueueEntry[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([roomId])
+  @@index([serviceType])
+  @@map("service_queues")
+}
+
+model PatientJourney {
+  id           String               @id @map("journey_id")
+  patientToken String               @map("patient_token")
+  tasks        PatientJourneyTask[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([patientToken])
+  @@map("patient_journeys")
+}
+
+model PatientJourneyTask {
+  id                    String             @id @map("task_id")
+  journeyId             String             @map("journey_id")
+  journeyStep           JourneyStep        @map("journey_step")
+  parentTaskId          String?            @map("parent_task_id")
+  sourceDependsOnTaskId String?            @map("depends_on_task_id")
+  patientToken          String             @map("patient_token")
+  queueId               String?            @map("queue_id")
+  roomId                String?            @map("room_id")
+  taskType              PatientTaskType    @map("task_type")
+  status                PatientTaskStatus  @default(PENDING)
+  serviceType           ServiceType        @map("service_type")
+  clinicalPriority      ClinicalPriority   @default(NORMAL) @map("clinical_priority")
+  readinessStatus       ReadinessStatus?   @map("readiness_status")
+  schedulingMode        SchedulingMode?    @map("scheduling_mode")
+  doctorId              String?            @map("doctor_id")
+  deviceId              String?            @map("device_id")
+  assignedAt            DateTime?          @map("assigned_at") @db.Timestamptz(6)
+  arrivalTime           DateTime?          @map("arrival_time") @db.Timestamptz(6)
+  readyAt               DateTime?          @map("ready_at") @db.Timestamptz(6)
+  serviceStart          DateTime?          @map("service_start") @db.Timestamptz(6)
+  serviceEnd            DateTime?          @map("service_end") @db.Timestamptz(6)
+  completedAt           DateTime?          @map("completed_at") @db.Timestamptz(6)
+  cancelledAt           DateTime?          @map("cancelled_at") @db.Timestamptz(6)
+  resultReadyAt         DateTime?          @map("result_ready_at") @db.Timestamptz(6)
+  resultUrgency         ResultUrgency?     @map("result_urgency")
+  resultDelayMinutes    Float?             @map("result_delay_minutes")
+  returnTiming          ReturnTiming?      @map("return_timing")
+  scheduleWindowStart   DateTime?          @map("schedule_window_start") @db.Timestamptz(6)
+  scheduleWindowEnd     DateTime?          @map("schedule_window_end") @db.Timestamptz(6)
+  sequenceOrder         Int?               @map("sequence_order")
+  queueLength           Int?               @map("queue_length")
+  arrivalRate15m        Int?               @map("arrival_rate_15m")
+  avgService30m         Float?             @map("avg_service_30m")
+  resourceStatus        ResourceStatus?    @map("resource_status")
+  resourceFailure       Boolean            @default(false) @map("resource_failure")
+  doctorPause           Boolean            @default(false) @map("doctor_pause")
+  caseComplexity        CaseComplexity?    @map("case_complexity")
+  activeServiceDuration Float?             @map("active_service_duration")
+  interruptionDuration  Float?             @map("interruption_duration")
+  elapsedServiceDuration Float?            @map("elapsed_service_duration")
+  actualWaitTime        Float?             @map("actual_wait_time")
+  noShow                Boolean            @default(false) @map("no_show")
+  emergencyInsertion    Boolean            @default(false) @map("emergency_insertion")
+  recentEmergencyCount  Int                @default(0) @map("recent_emergency_count")
+
+  journey              PatientJourney          @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  parentTask           PatientJourneyTask?     @relation("TaskParent", fields: [parentTaskId], references: [id])
+  childTasks           PatientJourneyTask[]    @relation("TaskParent")
+  queue                ServiceQueue?           @relation(fields: [queueId], references: [id])
+  room                 ClinicRoom?             @relation(fields: [roomId], references: [id])
+  queueEntries         PatientQueueEntry[]
+  blockingDependencies PatientTaskDependency[] @relation("TaskBlockedBy")
+  requiredByTasks      PatientTaskDependency[] @relation("TaskRequirement")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([journeyId, journeyStep])
+  @@index([parentTaskId])
+  @@index([patientToken])
+  @@index([queueId, status])
+  @@index([roomId, status])
+  @@index([doctorId, serviceStart])
+  @@index([deviceId, serviceStart])
+  @@index([serviceType, arrivalTime])
+  @@map("patient_journey_tasks")
+}
+
+model PatientTaskDependency {
+  id              Int    @id @default(autoincrement())
+  taskId          String @map("task_id")
+  dependsOnTaskId String @map("depends_on_task_id")
+
+  task          PatientJourneyTask @relation("TaskBlockedBy", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOnTask PatientJourneyTask @relation("TaskRequirement", fields: [dependsOnTaskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([taskId, dependsOnTaskId])
+  @@index([dependsOnTaskId])
+  @@map("patient_task_dependencies")
+}
+
+model PatientQueueEntry {
+  id       String @id @default(cuid())
+  queueId  String @map("queue_id")
+  taskId   String @map("task_id")
+
+  status   QueueEntryStatus @default(WAITING)
+  priority ClinicalPriority @default(NORMAL)
+
+  queueNumber Int? @map("queue_number")
+  position    Int?
+
+  enqueuedAt     DateTime  @default(now()) @map("enqueued_at") @db.Timestamptz(6)
+  calledAt       DateTime? @map("called_at") @db.Timestamptz(6)
+  serviceStartAt DateTime? @map("service_start_at") @db.Timestamptz(6)
+  serviceEndAt   DateTime? @map("service_end_at") @db.Timestamptz(6)
+  cancelledAt    DateTime? @map("cancelled_at") @db.Timestamptz(6)
+
+  queue ServiceQueue       @relation(fields: [queueId], references: [id])
+  task  PatientJourneyTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([taskId, queueId])
+  @@index([queueId, status, priority, enqueuedAt])
+  @@index([taskId])
+  @@map("patient_queue_entries")
+}
+
+model CheckinSlotStatistic {
+  id           Int      @id @default(autoincrement())
+  checkinTime  DateTime @unique @map("checkin_time") @db.Timestamp(0)
+  date         DateTime @db.Date
+  slotStart    String   @map("slot_start") @db.VarChar(5)
+  slotIndex    Int      @map("slot_index")
+  dayOfWeek    Int      @map("day_of_week")
+  dayName      String   @map("day_name") @db.VarChar(16)
+  month        Int
+  isWeekend    Boolean  @map("is_weekend")
+  checkinCount Int      @map("checkin_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([date, slotIndex])
+  @@index([date])
+  @@index([slotIndex])
+  @@index([dayOfWeek, slotIndex])
+  @@index([month, slotIndex])
+  @@map("checkin_slot_statistics")
+}
