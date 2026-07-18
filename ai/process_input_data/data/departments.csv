@@ -1,16 +1,16 @@
 ﻿department_code,department_name,description,age_min,age_max,gender_scope,is_emergency,is_active,validation_status
-ER,Cấp cứu,Tiếp nhận các trường hợp có dấu hiệu nguy hiểm cần đánh giá ngay.,0,120,ALL,True,True,SYNTHETIC_UNVALIDATED
-GENERAL,Nội tổng quát,Tiếp nhận triệu chứng chưa xác định rõ chuyên khoa hoặc cần khám sàng lọc ban đầu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-CARD,Tim mạch,Khám các triệu chứng liên quan tim và tuần hoàn khi không có dấu hiệu cấp cứu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-NEURO,Thần kinh,"Khám đau đầu, chóng mặt, tê bì và các triệu chứng thần kinh không cấp cứu.",16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-ENT,Tai Mũi Họng,"Khám các triệu chứng tai, mũi, họng và thanh quản.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-DERM,Da liễu,"Khám các vấn đề về da, tóc, móng và niêm mạc.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-PED,Nhi khoa,Khám và điều phối bệnh nhân dưới 16 tuổi.,0,15,ALL,False,True,SYNTHETIC_UNVALIDATED
-OBGYN,Sản phụ khoa,Khám các triệu chứng sản khoa và phụ khoa.,12,120,FEMALE,False,True,SYNTHETIC_UNVALIDATED
-ORTHO,Cơ xương khớp,"Khám đau xương khớp, cột sống và chấn thương không cấp cứu.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-GASTRO,Tiêu hóa,Khám các triệu chứng đường tiêu hóa và gan mật không cấp cứu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-RESP,Hô hấp,"Khám ho, khò khè và khó thở mức độ ổn định, không có dấu hiệu cấp cứu.",16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-URO,Tiết niệu,Khám các triệu chứng đường tiểu và hệ tiết niệu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-OPH,Mắt,"Khám đau mắt, đỏ mắt, nhìn mờ và các triệu chứng thị giác không cấp cứu.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-ENDO,Nội tiết,Khám các triệu chứng liên quan chuyển hóa và nội tiết.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
-PSYCH,Tâm thần - Tâm lý,"Khám các vấn đề lo âu, mất ngủ và cảm xúc khi không có nguy cơ khẩn cấp.",12,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+ER,Khoa Cấp cứu,Tiếp nhận các trường hợp có dấu hiệu nguy hiểm cần đánh giá ngay.,0,120,ALL,True,True,SYNTHETIC_UNVALIDATED
+GENERAL,Khoa Khám bệnh Tổng quát,Tiếp nhận triệu chứng chưa xác định rõ chuyên khoa hoặc cần khám sàng lọc ban đầu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+CARD,Khoa Tim mạch,Khám các triệu chứng liên quan tim và tuần hoàn khi không có dấu hiệu cấp cứu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+NEURO,Khoa Thần kinh,"Khám đau đầu, chóng mặt, tê bì và các triệu chứng thần kinh không cấp cứu.",16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+ENT,Khoa Tai Mũi Họng,"Khám các triệu chứng tai, mũi, họng và thanh quản.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+DERM,Khoa Da liễu,"Khám các vấn đề về da, tóc, móng và niêm mạc.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+PED,Khoa Nhi,Khám và điều phối bệnh nhân dưới 16 tuổi.,0,15,ALL,False,True,SYNTHETIC_UNVALIDATED
+OBGYN,Khoa Sản Phụ khoa,Khám các triệu chứng sản khoa và phụ khoa.,12,120,FEMALE,False,True,SYNTHETIC_UNVALIDATED
+ORTHO,Khoa Cơ Xương Khớp,"Khám đau xương khớp, cột sống và chấn thương không cấp cứu.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+GASTRO,Khoa Tiêu hóa - Gan mật,Khám các triệu chứng đường tiêu hóa và gan mật không cấp cứu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+RESP,Khoa Hô hấp,"Khám ho, khò khè và khó thở mức độ ổn định, không có dấu hiệu cấp cứu.",16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+URO,Khoa Tiết niệu,Khám các triệu chứng đường tiểu và hệ tiết niệu.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+OPH,Khoa Mắt,"Khám đau mắt, đỏ mắt, nhìn mờ và các triệu chứng thị giác không cấp cứu.",0,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+ENDO,Khoa Nội tiết,Khám các triệu chứng liên quan chuyển hóa và nội tiết.,16,120,ALL,False,True,SYNTHETIC_UNVALIDATED
+PSYCH,Khoa Tâm thần - Tâm lý,"Khám các vấn đề lo âu, mất ngủ và cảm xúc khi không có nguy cơ khẩn cấp.",12,120,ALL,False,True,SYNTHETIC_UNVALIDATED
