@@ -24,7 +24,7 @@ def apply_event(s,e):
     t=s.tasks.get(e.task_id);previous_task=t.model_dump(mode="json") if t else None;audits=[]
     creates={EventType.PATIENT_CHECKED_IN,EventType.SERVICE_ORDERED,EventType.ARRIVED_QUEUE,EventType.EMERGENCY_ARRIVED,EventType.TASK_ASSIGNED_TO_QUEUE,EventType.PATIENT_ARRIVED,EventType.PATIENT_CHECKED_IN_EARLY,EventType.PATIENT_READY_AT_QUEUE}
     if not t and e.event_type in creates:
-        t=Task(task_id=e.task_id,journey_id=e.journey_id,queue_id=e.queue_id,task_type=e.task_type,
+        t=Task(task_id=e.task_id,journey_id=e.journey_id,patient_token=e.patient_token,queue_id=e.queue_id,task_type=e.task_type,
             service_type=e.metadata.get("service_type","CLINICAL_CONSULT"),clinical_priority=e.clinical_priority,
             readiness_status=ReadinessStatus.ARRIVED,scheduling_mode=SchedulingMode(e.metadata.get("scheduling_mode","FAIR_QUEUE")),
             ready_at=e.event_time,predicted_minutes=e.metadata.get("predicted_minutes",12),created_seq=s.version,

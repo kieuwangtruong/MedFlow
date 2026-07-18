@@ -51,7 +51,7 @@ POST /api/v1/forecasts
 POST /api/v1/symptom-routing
 GET  /health
 GET  /api/v1/rooms/status
-GET  /api/v1/tasks/{task_id}/estimate
+GET  /api/v1/patients/{patient_token}/estimate
 POST /api/v1/events
 POST /api/v1/estimates/room-options
 ```

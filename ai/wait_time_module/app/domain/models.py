@@ -28,7 +28,7 @@ class EventType(StrEnum):
     PATIENT_CHECKED_IN="PATIENT_CHECKED_IN"; SERVICE_ORDERED="SERVICE_ORDERED"; ARRIVED_QUEUE="ARRIVED_QUEUE"; SERVICE_STARTED="SERVICE_STARTED"; SERVICE_COMPLETED="SERVICE_COMPLETED"; RESULT_READY="RESULT_READY"; RETURN_STARTED="RETURN_STARTED"; RETURN_ARRIVED="RETURN_ARRIVED"; PRIORITY_CHANGED="PRIORITY_CHANGED"; NO_SHOW_CONFIRMED="NO_SHOW_CONFIRMED"; RESOURCE_AVAILABLE="RESOURCE_AVAILABLE"; RESOURCE_FAILED="RESOURCE_FAILED"; EMERGENCY_ARRIVED="EMERGENCY_ARRIVED"; TASK_CANCELLED="TASK_CANCELLED"; TASK_ASSIGNED_TO_QUEUE="TASK_ASSIGNED_TO_QUEUE"; TASK_REASSIGNED_TO_QUEUE="TASK_REASSIGNED_TO_QUEUE"; PATIENT_ARRIVED="PATIENT_ARRIVED"; PATIENT_CHECKED_IN_EARLY="PATIENT_CHECKED_IN_EARLY"; TASK_BECAME_ELIGIBLE="TASK_BECAME_ELIGIBLE"; PATIENT_READY_AT_QUEUE="PATIENT_READY_AT_QUEUE"; PATIENT_LEFT_FOR_OTHER_SERVICE="PATIENT_LEFT_FOR_OTHER_SERVICE"; OTHER_SERVICE_STARTED="OTHER_SERVICE_STARTED"; OTHER_SERVICE_COMPLETED="OTHER_SERVICE_COMPLETED"; PATIENT_RETURNING_TO_QUEUE="PATIENT_RETURNING_TO_QUEUE"; PATIENT_RETURNED_TO_QUEUE="PATIENT_RETURNED_TO_QUEUE"; PATIENT_LOCATION_UPDATED="PATIENT_LOCATION_UPDATED"; TASK_MISSED_CALL="TASK_MISSED_CALL"
 
 class Task(BaseModel):
-    task_id: str; journey_id: str; queue_id: str
+    task_id: str; journey_id: str; patient_token: str; queue_id: str
     task_type: TaskType; service_type: str = "CLINICAL_CONSULT"
     clinical_priority: ClinicalPriority = ClinicalPriority.NORMAL
     readiness_status: ReadinessStatus = ReadinessStatus.WAITING
@@ -48,6 +48,12 @@ class Task(BaseModel):
     estimated_return_arrived_at: datetime|None=None; actual_return_arrived_at: datetime|None=None
     ready_for_review_at: datetime|None=None; return_review_sla_minutes: float=15
     created_seq: int=0
+    @model_validator(mode="before")
+    @classmethod
+    def restore_legacy_patient_token(cls, value):
+        if isinstance(value, dict) and not value.get("patient_token"):
+            value = {**value, "patient_token": value.get("task_id", "UNKNOWN")}
+        return value
     @model_validator(mode="after")
     def validate_window(self):
         if self.schedule_window_start and self.schedule_window_end and self.schedule_window_end < self.schedule_window_start: raise ValueError("schedule window end precedes start")
@@ -64,7 +70,7 @@ class Resource(BaseModel):
     compatible_service_types: set[str] = Field(default_factory=set)
 
 class Event(BaseModel):
-    event_id: str; event_time: datetime; journey_id: str; task_id: str; queue_id: str
+    event_id: str; event_time: datetime; journey_id: str; task_id: str; patient_token: str; queue_id: str
     event_type: EventType; task_type: TaskType=TaskType.INITIAL_CONSULT; clinical_priority: ClinicalPriority=ClinicalPriority.NORMAL
     resource_id: str|None=None; metadata: dict = Field(default_factory=dict)
     based_on_estimate_version: int|None=None; actor_id: str="unknown"; actor_type: str="SERVICE"
