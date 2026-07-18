@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "code-review-graph": {
+      "command": "E:\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "args": [
+        "-m",
+        "code_review_graph",
+        "serve"
+      ],
+      "cwd": "D:\\VSCode_Project\\Website\\vaic_2026\\VAIC2026-TuTru",
+      "type": "stdio"
+    }
+  }
+}
