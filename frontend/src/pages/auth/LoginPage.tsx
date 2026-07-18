@@ -1,36 +1,34 @@
-import {
-  Hospital,
-  MonitorCheck,
-  ShieldCheck,
-  Stethoscope,
-  UserRound,
-} from "lucide-react";
+import { ArrowLeft, Hospital, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import type { UserRole } from "../../types";
 import loginBackground from "../../assets/backgrounds/hospital-login.png";
+import { useAuth } from "../../hooks/useAuth";
+
+type LoginMode = "patient" | "staff";
 
 export function LoginPage() {
-  const { user, login, isAuthenticated } = useAuth();
-  const [role, setRole] = useState<UserRole>("PATIENT");
+  const { user, login, staffLogin, isAuthenticated } = useAuth();
+  const [mode, setMode] = useState<LoginMode>("patient");
   const [cccd, setCccd] = useState("001204012345");
-  const valid = /^\d{9,12}$/.test(cccd);
-  if (isAuthenticated && user)
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const cccdValid = /^\d{9,12}$/.test(cccd);
+  const staffValid = userName.trim().length > 0 && password.length > 0;
+  const pending = login.isPending || staffLogin.isPending;
+
+  if (isAuthenticated && user) {
     return <Navigate to={`/${user.role.toLowerCase()}`} replace />;
-  const submit = (event: React.FormEvent) => {
+  }
+
+  const submitPatient = (event: FormEvent) => {
     event.preventDefault();
-    if (valid)
-      login.mutate({
-        identifier:
-          role === "DOCTOR"
-            ? `doctor-${cccd}`
-            : role === "ADMIN"
-              ? `admin-${cccd}`
-              : cccd,
-        password: "cccd-login",
-        role,
-      });
+    if (cccdValid) login.mutate({ cccd });
+  };
+
+  const submitStaff = (event: FormEvent) => {
+    event.preventDefault();
+    if (staffValid) staffLogin.mutate({ userName, password });
   };
 
   return (
@@ -46,9 +44,7 @@ export function LoginPage() {
               <span className="grid h-12 w-12 place-items-center rounded-lg bg-[#ea7a50] text-white">
                 <Hospital />
               </span>
-              <strong className="text-xl drop-shadow-sm">
-                Bệnh viện An Tâm
-              </strong>
+              <strong className="text-xl drop-shadow-sm">Bệnh viện An Tâm</strong>
             </div>
             <h1 className="text-5xl font-extrabold leading-[1.12] tracking-tight drop-shadow-md">
               Biết rõ nơi cần đến.
@@ -61,72 +57,42 @@ export function LoginPage() {
             </div>
           </div>
         </section>
+
         <section className="grid place-items-center px-6 py-10 sm:px-12">
           <div className="w-full max-w-lg">
             <div className="mb-9 flex items-center gap-2 text-xl font-extrabold text-[#176b9b] lg:hidden">
               <Hospital />
               Bệnh viện An Tâm
             </div>
-            <h2 className="text-3xl font-extrabold tracking-tight text-slate-950">
-              Đăng nhập
-            </h2>
-            <div className="mt-6 grid grid-cols-3 gap-2">
-              <Role
-                active={role === "PATIENT"}
-                onClick={() => setRole("PATIENT")}
-                icon={<UserRound />}
-                label="Bệnh nhân"
+
+            {mode === "patient" ? (
+              <PatientLoginForm
+                cccd={cccd}
+                valid={cccdValid}
+                pending={pending}
+                onChangeCccd={setCccd}
+                onSubmit={submitPatient}
+                onStaffMode={() => {
+                  staffLogin.reset();
+                  setMode("staff");
+                }}
               />
-              <Role
-                active={role === "DOCTOR"}
-                onClick={() => setRole("DOCTOR")}
-                icon={<Stethoscope />}
-                label="Nhân viên"
+            ) : (
+              <StaffLoginForm
+                userName={userName}
+                password={password}
+                valid={staffValid}
+                pending={pending}
+                errorMessage={getLoginErrorMessage(staffLogin.error)}
+                onChangeUserName={setUserName}
+                onChangePassword={setPassword}
+                onSubmit={submitStaff}
+                onPatientMode={() => {
+                  staffLogin.reset();
+                  setMode("patient");
+                }}
               />
-              <Role
-                active={role === "ADMIN"}
-                onClick={() => setRole("ADMIN")}
-                icon={<MonitorCheck />}
-                label="Vận hành"
-              />
-            </div>
-            <form onSubmit={submit} className="mt-8">
-              <label>
-                <span className="field-label">Số căn cước công dân</span>
-                <input
-                  inputMode="numeric"
-                  autoFocus
-                  value={cccd}
-                  onChange={(e) =>
-                    setCccd(e.target.value.replace(/\D/g, "").slice(0, 12))
-                  }
-                  className="form-control text-lg tracking-wider"
-                  placeholder="Nhập 9–12 chữ số"
-                />
-              </label>
-              {cccd && !valid && (
-                <p className="mt-2 text-sm font-medium text-red-600">
-                  CCCD cần có từ 9 đến 12 chữ số.
-                </p>
-              )}
-              <button
-                disabled={!valid || login.isPending}
-                className="mt-6 h-13 w-full rounded-lg bg-[#176b9b] px-6 font-bold text-white hover:bg-[#145b84] disabled:bg-slate-300"
-              >
-                {login.isPending ? "Đang kiểm tra..." : "Tiếp tục"}
-              </button>
-            </form>
-            <div className="mt-7 flex items-center justify-between border-t border-slate-200 pt-5 text-sm">
-              <span className="text-slate-500">
-                Máy check-in tại cửa phòng?
-              </span>
-              <Link
-                to="/kiosk"
-                className="font-bold text-[#176b9b] hover:underline"
-              >
-                Mở chế độ kiosk
-              </Link>
-            </div>
+            )}
           </div>
         </section>
       </div>
@@ -134,25 +100,171 @@ export function LoginPage() {
   );
 }
 
-function Role({
-  active,
-  onClick,
-  icon,
-  label,
+function getLoginErrorMessage(error: unknown) {
+  if (!error || typeof error !== "object") return "";
+  const response = "response" in error ? error.response : undefined;
+
+  if (!response || typeof response !== "object") return "Tài khoản hoặc mật khẩu chưa đúng";
+  const data = "data" in response ? response.data : undefined;
+
+  if (!data || typeof data !== "object") return "Tài khoản hoặc mật khẩu chưa đúng";
+  const errorBody = "error" in data ? data.error : undefined;
+
+  if (!errorBody || typeof errorBody !== "object") return "Tài khoản hoặc mật khẩu chưa đúng";
+  const message = "message" in errorBody ? errorBody.message : undefined;
+
+  return typeof message === "string" && message ? message : "Tài khoản hoặc mật khẩu chưa đúng";
+}
+
+function PatientLoginForm({
+  cccd,
+  valid,
+  pending,
+  onChangeCccd,
+  onSubmit,
+  onStaffMode,
 }: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
+  cccd: string;
+  valid: boolean;
+  pending: boolean;
+  onChangeCccd: (value: string) => void;
+  onSubmit: (event: FormEvent) => void;
+  onStaffMode: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex min-h-24 flex-col items-center justify-center gap-2 rounded-lg border text-sm font-bold transition ${active ? "border-[#176b9b] bg-sky-50 text-[#176b9b] ring-2 ring-sky-100" : "border-slate-200 bg-white text-slate-500 hover:border-slate-300"}`}
-    >
-      <span className="[&>svg]:h-6 [&>svg]:w-6">{icon}</span>
-      {label}
-    </button>
+    <>
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-lg bg-sky-50 text-[#176b9b]">
+          <UserRound size={22} />
+        </span>
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-950">Đăng nhập</h2>
+          <p className="mt-1 text-sm font-medium text-slate-500">Cổng bệnh nhân</p>
+        </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="mt-8">
+        <label>
+          <span className="field-label">Số căn cước công dân</span>
+          <input
+            inputMode="numeric"
+            autoFocus
+            value={cccd}
+            onChange={(event) => onChangeCccd(event.target.value.replace(/\D/g, "").slice(0, 12))}
+            className="form-control text-lg tracking-wider"
+            placeholder="Nhập 9-12 chữ số"
+          />
+        </label>
+        {cccd && !valid && (
+          <p className="mt-2 text-sm font-medium text-red-600">
+            CCCD cần có từ 9 đến 12 chữ số.
+          </p>
+        )}
+        <button
+          disabled={!valid || pending}
+          className="mt-6 h-12 w-full rounded-lg bg-[#176b9b] px-6 font-bold text-white hover:bg-[#145b84] disabled:bg-slate-300"
+        >
+          {pending ? "Đang kiểm tra..." : "Tiếp tục"}
+        </button>
+      </form>
+
+      <div className="mt-7 grid gap-3 border-t border-slate-200 pt-5 text-sm">
+        <button
+          type="button"
+          onClick={onStaffMode}
+          className="flex h-11 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white font-bold text-[#176b9b] transition hover:border-sky-200 hover:bg-sky-50"
+        >
+          <Stethoscope size={18} />
+          Đăng nhập nhân viên
+        </button>
+        <div className="flex items-center justify-between">
+          <span className="text-slate-500">Máy check-in tại cửa phòng?</span>
+          <Link to="/kiosk" className="font-bold text-[#176b9b] hover:underline">
+            Mở chế độ kiosk
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function StaffLoginForm({
+  userName,
+  password,
+  valid,
+  pending,
+  errorMessage,
+  onChangeUserName,
+  onChangePassword,
+  onSubmit,
+  onPatientMode,
+}: {
+  userName: string;
+  password: string;
+  valid: boolean;
+  pending: boolean;
+  errorMessage: string;
+  onChangeUserName: (value: string) => void;
+  onChangePassword: (value: string) => void;
+  onSubmit: (event: FormEvent) => void;
+  onPatientMode: () => void;
+}) {
+  return (
+    <>
+      <button
+        type="button"
+        onClick={onPatientMode}
+        className="mb-7 flex h-10 items-center gap-2 rounded-lg px-2 text-sm font-bold text-slate-500 transition hover:bg-slate-100 hover:text-[#176b9b]"
+      >
+        <ArrowLeft size={18} />
+        Quay lại cổng bệnh nhân
+      </button>
+
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-lg bg-sky-50 text-[#176b9b]">
+          <Stethoscope size={22} />
+        </span>
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-950">
+            Đăng nhập nhân viên
+          </h2>
+          <p className="mt-1 text-sm font-medium text-slate-500">Tài khoản và mật khẩu nội bộ</p>
+        </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="mt-8 grid gap-5">
+        <label>
+          <span className="field-label">Tài khoản</span>
+          <input
+            autoFocus
+            value={userName}
+            onChange={(event) => onChangeUserName(event.target.value)}
+            className="form-control"
+            placeholder="Nhập tài khoản"
+          />
+        </label>
+        <label>
+          <span className="field-label">Mật khẩu</span>
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => onChangePassword(event.target.value)}
+            className="form-control"
+            placeholder="Nhập mật khẩu"
+          />
+        </label>
+        {errorMessage && (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+            {errorMessage}
+          </p>
+        )}
+        <button
+          disabled={!valid || pending}
+          className="h-12 w-full rounded-lg bg-[#176b9b] px-6 font-bold text-white hover:bg-[#145b84] disabled:bg-slate-300"
+        >
+          {pending ? "Đang đăng nhập..." : "Đăng nhập"}
+        </button>
+      </form>
+    </>
   );
 }

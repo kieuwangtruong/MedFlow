@@ -4,7 +4,7 @@ export type VisitStatus = 'CHECKED_IN' | 'SYMPTOM_SUBMITTED' | 'WAITING_TRIAGE' 
 export type StepStatus = 'PENDING' | 'WAITING' | 'CALLED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 export type PeakLevel = 'low' | 'normal' | 'high' | 'very_high'
 
-export interface User { id: string; full_name: string; role: UserRole; email?: string }
+export interface User { id: string; full_name: string; role: UserRole; email?: string; cccd?: string; patient_token?: string; staff_role?: string }
 export interface Patient { id: string; code: string; fullName: string; birthYear: number; phone: string; gender: string; insuranceNumber?: string }
 export interface Doctor { id: string; fullName: string; department: string; room: string; status: 'AVAILABLE' | 'BUSY' | 'OFFLINE'; examinedToday: number; waitingPatients: number; averageMinutes: number }
 export interface Department { id: string; name: string; waitingCount: number }

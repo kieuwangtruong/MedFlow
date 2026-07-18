@@ -1,10 +1,36 @@
-import type { AuthResponse, UserRole } from '../types'
+import type { AuthResponse } from '../types'
 import axiosClient, { mockDelay, USE_MOCK_API } from './axiosClient'
 
 export const authApi = {
-  login: async (identifier: string, password: string, demoRole?: UserRole): Promise<AuthResponse> => {
-    if (!USE_MOCK_API) return (await axiosClient.post<AuthResponse>('/auth/login', { identifier, password })).data
-    const role = demoRole ?? (identifier.includes('admin') ? 'ADMIN' : identifier.includes('doctor') ? 'DOCTOR' : 'PATIENT')
-    return mockDelay({ access_token: `demo-${role.toLowerCase()}-token`, user: { id: `user-${role}`, full_name: role === 'PATIENT' ? 'Nguyễn Minh Quân' : role === 'DOCTOR' ? 'BS. Trần Minh An' : 'Quản trị bệnh viện', role, email: identifier } })
+  login: async (cccd: string): Promise<AuthResponse> => {
+    if (!USE_MOCK_API) return (await axiosClient.post<AuthResponse>('/auth/login', { cccd })).data
+
+    return mockDelay({
+      access_token: 'demo-patient-token',
+      user: {
+        id: `patient-${cccd}`,
+        full_name: 'Benh nhan demo',
+        role: 'PATIENT',
+        cccd,
+        patient_token: `pt-demo-${cccd}`,
+      },
+    })
+  },
+  staffLogin: async (userName: string, password: string): Promise<AuthResponse> => {
+    if (!USE_MOCK_API) {
+      return (await axiosClient.post<AuthResponse>('/auth/staff/login', { userName, password })).data
+    }
+
+    const role = userName.toLowerCase().includes('admin') ? 'ADMIN' : 'DOCTOR'
+    return mockDelay({
+      access_token: `demo-${role.toLowerCase()}-staff-token`,
+      user: {
+        id: `staff-${userName}`,
+        full_name: role === 'ADMIN' ? 'Quan tri vien demo' : 'Nhan vien demo',
+        role,
+        email: userName,
+        staff_role: role,
+      },
+    })
   },
 }
