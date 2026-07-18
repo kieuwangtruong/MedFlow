@@ -2,7 +2,7 @@
 
 Các file trong thư mục này là dữ liệu **tổng hợp, chưa được thẩm định lâm sàng**:
 
-- `unified_symptom_routing.csv`: dữ liệu train chính gồm 1.000 câu triệu chứng, khoa, phòng khám, mức nguy hiểm và train/validation/test split.
+- `unified_symptom_routing.csv`: dữ liệu train chính gồm 5.000 câu triệu chứng giàu ngữ cảnh, khoa, phòng khám, mức nguy hiểm và train/validation/test split 70/15/15. Dữ liệu tổng hợp, chưa được thẩm định lâm sàng.
 - `red_flag_cases.csv`: 1.000 trường hợp dùng kiểm thử rule engine.
 - `departments.csv`: giới hạn tuổi, giới và trạng thái của 15 khoa.
 

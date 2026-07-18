@@ -54,21 +54,21 @@
     "Phòng khám đại tràng - rối loạn tiêu hóa"
   ],
   "department_names": {
-    "ER": "Cấp cứu",
-    "GENERAL": "Nội tổng quát",
-    "CARD": "Tim mạch",
-    "NEURO": "Thần kinh",
-    "ENT": "Tai Mũi Họng",
-    "DERM": "Da liễu",
-    "PED": "Nhi khoa",
-    "OBGYN": "Sản phụ khoa",
-    "ORTHO": "Cơ xương khớp",
-    "GASTRO": "Tiêu hóa",
-    "RESP": "Hô hấp",
-    "URO": "Tiết niệu",
-    "OPH": "Mắt",
-    "ENDO": "Nội tiết",
-    "PSYCH": "Tâm thần - Tâm lý"
+    "ER": "Khoa Cấp cứu",
+    "GENERAL": "Khoa Khám bệnh Tổng quát",
+    "CARD": "Khoa Tim mạch",
+    "NEURO": "Khoa Thần kinh",
+    "ENT": "Khoa Tai Mũi Họng",
+    "DERM": "Khoa Da liễu",
+    "PED": "Khoa Nhi",
+    "OBGYN": "Khoa Sản Phụ khoa",
+    "ORTHO": "Khoa Cơ Xương Khớp",
+    "GASTRO": "Khoa Tiêu hóa - Gan mật",
+    "RESP": "Khoa Hô hấp",
+    "URO": "Khoa Tiết niệu",
+    "OPH": "Khoa Mắt",
+    "ENDO": "Khoa Nội tiết",
+    "PSYCH": "Khoa Tâm thần - Tâm lý"
   },
   "clinic_departments": {
     "Phòng khám tai": "ENT",
@@ -122,613 +122,613 @@
     "Phòng khám cơ xương khớp tổng quát": "ORTHO"
   },
   "data_path": "data/unified_symptom_routing.csv",
-  "data_rows": 1000,
-  "training_rows": 850,
-  "test_rows": 150,
+  "data_rows": 10000,
+  "training_rows": 8500,
+  "test_rows": 1500,
   "split": {
-    "train": 700,
-    "validation": 150,
-    "test": 150
+    "train": 7000,
+    "validation": 1500,
+    "test": 1500
   },
   "validation_metrics": {
-    "rows": 150,
-    "accuracy_top_1": 0.58,
-    "accuracy_top_2": 0.8,
-    "accuracy_top_3": 0.9067,
-    "macro_f1": 0.4789,
-    "weighted_f1": 0.5712,
-    "log_loss": 1.5094,
-    "mean_top_confidence": 0.4153,
+    "rows": 1500,
+    "accuracy_top_1": 0.5887,
+    "accuracy_top_2": 0.8087,
+    "accuracy_top_3": 0.8767,
+    "macro_f1": 0.4925,
+    "weighted_f1": 0.5725,
+    "log_loss": 1.3545,
+    "mean_top_confidence": 0.5467,
     "classification_report": {
       "Phòng cấp cứu chấn thương": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng cấp cứu mắt": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng cấp cứu sản khoa": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng cấp cứu thần kinh": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 3.0
+        "support": 30.0
       },
       "Phòng cấp cứu tim phổi": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 8.0
+        "support": 80.0
       },
       "Phòng khám chi - chấn thương chỉnh hình": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng khám chuyển hóa ban đầu": {
-        "precision": 0.6666666666666666,
+        "precision": 0.625,
         "recall": 1.0,
-        "f1-score": 0.8,
-        "support": 2.0
+        "f1-score": 0.7692307692307693,
+        "support": 20.0
       },
       "Phòng khám cột sống": {
         "precision": 0.6666666666666666,
         "recall": 0.6666666666666666,
         "f1-score": 0.6666666666666666,
-        "support": 3.0
+        "support": 30.0
       },
       "Phòng khám dạ dày - ổ bụng": {
-        "precision": 0.6,
-        "recall": 0.6,
-        "f1-score": 0.6,
-        "support": 5.0
+        "precision": 0.5,
+        "recall": 0.4,
+        "f1-score": 0.4444444444444444,
+        "support": 50.0
       },
       "Phòng khám dị ứng - ngứa": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám giấc ngủ": {
-        "precision": 0.5,
+        "precision": 1.0,
         "recall": 0.3333333333333333,
-        "f1-score": 0.4,
-        "support": 3.0
+        "f1-score": 0.5,
+        "support": 30.0
       },
       "Phòng khám hen - khò khè": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám ho - nhiễm trùng hô hấp": {
-        "precision": 0.6363636363636364,
+        "precision": 0.7070707070707071,
         "recall": 0.875,
-        "f1-score": 0.7368421052631579,
-        "support": 8.0
+        "f1-score": 0.7821229050279329,
+        "support": 80.0
       },
       "Phòng khám họng - thanh quản": {
         "precision": 0.25,
-        "recall": 1.0,
-        "f1-score": 0.4,
-        "support": 1.0
+        "recall": 0.8,
+        "f1-score": 0.38095238095238093,
+        "support": 10.0
       },
       "Phòng khám khí sắc - trầm cảm": {
-        "precision": 0.3333333333333333,
-        "recall": 0.5,
-        "f1-score": 0.4,
-        "support": 2.0
+        "precision": 0.3939393939393939,
+        "recall": 0.65,
+        "f1-score": 0.49056603773584906,
+        "support": 20.0
       },
       "Phòng khám khó thở - chức năng phổi": {
-        "precision": 1.0,
-        "recall": 0.25,
-        "f1-score": 0.4,
-        "support": 4.0
+        "precision": 0.9523809523809523,
+        "recall": 0.5,
+        "f1-score": 0.6557377049180327,
+        "support": 40.0
       },
       "Phòng khám khớp": {
-        "precision": 0.75,
-        "recall": 0.75,
-        "f1-score": 0.75,
-        "support": 4.0
+        "precision": 0.7916666666666666,
+        "recall": 0.95,
+        "f1-score": 0.8636363636363636,
+        "support": 40.0
       },
       "Phòng khám lo âu": {
-        "precision": 0.5,
-        "recall": 0.5,
-        "f1-score": 0.5,
-        "support": 2.0
+        "precision": 0.7407407407407407,
+        "recall": 1.0,
+        "f1-score": 0.851063829787234,
+        "support": 20.0
       },
       "Phòng khám mũi": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng khám nhi da liễu": {
         "precision": 1.0,
-        "recall": 0.5,
-        "f1-score": 0.6666666666666666,
-        "support": 2.0
+        "recall": 0.75,
+        "f1-score": 0.8571428571428571,
+        "support": 20.0
       },
       "Phòng khám nhi hô hấp": {
-        "precision": 0.6666666666666666,
+        "precision": 0.625,
         "recall": 0.5,
-        "f1-score": 0.5714285714285714,
-        "support": 4.0
+        "f1-score": 0.5555555555555556,
+        "support": 40.0
       },
       "Phòng khám nhi sốt": {
         "precision": 1.0,
-        "recall": 0.3333333333333333,
-        "f1-score": 0.5,
-        "support": 3.0
+        "recall": 0.8666666666666667,
+        "f1-score": 0.9285714285714286,
+        "support": 30.0
       },
       "Phòng khám nhi tiêu hóa": {
-        "precision": 0.3333333333333333,
-        "recall": 1.0,
-        "f1-score": 0.5,
-        "support": 2.0
+        "precision": 0.2702702702702703,
+        "recall": 0.5,
+        "f1-score": 0.3508771929824561,
+        "support": 20.0
       },
       "Phòng khám nội tiết tóc - da": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám phụ khoa": {
-        "precision": 0.5555555555555556,
+        "precision": 0.46296296296296297,
         "recall": 1.0,
-        "f1-score": 0.7142857142857143,
-        "support": 5.0
+        "f1-score": 0.6329113924050633,
+        "support": 50.0
       },
       "Phòng khám rối loạn nhịp": {
-        "precision": 0.2,
-        "recall": 0.5,
-        "f1-score": 0.2857142857142857,
-        "support": 2.0
+        "precision": 0.23076923076923078,
+        "recall": 0.45,
+        "f1-score": 0.3050847457627119,
+        "support": 20.0
       },
       "Phòng khám rối loạn vận động": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng khám suy tim - tuần hoàn": {
         "precision": 1.0,
         "recall": 0.6666666666666666,
         "f1-score": 0.8,
-        "support": 3.0
+        "support": 30.0
       },
       "Phòng khám sản - thai kỳ": {
-        "precision": 0.6666666666666666,
-        "recall": 0.6666666666666666,
-        "f1-score": 0.6666666666666666,
-        "support": 3.0
+        "precision": 0.65,
+        "recall": 0.8666666666666667,
+        "f1-score": 0.7428571428571429,
+        "support": 30.0
       },
       "Phòng khám sốt tổng quát": {
         "precision": 0.5,
         "recall": 0.5,
         "f1-score": 0.5,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám tai": {
-        "precision": 1.0,
+        "precision": 0.8,
         "recall": 0.6666666666666666,
-        "f1-score": 0.8,
-        "support": 6.0
+        "f1-score": 0.7272727272727273,
+        "support": 60.0
       },
       "Phòng khám thận - đường tiểu trên": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám thị lực - khúc xạ": {
-        "precision": 0.5,
-        "recall": 1.0,
-        "f1-score": 0.6666666666666666,
-        "support": 2.0
+        "precision": 0.34146341463414637,
+        "recall": 0.7,
+        "f1-score": 0.45901639344262296,
+        "support": 20.0
       },
       "Phòng khám thực quản - trào ngược": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám tiêu hóa ban đầu": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám tiết niệu vùng chậu": {
-        "precision": 0.5,
-        "recall": 0.3333333333333333,
-        "f1-score": 0.4,
-        "support": 3.0
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 30.0
       },
       "Phòng khám tuyến giáp - chuyển hóa": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám tóc - da đầu": {
-        "precision": 0.25,
+        "precision": 0.30303030303030304,
         "recall": 0.3333333333333333,
-        "f1-score": 0.2857142857142857,
-        "support": 3.0
+        "f1-score": 0.31746031746031744,
+        "support": 30.0
       },
       "Phòng khám tổn thương da": {
         "precision": 0.5714285714285714,
         "recall": 0.6666666666666666,
         "f1-score": 0.6153846153846154,
-        "support": 6.0
+        "support": 60.0
       },
       "Phòng khám viêm - đau mắt": {
-        "precision": 1.0,
+        "precision": 0.8928571428571429,
         "recall": 0.7142857142857143,
-        "f1-score": 0.8333333333333334,
-        "support": 7.0
+        "f1-score": 0.7936507936507936,
+        "support": 70.0
       },
       "Phòng khám vận động - cảm giác": {
-        "precision": 0.25,
+        "precision": 0.23809523809523808,
         "recall": 0.5,
-        "f1-score": 0.3333333333333333,
-        "support": 2.0
+        "f1-score": 0.3225806451612903,
+        "support": 20.0
       },
       "Phòng khám đau ngực - mạch vành": {
-        "precision": 0.4,
-        "recall": 0.5,
-        "f1-score": 0.4444444444444444,
-        "support": 4.0
+        "precision": 0.47368421052631576,
+        "recall": 0.675,
+        "f1-score": 0.5567010309278351,
+        "support": 40.0
       },
       "Phòng khám đau vùng chậu": {
         "precision": 1.0,
-        "recall": 0.5714285714285714,
-        "f1-score": 0.7272727272727273,
-        "support": 7.0
+        "recall": 0.5142857142857142,
+        "f1-score": 0.6792452830188679,
+        "support": 70.0
       },
       "Phòng khám đau đầu - chóng mặt": {
-        "precision": 1.0,
-        "recall": 0.5714285714285714,
-        "f1-score": 0.7272727272727273,
-        "support": 7.0
+        "precision": 0.75,
+        "recall": 0.42857142857142855,
+        "f1-score": 0.5454545454545454,
+        "support": 70.0
       },
       "Phòng khám đau đầu - chóng mặt ban đầu": {
         "precision": 0.25,
-        "recall": 0.25,
-        "f1-score": 0.25,
-        "support": 4.0
+        "recall": 0.325,
+        "f1-score": 0.2826086956521739,
+        "support": 40.0
       },
       "Phòng khám đái tháo đường": {
-        "precision": 0.42857142857142855,
-        "recall": 0.75,
-        "f1-score": 0.5454545454545454,
-        "support": 4.0
+        "precision": 0.3389830508474576,
+        "recall": 0.5,
+        "f1-score": 0.40404040404040403,
+        "support": 40.0
       },
       "Phòng khám đường tiểu dưới": {
-        "precision": 0.5,
-        "recall": 0.5,
-        "f1-score": 0.5,
-        "support": 2.0
+        "precision": 0.8181818181818182,
+        "recall": 0.9,
+        "f1-score": 0.8571428571428571,
+        "support": 20.0
       },
       "Phòng khám đại tràng - rối loạn tiêu hóa": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 1.0
+        "support": 10.0
       },
-      "accuracy": 0.58,
+      "accuracy": 0.5886666666666667,
       "macro avg": {
-        "precision": 0.5099010942760943,
-        "recall": 0.5103918650793651,
-        "f1-score": 0.4788989032410085,
-        "support": 150.0
+        "precision": 0.5030039862722622,
+        "recall": 0.5249751984126984,
+        "f1-score": 0.4924579109642904,
+        "support": 1500.0
       },
       "weighted avg": {
-        "precision": 0.6256325156325157,
-        "recall": 0.58,
-        "f1-score": 0.571205597521387,
-        "support": 150.0
+        "precision": 0.602352150293267,
+        "recall": 0.5886666666666667,
+        "f1-score": 0.5724953970573488,
+        "support": 1500.0
       }
     }
   },
   "test_metrics": {
-    "rows": 150,
-    "accuracy_top_1": 0.5933,
-    "accuracy_top_2": 0.8133,
-    "accuracy_top_3": 0.9267,
-    "macro_f1": 0.5334,
-    "weighted_f1": 0.5941,
-    "log_loss": 1.3397,
-    "mean_top_confidence": 0.4532,
+    "rows": 1500,
+    "accuracy_top_1": 0.6627,
+    "accuracy_top_2": 0.8333,
+    "accuracy_top_3": 0.91,
+    "macro_f1": 0.6062,
+    "weighted_f1": 0.6598,
+    "log_loss": 1.1141,
+    "mean_top_confidence": 0.5764,
     "classification_report": {
       "Phòng cấp cứu chấn thương": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng cấp cứu sản khoa": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 3.0
+        "support": 30.0
       },
       "Phòng cấp cứu thần kinh": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 5.0
+        "support": 50.0
       },
       "Phòng cấp cứu tim phổi": {
         "precision": 1.0,
         "recall": 1.0,
         "f1-score": 1.0,
-        "support": 7.0
+        "support": 70.0
       },
       "Phòng khám chi - chấn thương chỉnh hình": {
-        "precision": 1.0,
-        "recall": 0.25,
-        "f1-score": 0.4,
-        "support": 4.0
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 40.0
       },
       "Phòng khám chuyển hóa ban đầu": {
         "precision": 0.3333333333333333,
         "recall": 1.0,
         "f1-score": 0.5,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng khám cột sống": {
-        "precision": 0.6,
-        "recall": 0.6,
-        "f1-score": 0.6,
-        "support": 5.0
+        "precision": 0.574468085106383,
+        "recall": 0.54,
+        "f1-score": 0.5567010309278351,
+        "support": 50.0
       },
       "Phòng khám dạ dày - ổ bụng": {
-        "precision": 0.6666666666666666,
-        "recall": 0.5,
-        "f1-score": 0.5714285714285714,
-        "support": 4.0
+        "precision": 0.75,
+        "recall": 0.75,
+        "f1-score": 0.75,
+        "support": 40.0
       },
       "Phòng khám dị ứng - ngứa": {
-        "precision": 0.5,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1-score": 0.6666666666666666,
-        "support": 1.0
-      },
-      "Phòng khám giấc ngủ": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 0.0
+        "f1-score": 1.0,
+        "support": 10.0
       },
       "Phòng khám hen - khò khè": {
         "precision": 0.5,
         "recall": 0.5,
         "f1-score": 0.5,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám ho - nhiễm trùng hô hấp": {
-        "precision": 0.8,
-        "recall": 0.8,
-        "f1-score": 0.8,
-        "support": 5.0
+        "precision": 0.75,
+        "recall": 0.66,
+        "f1-score": 0.7021276595744681,
+        "support": 50.0
       },
       "Phòng khám họng - thanh quản": {
-        "precision": 1.0,
+        "precision": 0.3333333333333333,
         "recall": 0.3333333333333333,
-        "f1-score": 0.5,
-        "support": 3.0
+        "f1-score": 0.3333333333333333,
+        "support": 30.0
       },
       "Phòng khám khí sắc - trầm cảm": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 1.0
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1-score": 0.8888888888888888,
+        "support": 10.0
       },
       "Phòng khám khó thở - chức năng phổi": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 1.0
+        "support": 10.0
       },
       "Phòng khám khớp": {
-        "precision": 1.0,
-        "recall": 0.5,
-        "f1-score": 0.6666666666666666,
-        "support": 6.0
+        "precision": 0.6756756756756757,
+        "recall": 0.8333333333333334,
+        "f1-score": 0.746268656716418,
+        "support": 60.0
+      },
+      "Phòng khám lo âu": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 0.0
       },
       "Phòng khám nhi da liễu": {
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 1.0
-      },
-      "Phòng khám nhi hô hấp": {
         "precision": 0.6666666666666666,
         "recall": 1.0,
         "f1-score": 0.8,
-        "support": 4.0
+        "support": 10.0
+      },
+      "Phòng khám nhi hô hấp": {
+        "precision": 0.6363636363636364,
+        "recall": 0.875,
+        "f1-score": 0.7368421052631579,
+        "support": 40.0
       },
       "Phòng khám nhi tiêu hóa": {
         "precision": 1.0,
-        "recall": 0.75,
-        "f1-score": 0.8571428571428571,
-        "support": 4.0
+        "recall": 0.725,
+        "f1-score": 0.8405797101449275,
+        "support": 40.0
       },
       "Phòng khám nội tiết tóc - da": {
         "precision": 0.6666666666666666,
         "recall": 0.4,
         "f1-score": 0.5,
-        "support": 5.0
+        "support": 50.0
       },
       "Phòng khám phụ khoa": {
-        "precision": 0.3333333333333333,
+        "precision": 0.3448275862068966,
         "recall": 1.0,
-        "f1-score": 0.5,
-        "support": 2.0
+        "f1-score": 0.5128205128205128,
+        "support": 20.0
       },
       "Phòng khám rối loạn nhịp": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 4.0
+        "precision": 0.48717948717948717,
+        "recall": 0.475,
+        "f1-score": 0.4810126582278481,
+        "support": 40.0
       },
       "Phòng khám rối loạn vận động": {
-        "precision": 0.3333333333333333,
+        "precision": 1.0,
         "recall": 0.3333333333333333,
-        "f1-score": 0.3333333333333333,
-        "support": 3.0
+        "f1-score": 0.5,
+        "support": 30.0
       },
       "Phòng khám suy tim - tuần hoàn": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 2.0
+        "support": 20.0
       },
       "Phòng khám sản - thai kỳ": {
         "precision": 1.0,
-        "recall": 0.5,
-        "f1-score": 0.6666666666666666,
-        "support": 4.0
+        "recall": 0.625,
+        "f1-score": 0.7692307692307693,
+        "support": 40.0
       },
       "Phòng khám sốt tổng quát": {
-        "precision": 0.6,
-        "recall": 0.75,
-        "f1-score": 0.6666666666666666,
-        "support": 4.0
+        "precision": 0.7222222222222222,
+        "recall": 0.65,
+        "f1-score": 0.6842105263157895,
+        "support": 40.0
       },
       "Phòng khám tai": {
-        "precision": 0.75,
+        "precision": 0.9836065573770492,
         "recall": 1.0,
-        "f1-score": 0.8571428571428571,
-        "support": 6.0
+        "f1-score": 0.9917355371900827,
+        "support": 60.0
       },
       "Phòng khám thận - đường tiểu trên": {
-        "precision": 0.5,
-        "recall": 0.3333333333333333,
-        "f1-score": 0.4,
-        "support": 3.0
+        "precision": 1.0,
+        "recall": 0.5333333333333333,
+        "f1-score": 0.6956521739130435,
+        "support": 30.0
       },
       "Phòng khám thị lực - khúc xạ": {
-        "precision": 0.25,
+        "precision": 0.3448275862068966,
         "recall": 0.2,
-        "f1-score": 0.2222222222222222,
-        "support": 5.0
+        "f1-score": 0.25316455696202533,
+        "support": 50.0
       },
       "Phòng khám thực quản - trào ngược": {
         "precision": 1.0,
-        "recall": 0.3333333333333333,
-        "f1-score": 0.5,
-        "support": 3.0
+        "recall": 0.23333333333333334,
+        "f1-score": 0.3783783783783784,
+        "support": 30.0
       },
       "Phòng khám tiêu hóa ban đầu": {
         "precision": 1.0,
-        "recall": 1.0,
-        "f1-score": 1.0,
-        "support": 2.0
+        "recall": 0.9,
+        "f1-score": 0.9473684210526315,
+        "support": 20.0
       },
       "Phòng khám tiết niệu vùng chậu": {
-        "precision": 0.5,
-        "recall": 0.6666666666666666,
-        "f1-score": 0.5714285714285714,
-        "support": 3.0
+        "precision": 0.5625,
+        "recall": 0.6,
+        "f1-score": 0.5806451612903226,
+        "support": 30.0
       },
       "Phòng khám tuyến giáp - chuyển hóa": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 2.0
+        "precision": 0.5,
+        "recall": 0.5,
+        "f1-score": 0.5,
+        "support": 20.0
       },
       "Phòng khám tóc - da đầu": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1-score": 0.0,
-        "support": 1.0
+        "precision": 0.19607843137254902,
+        "recall": 1.0,
+        "f1-score": 0.32786885245901637,
+        "support": 10.0
       },
       "Phòng khám tổn thương da": {
         "precision": 1.0,
-        "recall": 0.5,
-        "f1-score": 0.6666666666666666,
-        "support": 6.0
+        "recall": 0.8166666666666667,
+        "f1-score": 0.8990825688073395,
+        "support": 60.0
       },
       "Phòng khám viêm - đau mắt": {
-        "precision": 0.5555555555555556,
-        "recall": 0.625,
-        "f1-score": 0.5882352941176471,
-        "support": 8.0
+        "precision": 0.6111111111111112,
+        "recall": 0.825,
+        "f1-score": 0.7021276595744681,
+        "support": 80.0
       },
       "Phòng khám vận động - cảm giác": {
-        "precision": 0.5,
+        "precision": 0.5128205128205128,
         "recall": 1.0,
-        "f1-score": 0.6666666666666666,
-        "support": 2.0
+        "f1-score": 0.6779661016949152,
+        "support": 20.0
       },
       "Phòng khám đau ngực - mạch vành": {
-        "precision": 0.625,
-        "recall": 0.7142857142857143,
-        "f1-score": 0.6666666666666666,
-        "support": 7.0
+        "precision": 0.7215189873417721,
+        "recall": 0.8142857142857143,
+        "f1-score": 0.7651006711409396,
+        "support": 70.0
       },
       "Phòng khám đau vùng chậu": {
-        "precision": 0.6666666666666666,
+        "precision": 0.6451612903225806,
         "recall": 0.6666666666666666,
-        "f1-score": 0.6666666666666666,
-        "support": 3.0
+        "f1-score": 0.6557377049180327,
+        "support": 30.0
       },
       "Phòng khám đau đầu - chóng mặt": {
         "precision": 1.0,
         "recall": 0.6666666666666666,
         "f1-score": 0.8,
-        "support": 3.0
+        "support": 30.0
       },
       "Phòng khám đau đầu - chóng mặt ban đầu": {
         "precision": 0.3333333333333333,
         "recall": 0.3333333333333333,
         "f1-score": 0.3333333333333333,
-        "support": 3.0
+        "support": 30.0
       },
       "Phòng khám đái tháo đường": {
-        "precision": 0.6,
-        "recall": 0.75,
-        "f1-score": 0.6666666666666666,
-        "support": 4.0
+        "precision": 0.7560975609756098,
+        "recall": 0.775,
+        "f1-score": 0.7654320987654321,
+        "support": 40.0
       },
       "Phòng khám đường tiểu dưới": {
+        "precision": 0.7407407407407407,
+        "recall": 0.5,
+        "f1-score": 0.5970149253731343,
+        "support": 40.0
+      },
+      "Phòng khám đại tràng - rối loạn tiêu hóa": {
         "precision": 0.0,
         "recall": 0.0,
         "f1-score": 0.0,
-        "support": 4.0
+        "support": 20.0
       },
-      "Phòng khám đại tràng - rối loạn tiêu hóa": {
-        "precision": 0.25,
-        "recall": 0.5,
-        "f1-score": 0.3333333333333333,
-        "support": 2.0
-      },
-      "accuracy": 0.5933333333333334,
+      "accuracy": 0.6626666666666666,
       "macro avg": {
-        "precision": 0.580239898989899,
-        "recall": 0.5569534632034632,
-        "f1-score": 0.5333545539427892,
-        "support": 150.0
+        "precision": 0.6442848364626467,
+        "recall": 0.6332792207792207,
+        "f1-score": 0.6061959999158419,
+        "support": 1500.0
       },
       "weighted avg": {
-        "precision": 0.6602407407407408,
-        "recall": 0.5933333333333334,
-        "f1-score": 0.5941450357920947,
-        "support": 150.0
+        "precision": 0.7031986665254617,
+        "recall": 0.6626666666666666,
+        "f1-score": 0.6598454135296973,
+        "support": 1500.0
       }
     }
   },
@@ -745,6 +745,6 @@
     }
   },
   "scikit_learn_version": "1.5.2",
-  "trained_at": "2026-07-18T08:39:09.471504+00:00",
+  "trained_at": "2026-07-18T14:03:46.829652+00:00",
   "data_notice": "Synthetic and unvalidated; not for autonomous clinical decisions."
 }

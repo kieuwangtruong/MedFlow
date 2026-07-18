@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import gc
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -9,7 +10,7 @@ import numpy as np
 import pandas as pd
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import accuracy_score, classification_report, f1_score, log_loss
 from sklearn.pipeline import FeatureUnion, Pipeline
 
@@ -38,26 +39,27 @@ def build_pipeline() -> Pipeline:
                     min_df=2,
                     max_df=0.98,
                     sublinear_tf=True,
-                    max_features=25_000,
+                    max_features=8_000,
                 ),
             ),
             (
                 "char_tfidf",
                 TfidfVectorizer(
                     analyzer="char_wb",
-                    ngram_range=(3, 5),
+                    ngram_range=(3, 4),
                     min_df=2,
                     sublinear_tf=True,
-                    max_features=35_000,
+                    max_features=12_000,
                 ),
             ),
         ]
     )
-    classifier = LogisticRegression(
-        C=4.0,
-        max_iter=2_000,
+    classifier = SGDClassifier(
+        loss="log_loss",
+        alpha=1e-5,
+        max_iter=1_000,
         class_weight="balanced",
-        solver="lbfgs",
+        tol=1e-3,
         random_state=20260718,
     )
     return Pipeline([("features", features), ("classifier", classifier)])
@@ -144,6 +146,8 @@ def main() -> None:
         train["clinic_room"],
     )
     validation_metrics = evaluate(validation_model, validation)
+    del validation_model
+    gc.collect()
 
     final_training = pd.concat([train, validation], ignore_index=True)
     final_model = build_pipeline()
@@ -167,7 +171,7 @@ def main() -> None:
         .to_dict()
     )
     metadata = {
-        "algorithm": "FeatureUnion(TF-IDF word + TF-IDF char) + LogisticRegression",
+        "algorithm": "FeatureUnion(TF-IDF word + TF-IDF char) + SGD logistic regression",
         "task": "clinic_room_routing_not_medical_diagnosis",
         "language": "vi",
         "classes": final_model.classes_.tolist(),

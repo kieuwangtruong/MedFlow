@@ -12,7 +12,7 @@ export interface Room { id: string; code: string; name: string; department: stri
 export interface PatientVisit { id: string; patientId: string; patientName: string; queueNumber: string; checkinTime: string; priority: Priority; status: VisitStatus; department: string; room: string; doctor?: string; waitingMinutes: number; nextStep: string; estimatedCompletion: string }
 export interface SymptomReport { description: string; onset: string; painLevel: number; commonSymptoms: string[]; dangerSigns: string[] }
 export interface TriageAssessment { priority: Priority; summary: string; warning?: string }
-export interface AIRecommendation { department: string; room: string; floor: number; estimatedWait: number; waitingCount: number; reason: string; confidence: number; priority: Priority }
+export interface AIRecommendation { department: string; room: string; floor: number; estimatedWait: number; waitingCount: number; reason: string; confidence: number; priority: Priority; requiresHumanReview?: boolean; isRedFlag?: boolean; alternatives?: { department: string; room: string; confidence: number }[] }
 export interface PathwayStep { id: string; title: string; department: string; room: string; doctor?: string; status: StepStatus; estimatedWait: number; estimatedStart: string; actualTime?: string; directions: string }
 export interface PatientPathway { visitId: string; visitStatus: VisitStatus; queueNumber: string; currentRoom: string; peopleAhead: number; estimatedWait: number; steps: PathwayStep[] }
 export interface QueueEntry { visitId: string; queueNumber: string; patientName: string; age: number; mainSymptom: string; priority: Priority; waitedMinutes: number; status: VisitStatus; department: string; room: string }
