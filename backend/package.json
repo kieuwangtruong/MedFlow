@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:seed": "prisma db seed",
+    "prisma:seed:clinic": "node prisma/seed-clinic-directory.js",
     "prisma:seed:staff": "node prisma/seed-staff-users.js",
     "prisma:studio": "prisma studio",
     "test": "node --test"

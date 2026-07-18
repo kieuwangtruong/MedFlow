@@ -17,6 +17,8 @@ model StaffUser {
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
+  assignedClinicRooms ClinicRoom[] @relation("ClinicRoomDoctor")
+
   @@map("staff_users")
 }
 
@@ -140,12 +142,14 @@ enum QueueEntryStatus {
 model ClinicRoom {
   id          String  @id
   specialtyId String  @map("specialty_id")
+  doctorId    String? @map("doctor_id")
   name        String
   code        String? @unique
   floor       String?
   isActive    Boolean @default(true) @map("is_active")
 
   specialty     ClinicalSpecialty    @relation(fields: [specialtyId], references: [id])
+  doctor        StaffUser?           @relation("ClinicRoomDoctor", fields: [doctorId], references: [id], onDelete: SetNull)
   queues        ServiceQueue[]
   tasks         PatientJourneyTask[]
   outgoingEdges HospitalEdge[]       @relation("EdgeFrom")
@@ -157,6 +161,7 @@ model ClinicRoom {
 
   @@unique([specialtyId, name])
   @@index([specialtyId])
+  @@index([doctorId])
   @@map("clinic_rooms")
 }
 

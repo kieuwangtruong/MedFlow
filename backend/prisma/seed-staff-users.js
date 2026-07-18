@@ -9,13 +9,13 @@ const STAFF_USERS = [
   {
     username: 'adminamind',
     password: process.env.SEED_ADMIN_PASSWORD || '12345678',
-    fullName: 'Quan tri vien',
+    fullName: 'Quản trị viên',
     role: 'ADMIN',
   },
   {
     username: 'nam01@gmail.com',
     password: process.env.SEED_DOCTOR_PASSWORD || '12345678',
-    fullName: 'Nguyễn Văn Nam',
+    fullName: 'BS. Nguyễn Văn Nam',
     role: 'DOCTOR',
   },
   {
@@ -24,7 +24,6 @@ const STAFF_USERS = [
     fullName: 'Nguyễn Thảo Ngân',
     role: 'NURSE',
   },
-
 ];
 
 function hashPassword(password) {

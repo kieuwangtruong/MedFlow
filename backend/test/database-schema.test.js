@@ -101,6 +101,7 @@ test('migration SQL contains the documented VAIC module tables and constraints',
   }
 
   assert.match(sql, /ALTER TABLE "patient_journeys"[\s\S]+FOREIGN KEY \("patient_token"\)/);
+  assert.match(sql, /ALTER TABLE "clinic_rooms"[\s\S]+FOREIGN KEY \("doctor_id"\)/);
   assert.match(sql, /ALTER TABLE "patient_journey_tasks"[\s\S]+FOREIGN KEY \("journey_id"\)/);
   assert.match(sql, /ALTER TABLE "patient_task_dependencies"[\s\S]+FOREIGN KEY \("depends_on_task_id"\)/);
   assert.match(sql, /ALTER TABLE "patient_queue_entries"[\s\S]+FOREIGN KEY \("queue_id"\)/);
