@@ -7,12 +7,57 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model StaffUser {
+  id           String      @id @default(cuid())
+  username     String      @unique
+  passwordHash String      @map("password_hash")
+  fullName     String?     @map("full_name")
+  role         StaffRole   @default(STAFF)
+  status       StaffStatus @default(ACTIVE)
+  lastLoginAt  DateTime?   @map("last_login_at") @db.Timestamptz(6)
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  @@map("staff_users")
+}
+
+model Patient {
+  id                 String        @id @default(cuid())
+  identificationCode String        @unique @map("identification_code")
+  patientToken       String        @unique @map("patient_token")
+  fullName           String?       @map("full_name")
+  phoneNumber        String?       @map("phone_number")
+  dateOfBirth        DateTime?     @map("date_of_birth") @db.Date
+  status             PatientStatus @default(ACTIVE)
+
+  journeys PatientJourney[]
+  tasks    PatientJourneyTask[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([patientToken])
+  @@map("patients")
+}
+
+enum StaffRole {
+  ADMIN
+  DOCTOR
+  NURSE
+  RECEPTIONIST
+  STAFF
+}
+
+enum StaffStatus {
+  ACTIVE
+  INACTIVE
+  LOCKED
+}
+
+enum PatientStatus {
+  ACTIVE
+  INACTIVE
+  MERGED
 }
 
 enum JourneyStep {
@@ -92,19 +137,57 @@ enum QueueEntryStatus {
 }
 
 model ClinicRoom {
-  id          String       @id
+  id          String  @id
+  specialtyId String  @map("specialty_id")
   name        String
-  serviceType ServiceType? @map("service_type")
-  isActive    Boolean      @default(true) @map("is_active")
+  code        String? @unique
+  floor       String?
+  isActive    Boolean @default(true) @map("is_active")
 
-  queues ServiceQueue[]
-  tasks  PatientJourneyTask[]
+  specialty ClinicalSpecialty    @relation(fields: [specialtyId], references: [id])
+  queues    ServiceQueue[]
+  tasks     PatientJourneyTask[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([serviceType])
+  @@unique([specialtyId, name])
+  @@index([specialtyId])
   @@map("clinic_rooms")
+}
+
+model Department {
+  id       String  @id
+  name     String
+  code     String? @unique
+  isActive Boolean @default(true) @map("is_active")
+
+  specialties ClinicalSpecialty[]
+  tasks       PatientJourneyTask[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("departments")
+}
+
+model ClinicalSpecialty {
+  id           String  @id
+  departmentId String  @map("department_id")
+  name         String
+  code         String? @unique
+  isActive     Boolean @default(true) @map("is_active")
+
+  department Department           @relation(fields: [departmentId], references: [id])
+  rooms      ClinicRoom[]
+  tasks      PatientJourneyTask[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([departmentId, name])
+  @@index([departmentId])
+  @@map("clinical_specialties")
 }
 
 model ServiceQueue {
@@ -114,7 +197,7 @@ model ServiceQueue {
   serviceType ServiceType? @map("service_type")
   isActive    Boolean      @default(true) @map("is_active")
 
-  room    ClinicRoom?         @relation(fields: [roomId], references: [id])
+  room    ClinicRoom?          @relation(fields: [roomId], references: [id])
   tasks   PatientJourneyTask[]
   entries PatientQueueEntry[]
 
@@ -129,6 +212,7 @@ model ServiceQueue {
 model PatientJourney {
   id           String               @id @map("journey_id")
   patientToken String               @map("patient_token")
+  patient      Patient              @relation(fields: [patientToken], references: [patientToken])
   tasks        PatientJourneyTask[]
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -139,54 +223,59 @@ model PatientJourney {
 }
 
 model PatientJourneyTask {
-  id                    String             @id @map("task_id")
-  journeyId             String             @map("journey_id")
-  journeyStep           JourneyStep        @map("journey_step")
-  parentTaskId          String?            @map("parent_task_id")
-  sourceDependsOnTaskId String?            @map("depends_on_task_id")
-  patientToken          String             @map("patient_token")
-  queueId               String?            @map("queue_id")
-  roomId                String?            @map("room_id")
-  taskType              PatientTaskType    @map("task_type")
-  status                PatientTaskStatus  @default(PENDING)
-  serviceType           ServiceType        @map("service_type")
-  clinicalPriority      ClinicalPriority   @default(NORMAL) @map("clinical_priority")
-  readinessStatus       ReadinessStatus?   @map("readiness_status")
-  schedulingMode        SchedulingMode?    @map("scheduling_mode")
-  doctorId              String?            @map("doctor_id")
-  deviceId              String?            @map("device_id")
-  assignedAt            DateTime?          @map("assigned_at") @db.Timestamptz(6)
-  arrivalTime           DateTime?          @map("arrival_time") @db.Timestamptz(6)
-  readyAt               DateTime?          @map("ready_at") @db.Timestamptz(6)
-  serviceStart          DateTime?          @map("service_start") @db.Timestamptz(6)
-  serviceEnd            DateTime?          @map("service_end") @db.Timestamptz(6)
-  completedAt           DateTime?          @map("completed_at") @db.Timestamptz(6)
-  cancelledAt           DateTime?          @map("cancelled_at") @db.Timestamptz(6)
-  resultReadyAt         DateTime?          @map("result_ready_at") @db.Timestamptz(6)
-  resultUrgency         ResultUrgency?     @map("result_urgency")
-  resultDelayMinutes    Float?             @map("result_delay_minutes")
-  returnTiming          ReturnTiming?      @map("return_timing")
-  scheduleWindowStart   DateTime?          @map("schedule_window_start") @db.Timestamptz(6)
-  scheduleWindowEnd     DateTime?          @map("schedule_window_end") @db.Timestamptz(6)
-  sequenceOrder         Int?               @map("sequence_order")
-  queueLength           Int?               @map("queue_length")
-  arrivalRate15m        Int?               @map("arrival_rate_15m")
-  avgService30m         Float?             @map("avg_service_30m")
-  resourceStatus        ResourceStatus?    @map("resource_status")
-  resourceFailure       Boolean            @default(false) @map("resource_failure")
-  doctorPause           Boolean            @default(false) @map("doctor_pause")
-  caseComplexity        CaseComplexity?    @map("case_complexity")
-  activeServiceDuration Float?             @map("active_service_duration")
-  interruptionDuration  Float?             @map("interruption_duration")
+  id                     String            @id @map("task_id")
+  journeyId              String            @map("journey_id")
+  journeyStep            JourneyStep       @map("journey_step")
+  parentTaskId           String?           @map("parent_task_id")
+  sourceDependsOnTaskId  String?           @map("depends_on_task_id")
+  patientToken           String            @map("patient_token")
+  departmentId           String?           @map("department_id")
+  specialtyId            String?           @map("specialty_id")
+  queueId                String?           @map("queue_id")
+  roomId                 String?           @map("room_id")
+  taskType               PatientTaskType   @map("task_type")
+  status                 PatientTaskStatus @default(PENDING)
+  serviceType            ServiceType       @map("service_type")
+  clinicalPriority       ClinicalPriority  @default(NORMAL) @map("clinical_priority")
+  readinessStatus        ReadinessStatus?  @map("readiness_status")
+  schedulingMode         SchedulingMode?   @map("scheduling_mode")
+  doctorId               String?           @map("doctor_id")
+  deviceId               String?           @map("device_id")
+  assignedAt             DateTime?         @map("assigned_at") @db.Timestamptz(6)
+  arrivalTime            DateTime?         @map("arrival_time") @db.Timestamptz(6)
+  readyAt                DateTime?         @map("ready_at") @db.Timestamptz(6)
+  serviceStart           DateTime?         @map("service_start") @db.Timestamptz(6)
+  serviceEnd             DateTime?         @map("service_end") @db.Timestamptz(6)
+  completedAt            DateTime?         @map("completed_at") @db.Timestamptz(6)
+  cancelledAt            DateTime?         @map("cancelled_at") @db.Timestamptz(6)
+  resultReadyAt          DateTime?         @map("result_ready_at") @db.Timestamptz(6)
+  resultUrgency          ResultUrgency?    @map("result_urgency")
+  resultDelayMinutes     Float?            @map("result_delay_minutes")
+  returnTiming           ReturnTiming?     @map("return_timing")
+  scheduleWindowStart    DateTime?         @map("schedule_window_start") @db.Timestamptz(6)
+  scheduleWindowEnd      DateTime?         @map("schedule_window_end") @db.Timestamptz(6)
+  sequenceOrder          Int?              @map("sequence_order")
+  queueLength            Int?              @map("queue_length")
+  arrivalRate15m         Int?              @map("arrival_rate_15m")
+  avgService30m          Float?            @map("avg_service_30m")
+  resourceStatus         ResourceStatus?   @map("resource_status")
+  resourceFailure        Boolean           @default(false) @map("resource_failure")
+  doctorPause            Boolean           @default(false) @map("doctor_pause")
+  caseComplexity         CaseComplexity?   @map("case_complexity")
+  activeServiceDuration  Float?            @map("active_service_duration")
+  interruptionDuration   Float?            @map("interruption_duration")
   elapsedServiceDuration Float?            @map("elapsed_service_duration")
-  actualWaitTime        Float?             @map("actual_wait_time")
-  noShow                Boolean            @default(false) @map("no_show")
-  emergencyInsertion    Boolean            @default(false) @map("emergency_insertion")
-  recentEmergencyCount  Int                @default(0) @map("recent_emergency_count")
+  actualWaitTime         Float?            @map("actual_wait_time")
+  noShow                 Boolean           @default(false) @map("no_show")
+  emergencyInsertion     Boolean           @default(false) @map("emergency_insertion")
+  recentEmergencyCount   Int               @default(0) @map("recent_emergency_count")
 
   journey              PatientJourney          @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+  patient              Patient                 @relation(fields: [patientToken], references: [patientToken])
   parentTask           PatientJourneyTask?     @relation("TaskParent", fields: [parentTaskId], references: [id])
   childTasks           PatientJourneyTask[]    @relation("TaskParent")
+  department           Department?             @relation(fields: [departmentId], references: [id])
+  specialty            ClinicalSpecialty?      @relation(fields: [specialtyId], references: [id])
   queue                ServiceQueue?           @relation(fields: [queueId], references: [id])
   room                 ClinicRoom?             @relation(fields: [roomId], references: [id])
   queueEntries         PatientQueueEntry[]
@@ -199,6 +288,8 @@ model PatientJourneyTask {
   @@index([journeyId, journeyStep])
   @@index([parentTaskId])
   @@index([patientToken])
+  @@index([departmentId, status])
+  @@index([specialtyId, status])
   @@index([queueId, status])
   @@index([roomId, status])
   @@index([doctorId, serviceStart])
@@ -223,9 +314,9 @@ model PatientTaskDependency {
 }
 
 model PatientQueueEntry {
-  id       String @id @default(cuid())
-  queueId  String @map("queue_id")
-  taskId   String @map("task_id")
+  id      String @id @default(cuid())
+  queueId String @map("queue_id")
+  taskId  String @map("task_id")
 
   status   QueueEntryStatus @default(WAITING)
   priority ClinicalPriority @default(NORMAL)
