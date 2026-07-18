@@ -16,6 +16,7 @@ from process_input_data.app.model import (
 from process_input_data.app.routing_service import RoutingService
 from process_input_data.app.schemas import RoutingRequest, RoutingResponse
 from wait_time_module.app.main import app as wait_time_app
+from service_routing_optimization.router import router as routing_optimization_router
 
 
 @asynccontextmanager
@@ -59,6 +60,11 @@ app.add_middleware(
 
 app.include_router(forecast_router)
 app.include_router(wait_time_app.router, tags=["Wait Time & Queue"])
+app.include_router(
+    routing_optimization_router,
+    prefix="/api/v1/routing",
+    tags=["Service Routing Optimization"],
+)
 
 
 @app.get("/", tags=["System"])
@@ -70,6 +76,7 @@ def root() -> dict:
             "peak_hour_prediction",
             "symptom_routing",
             "wait_time_and_queue",
+            "service_routing_optimization",
         ],
     }
 

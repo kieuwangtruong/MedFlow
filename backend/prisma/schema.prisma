@@ -94,6 +94,8 @@ enum ServiceType {
 enum ClinicalPriority {
   NORMAL
   URGENT
+  EMERGENCY
+  NON_URGENT
 }
 
 enum ReadinessStatus {
@@ -144,9 +146,12 @@ model ClinicRoom {
   floor       String?
   isActive    Boolean @default(true) @map("is_active")
 
-  specialty ClinicalSpecialty    @relation(fields: [specialtyId], references: [id])
-  queues    ServiceQueue[]
-  tasks     PatientJourneyTask[]
+  specialty     ClinicalSpecialty    @relation(fields: [specialtyId], references: [id])
+  queues        ServiceQueue[]
+  tasks         PatientJourneyTask[]
+  outgoingEdges HospitalEdge[]       @relation("EdgeFrom")
+  incomingEdges HospitalEdge[]       @relation("EdgeTo")
+  equipments    Equipment[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -191,11 +196,12 @@ model ClinicalSpecialty {
 }
 
 model ServiceQueue {
-  id          String       @id
-  name        String
-  roomId      String?      @map("room_id")
-  serviceType ServiceType? @map("service_type")
-  isActive    Boolean      @default(true) @map("is_active")
+  id                   String       @id
+  name                 String
+  roomId               String?      @map("room_id")
+  serviceType          ServiceType? @map("service_type")
+  isActive             Boolean      @default(true) @map("is_active")
+  estimatedWaitMinutes Float        @default(0.0) @map("estimated_wait_minutes")
 
   room    ClinicRoom?          @relation(fields: [roomId], references: [id])
   tasks   PatientJourneyTask[]
@@ -210,10 +216,12 @@ model ServiceQueue {
 }
 
 model PatientJourney {
-  id           String               @id @map("journey_id")
-  patientToken String               @map("patient_token")
-  patient      Patient              @relation(fields: [patientToken], references: [patientToken])
-  tasks        PatientJourneyTask[]
+  id            String               @id @map("journey_id")
+  patientToken  String               @map("patient_token")
+  checkinAt     DateTime?            @map("checkin_at") @db.Timestamptz(6)
+  severityScore Int?                 @map("severity_score")
+  patient       Patient              @relation(fields: [patientToken], references: [patientToken])
+  tasks         PatientJourneyTask[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -363,4 +371,43 @@ model CheckinSlotStatistic {
   @@index([dayOfWeek, slotIndex])
   @@index([month, slotIndex])
   @@map("checkin_slot_statistics")
+}
+
+// ─── Service Routing Optimization ────────────────────────────────────────────
+
+model HospitalEdge {
+  id            String   @id @default(cuid())
+  fromRoomId    String   @map("from_room_id")
+  toRoomId      String   @map("to_room_id")
+  travelMinutes Float    @map("travel_minutes")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  fromRoom ClinicRoom @relation("EdgeFrom", fields: [fromRoomId], references: [id])
+  toRoom   ClinicRoom @relation("EdgeTo", fields: [toRoomId], references: [id])
+
+  @@unique([fromRoomId, toRoomId])
+  @@index([fromRoomId])
+  @@index([toRoomId])
+  @@map("hospital_edges")
+}
+
+model Equipment {
+  id        String          @id @default(cuid())
+  name      String
+  code      String?         @unique
+  roomId    String          @map("room_id")
+  status    EquipmentStatus @default(ACTIVE)
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  room ClinicRoom @relation(fields: [roomId], references: [id])
+
+  @@index([roomId])
+  @@map("equipments")
+}
+
+enum EquipmentStatus {
+  ACTIVE
+  INACTIVE
 }
