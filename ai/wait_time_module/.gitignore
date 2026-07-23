@@ -7,3 +7,5 @@ __pycache__/
 data/*.db
 data/*.db-*
 .env
+.env.*
+!.env.example

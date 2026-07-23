@@ -4,3 +4,8 @@ __pycache__/
 .pytest_cache/
 .venv/
 
+# Environment variables
+.env
+.env.*
+!.env.example
+

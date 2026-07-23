@@ -8,23 +8,29 @@ const HASH_ITERATIONS = 120000;
 const STAFF_USERS = [
   {
     username: 'adminamind',
-    password: process.env.SEED_ADMIN_PASSWORD || '12345678',
+    passwordEnv: 'SEED_ADMIN_PASSWORD',
     fullName: 'Quản trị viên',
     role: 'ADMIN',
   },
   {
     username: 'nam01@gmail.com',
-    password: process.env.SEED_DOCTOR_PASSWORD || '12345678',
+    passwordEnv: 'SEED_DOCTOR_PASSWORD',
     fullName: 'BS. Nguyễn Văn Nam',
     role: 'DOCTOR',
   },
   {
     username: 'ngan01@gmail.com',
-    password: process.env.SEED_NURSE_PASSWORD || '12345678',
+    passwordEnv: 'SEED_NURSE_PASSWORD',
     fullName: 'Nguyễn Thảo Ngân',
     role: 'NURSE',
   },
 ];
+
+function requiredSeedPassword(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is required to seed staff users`);
+  return value;
+}
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -53,17 +59,18 @@ async function seedStaffUsers() {
     const results = [];
 
     for (const user of STAFF_USERS) {
+      const passwordHash = hashPassword(requiredSeedPassword(user.passwordEnv));
       const staffUser = await prisma.staffUser.upsert({
         where: { username: user.username },
         create: {
           username: user.username,
-          passwordHash: hashPassword(user.password),
+          passwordHash,
           fullName: user.fullName,
           role: user.role,
           status: 'ACTIVE',
         },
         update: {
-          passwordHash: hashPassword(user.password),
+          passwordHash,
           fullName: user.fullName,
           role: user.role,
           status: 'ACTIVE',

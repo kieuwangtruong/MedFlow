@@ -1,4 +1,4 @@
-import json, os
+import hmac, json, os
 from dataclasses import dataclass
 from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
@@ -11,6 +11,9 @@ def require_scope(scope:str):
     def dependency(api_key:str|None=Security(header)):
         if os.getenv("AUTH_ENABLED","false").lower() not in {"1","true","yes"}:return Principal("development","SERVICE",{"wait.read","events.write","simulation.run","admin.manage"})
         if not api_key:raise HTTPException(401,"UNAUTHORIZED")
+        single_key=os.getenv("SERVICE_API_KEY")
+        if single_key and hmac.compare_digest(api_key,single_key):
+            return Principal(os.getenv("SERVICE_ACTOR_ID","medflow-backend"),"SERVICE",{"wait.read","events.write","simulation.run","admin.manage"})
         try:record=json.loads(os.getenv("SERVICE_API_KEYS","{}"))[api_key]
         except (KeyError,ValueError,TypeError):raise HTTPException(401,"UNAUTHORIZED")
         principal=Principal(record.get("actor_id","unknown"),record.get("actor_type","SERVICE"),set(record.get("scopes",[])))

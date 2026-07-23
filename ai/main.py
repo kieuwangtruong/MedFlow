@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from peak_hour_prediction.app.api.forecast import router as forecast_router
+from peak_hour_prediction.app.core.config import settings as forecast_settings
 from peak_hour_prediction.app.ml.model_loader import (
     model_container as forecast_model_container,
 )
@@ -17,6 +18,15 @@ from process_input_data.app.routing_service import RoutingService
 from process_input_data.app.schemas import RoutingRequest, RoutingResponse
 from wait_time_module.app.main import app as wait_time_app
 from service_routing_optimization.router import router as routing_optimization_router
+
+
+def _cors_origin(value: str) -> str:
+    value = value.strip().rstrip("/")
+    if value.startswith(("http://", "https://")):
+        return value
+    if value.startswith(("localhost", "127.0.0.1")):
+        return f"http://{value}"
+    return f"https://{value}"
 
 
 @asynccontextmanager
@@ -49,11 +59,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://vaic2026-tutru.onrender.com"
-    ],
+    allow_origins=[_cors_origin(origin) for origin in forecast_settings.cors_origin_list],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

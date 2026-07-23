@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
+    "start:production": "npm run prisma:generate && npm run prisma:deploy && npm start",
     "lint": "eslint src prisma test",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",

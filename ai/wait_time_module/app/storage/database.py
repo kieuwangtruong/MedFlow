@@ -36,5 +36,6 @@ class AuditRecord(Base):
     created_at:Mapped[datetime]=mapped_column(DateTime(timezone=True)); correlation_id:Mapped[str|None]=mapped_column(String(128))
 
 def make_engine(url:str):
+    if url.startswith("postgresql://"):url=url.replace("postgresql://","postgresql+psycopg://",1)
     args={"check_same_thread":False} if url.startswith("sqlite") else {}
     return create_engine(url,future=True,connect_args=args,pool_pre_ping=True)

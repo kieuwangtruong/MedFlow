@@ -3,6 +3,10 @@ const envConfig = require('../../config/env');
 
 const REQUEST_TIMEOUT_MS = 20000;
 
+function serviceBaseUrl(value) {
+  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
+}
+
 async function requestAi(path, options = {}) {
   const controller = new globalThis.AbortController();
   const timeout = globalThis.setTimeout(
@@ -11,7 +15,7 @@ async function requestAi(path, options = {}) {
   );
 
   try {
-    const url = new globalThis.URL(path, envConfig.aiServiceUrl).toString();
+    const url = new globalThis.URL(path, serviceBaseUrl(envConfig.aiServiceUrl)).toString();
     const response = await globalThis.fetch(url, {
       method: options.method || 'GET',
       headers: {

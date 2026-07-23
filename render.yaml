@@ -1,10 +1,122 @@
 services:
   - type: web
-    name: vaic2026-tutru
+    name: medflow-ai
+    runtime: python
+    plan: free
+    rootDir: ai
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_NAME
+        value: Smart Hospital Unified AI API
+      - key: APP_VERSION
+        value: 1.0.0
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: API_PREFIX
+        value: /api/v1
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: medflow-frontend
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: FORECAST_MODEL_PATH
+        value: models/checkin_forecast_model.joblib
+      - key: FORECAST_MODEL_METADATA_PATH
+        value: models/model_metadata.json
+      - key: FORECAST_CHECKIN_DATA_PATH
+        value: data/checkin_slots_2026_06.csv
+      - key: FORECAST_MAX_DAYS
+        value: "7"
+      - key: ROUTING_MODEL_PATH
+        value: models/clinic_room_router.joblib
+      - key: ROUTING_METADATA_PATH
+        value: models/model_metadata.json
+      - key: ROUTING_DEPARTMENTS_PATH
+        value: data/departments.csv
+      - key: CONFIDENCE_THRESHOLD
+        value: "0.45"
+      - key: TOP_K_DEFAULT
+        value: "3"
+      - key: DATABASE_URL
+        fromService:
+          type: web
+          name: medflow-backend
+          envVarKey: DATABASE_URL
+      - key: AUTH_ENABLED
+        value: "true"
+      - key: SERVICE_API_KEY
+        generateValue: true
+      - key: SERVICE_ACTOR_ID
+        value: medflow-backend
+      - key: TZ
+        value: Asia/Ho_Chi_Minh
+      - key: MONTE_CARLO_RUNS
+        value: "300"
+      - key: STALE_AFTER_SECONDS
+        value: "120"
+      - key: MAX_CANDIDATE_ROOMS
+        value: "20"
+      - key: MODEL_ARTIFACT_DIR
+        value: wait_time_module/artifacts
+      - key: MODEL_SCHEMA_VERSION
+        value: "1"
+
+  - type: web
+    name: medflow-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci && npm run prisma:generate
+    startCommand: npm run start:production
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN_SECONDS
+        value: "43200"
+      - key: APP_ORIGIN
+        fromService:
+          type: web
+          name: medflow-frontend
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: AI_SERVICE_URL
+        fromService:
+          type: web
+          name: medflow-ai
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: AI_SERVICE_API_KEY
+        fromService:
+          type: web
+          name: medflow-ai
+          envVarKey: SERVICE_API_KEY
+
+  - type: web
+    name: medflow-frontend
     runtime: static
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
+    autoDeployTrigger: commit
+    envVars:
+      - key: VITE_USE_MOCK_API
+        value: "false"
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: medflow-backend
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
     routes:
       - type: rewrite
         source: /*

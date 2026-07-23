@@ -1,2 +1,7 @@
 # Added by code-review-graph
 .code-review-graph/
+
+# Environment variables (applies recursively)
+.env
+.env.*
+!.env.example

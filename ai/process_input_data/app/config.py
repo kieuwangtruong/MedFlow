@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,9 +17,18 @@ class Settings(BaseSettings):
     port: int = 8001
     confidence_threshold: float = 0.45
     top_k_default: int = 3
-    model_path: str = "models/clinic_room_router.joblib"
-    metadata_path: str = "models/model_metadata.json"
-    departments_path: str = "data/departments.csv"
+    model_path: str = Field(
+        default="models/clinic_room_router.joblib",
+        validation_alias=AliasChoices("ROUTING_MODEL_PATH", "MODEL_PATH"),
+    )
+    metadata_path: str = Field(
+        default="models/model_metadata.json",
+        validation_alias=AliasChoices("ROUTING_METADATA_PATH", "METADATA_PATH"),
+    )
+    departments_path: str = Field(
+        default="data/departments.csv",
+        validation_alias=AliasChoices("ROUTING_DEPARTMENTS_PATH", "DEPARTMENTS_PATH"),
+    )
 
     model_config = SettingsConfigDict(
         env_file=PROJECT_ROOT / ".env",

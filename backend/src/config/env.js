@@ -1,17 +1,27 @@
+const crypto = require('node:crypto');
 require('dotenv').config({ quiet: true });
 
 const DEFAULT_PORT = 3000;
 const parsedPort = Number(process.env.PORT);
+const nodeEnv = process.env.NODE_ENV || 'development';
+const isProduction = nodeEnv === 'production';
+
+function requiredProductionValue(name, developmentFallback = '') {
+  const value = process.env[name]?.trim();
+  if (value) return value;
+  if (!isProduction) return developmentFallback;
+  throw new Error(`Missing required environment variable: ${name}`);
+}
 
 const envConfig = {
   port: Number.isInteger(parsedPort) && parsedPort > 0 ? parsedPort : DEFAULT_PORT,
-  appOrigin: process.env.APP_ORIGIN || '*',
-  databaseUrl: process.env.DATABASE_URL || '',
-  aiServiceUrl: process.env.AI_SERVICE_URL || 'http://localhost:8000',
+  appOrigin: requiredProductionValue('APP_ORIGIN', 'http://localhost:5173'),
+  databaseUrl: requiredProductionValue('DATABASE_URL'),
+  aiServiceUrl: requiredProductionValue('AI_SERVICE_URL', 'http://localhost:8000'),
   aiServiceApiKey: process.env.AI_SERVICE_API_KEY || '',
-  jwtSecret: process.env.JWT_SECRET || 'vaic-dev-token-secret-change-me',
+  jwtSecret: requiredProductionValue('JWT_SECRET', crypto.randomBytes(32).toString('hex')),
   jwtExpiresInSeconds: Number(process.env.JWT_EXPIRES_IN_SECONDS) || 60 * 60 * 12,
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
   redisUrl: process.env.REDIS_URL || ''
 };
 
