@@ -11,7 +11,11 @@ const configuredOrigins = envConfig.appOrigin
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
-const allowedOrigins = Array.from(new Set([...configuredOrigins, 'http://localhost:3000']));
+const allowedOrigins = Array.from(new Set([
+  ...configuredOrigins,
+  'http://localhost:3000',
+  'http://localhost:5173',
+]));
 const corsOptions =
   envConfig.appOrigin === '*' ? { origin: '*' } : { origin: allowedOrigins, credentials: true };
 

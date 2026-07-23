@@ -72,6 +72,7 @@ test('migration SQL contains the documented VAIC module tables and constraints',
     'departments',
     'clinical_specialties',
     'clinic_rooms',
+    'doctor_room_assignments',
     'service_queues',
     'patient_journeys',
     'patient_journey_tasks',
@@ -90,6 +91,7 @@ test('migration SQL contains the documented VAIC module tables and constraints',
     'patients_patient_token_key',
     'clinical_specialties_department_id_name_key',
     'clinic_rooms_specialty_id_name_key',
+    'doctor_room_assignments_doctor_id_room_id_shift_start_key',
     'patient_task_dependencies_task_id_depends_on_task_id_key',
     'patient_queue_entries_task_id_queue_id_key',
     'checkin_slot_statistics_checkin_time_key',
@@ -102,7 +104,40 @@ test('migration SQL contains the documented VAIC module tables and constraints',
 
   assert.match(sql, /ALTER TABLE "patient_journeys"[\s\S]+FOREIGN KEY \("patient_token"\)/);
   assert.match(sql, /ALTER TABLE "clinic_rooms"[\s\S]+FOREIGN KEY \("doctor_id"\)/);
+  assert.match(sql, /ALTER TABLE "doctor_room_assignments"[\s\S]+FOREIGN KEY \("doctor_id"\)/);
+  assert.match(sql, /ALTER TABLE "doctor_room_assignments"[\s\S]+FOREIGN KEY \("room_id"\)/);
   assert.match(sql, /ALTER TABLE "patient_journey_tasks"[\s\S]+FOREIGN KEY \("journey_id"\)/);
   assert.match(sql, /ALTER TABLE "patient_task_dependencies"[\s\S]+FOREIGN KEY \("depends_on_task_id"\)/);
   assert.match(sql, /ALTER TABLE "patient_queue_entries"[\s\S]+FOREIGN KEY \("queue_id"\)/);
+});
+
+test('shift assignment migration enforces one active room per doctor and room', () => {
+  const migrationPath = path.join(
+    projectRoot,
+    'prisma',
+    'migrations',
+    '20260721190000_add_doctor_room_shift_assignments',
+    'migration.sql',
+  );
+  const sql = require('node:fs').readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /doctor_room_assignments_valid_shift_check/);
+  assert.match(sql, /one_active_room_per_doctor_idx/);
+  assert.match(sql, /one_active_doctor_per_room_idx/);
+});
+
+test('patient intake migration persists symptoms and intake source', () => {
+  const migrationPath = path.join(
+    projectRoot,
+    'prisma',
+    'migrations',
+    '20260723090000_add_patient_intake_data',
+    'migration.sql',
+  );
+  const sql = require('node:fs').readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /symptom_description/);
+  assert.match(sql, /symptom_payload/);
+  assert.match(sql, /symptoms_submitted_at/);
+  assert.match(sql, /intake_source/);
 });

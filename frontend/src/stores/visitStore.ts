@@ -12,6 +12,6 @@ interface VisitState {
 }
 
 export const useVisitStore = create<VisitState>()(persist(
-  (set) => ({ visitId: 'VIS-260718-042', queueNumber: 'A042', recommendation: null, setVisit: (visitId, queueNumber) => set({ visitId, queueNumber }), setRecommendation: (recommendation) => set({ recommendation }), clearVisit: () => set({ visitId: null, queueNumber: null, recommendation: null }) }),
+  (set) => ({ visitId: null, queueNumber: null, recommendation: null, setVisit: (visitId, queueNumber) => set({ visitId, queueNumber }), setRecommendation: (recommendation) => set({ recommendation }), clearVisit: () => set({ visitId: null, queueNumber: null, recommendation: null }) }),
   { name: 'smart-hospital-visit' },
 ))

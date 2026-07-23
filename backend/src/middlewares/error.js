@@ -5,7 +5,8 @@ function notFoundHandler(req, _res, next) {
 }
 
 function errorHandler(err, _req, res, _next) {
-  const statusCode = err.statusCode || err.status || 500;
+  const isValidationError = err.name === 'ZodError';
+  const statusCode = isValidationError ? 400 : err.statusCode || err.status || 500;
 
   if (statusCode >= 500) {
     console.error(err);
@@ -15,7 +16,8 @@ function errorHandler(err, _req, res, _next) {
     success: false,
     error: {
       code: err.code || 'INTERNAL_SERVER_ERROR',
-      message: err.message || 'Internal Server Error'
+      message: isValidationError ? 'Validation failed' : err.message || 'Internal Server Error',
+      ...(isValidationError ? { details: err.flatten() } : {})
     }
   });
 }

@@ -1,24 +1,26 @@
 import { useQuery } from '@tanstack/react-query'
-import { Activity, ChevronRight, Clock3, DoorOpen, MoreHorizontal, Pause, Play, Search, Stethoscope, UserRound, Users } from 'lucide-react'
+import { Activity, ChevronRight, Clock3, DoorOpen, MoreHorizontal, Search, Stethoscope, UserRound, Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 import { doctorApi } from '../../api/doctorApi'
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton'
 import { PageHeader } from '../../components/common/PageHeader'
 import { DoctorQueueTable } from '../../components/doctor/DoctorQueueTable'
+import { useAuthStore } from '../../stores/authStore'
 import { POLLING } from '../../utils/constants'
 
 export function DoctorQueuePage() {
+  const user = useAuthStore((state) => state.user)
   const [search, setSearch] = useState('')
-  const [roomOpen, setRoomOpen] = useState(true)
   const query = useQuery({ queryKey: ['doctor-queue'], queryFn: doctorApi.getQueue, refetchInterval: POLLING.doctorQueue })
+  const assignmentQuery = useQuery({ queryKey: ['doctor-assignment'], queryFn: doctorApi.getAssignment })
   const filtered = useMemo(() => (query.data ?? []).filter((item) => `${item.patientName} ${item.queueNumber} ${item.mainSymptom}`.toLowerCase().includes(search.toLowerCase())), [query.data, search])
   const current = filtered[0]
-  return <><PageHeader title="Phòng khám Nội 201" description="Ca sáng · BS. Trần Minh An · Tầng 2, khu B" action={<div className="flex items-center gap-2"><span className={`rounded-full px-3 py-2 text-sm font-bold ${roomOpen ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{roomOpen ? 'Đang tiếp nhận' : 'Tạm dừng'}</span><button onClick={() => { setRoomOpen(!roomOpen); toast.success(roomOpen ? 'Đã tạm dừng nhận bệnh nhân' : 'Đã mở lại phòng') }} className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700">{roomOpen ? <Pause size={17}/> : <Play size={17}/>} {roomOpen ? 'Tạm dừng phòng' : 'Mở phòng'}</button></div>}/>
+  const assignment = assignmentQuery.data
+  return <><PageHeader title={assignment?.room.name ?? 'Chưa được phân công phòng'} description={assignment ? `${user?.full_name ?? 'Bác sĩ'} · Tầng ${assignment.room.floor} · ${assignment.room.department}` : 'Liên hệ điều phối viên để nhận ca trực.'} action={<span className={`rounded-full px-3 py-2 text-sm font-bold ${assignment ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{assignment ? 'Ca trực đang hoạt động' : 'Chưa có ca trực'}</span>}/>
     <div className="mb-5 grid gap-3 sm:grid-cols-3"><Summary icon={<Users/>} label="Đang đợi" value={filtered.length}/><Summary icon={<Clock3/>} label="Chờ trung bình" value="18 phút"/><Summary icon={<Activity/>} label="Đã khám hôm nay" value="12"/></div>
     <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_390px]">
-      <section className="min-w-0"><div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><h2 className="text-xl font-extrabold text-slate-950">Hàng đợi của phòng</h2><label className="relative w-full sm:w-80"><Search className="absolute left-3 top-3 text-slate-400" size={18}/><input value={search} onChange={(e) => setSearch(e.target.value)} className="form-control h-11 pl-10" placeholder="Tìm số, tên, triệu chứng..."/></label></div>{query.isLoading ? <LoadingSkeleton/> : <DoctorQueueTable items={filtered}/>}</section>
+      <section className="min-w-0"><div className="mb-3 flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><h2 className="text-xl font-extrabold text-slate-950">Hàng đợi của phòng</h2><label className="relative w-full sm:w-80"><Search className="absolute left-3 top-3 text-slate-400" size={18}/><input value={search} onChange={(e) => setSearch(e.target.value)} className="form-control h-11 pl-10" placeholder="Tìm số, tên, triệu chứng..."/></label></div>{query.isLoading || assignmentQuery.isLoading ? <LoadingSkeleton/> : <DoctorQueueTable items={filtered}/>}</section>
       <aside className="2xl:sticky 2xl:top-24 2xl:self-start"><div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 bg-[#f8faf9] px-5 py-4"><div><p className="text-xs font-bold uppercase tracking-[.14em] text-[#125f52]">Đang khám</p><h2 className="mt-1 text-xl font-extrabold text-slate-950">{current?.queueNumber ?? '—'} · {current?.patientName ?? 'Chưa có'}</h2></div><button className="rounded-lg p-2 text-slate-400 hover:bg-slate-100"><MoreHorizontal/></button></div>{current && <div className="p-5"><div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-full bg-slate-100 text-slate-600"><UserRound/></span><div><p className="font-bold text-slate-900">{current.patientName}</p><p className="text-sm text-slate-500">{current.age} tuổi · {current.visitId}</p></div></div><dl className="mt-5 space-y-4"><Detail label="Triệu chứng chính" value={current.mainSymptom}/><Detail label="Mức ưu tiên" value="Ưu tiên cao"/><Detail label="Bắt đầu khám" value="09:42 · được 12 phút"/></dl><div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4"><p className="text-xs font-bold uppercase tracking-wider text-amber-700">Lưu ý tiếp nhận</p><p className="mt-1 text-sm leading-6 text-amber-900">Bệnh nhân có tiền sử tăng huyết áp. Đã đo sinh hiệu tại quầy.</p></div><div className="mt-5 grid gap-2"><Link to={`/doctor/examination/${current.visitId}`} className="flex items-center justify-center gap-2 rounded-xl bg-[#125f52] px-4 py-3 font-bold text-white"><Stethoscope size={18}/>Mở hồ sơ khám<ChevronRight size={17}/></Link><Link to={`/doctor/orders/${current.visitId}`} className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-3 font-bold text-slate-700"><DoorOpen size={18}/>Chỉ định phòng khám thêm</Link></div></div>}</div></aside>
     </div>
   </>

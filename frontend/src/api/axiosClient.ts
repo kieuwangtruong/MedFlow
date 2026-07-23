@@ -4,7 +4,7 @@ import { useAuthStore } from '../stores/authStore'
 export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API !== 'false'
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api/v1',
   timeout: 15_000,
 })
 

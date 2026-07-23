@@ -60,6 +60,10 @@ def test_journey_actual_timestamps_are_persisted(persistent_store):
     apply_event(persistent_store,event("review-order","SERVICE_ORDERED","review","ROOM-A",task_type="RETURN_REVIEW"));r=event("result","RESULT_READY","review","ROOM-A",task_type="RETURN_REVIEW");r.event_time=NOW+timedelta(minutes=1);apply_event(persistent_store,r);a=event("return","RETURN_ARRIVED","review","ROOM-A",task_type="RETURN_REVIEW");a.event_time=NOW+timedelta(minutes=2);apply_event(persistent_store,a)
     j=persistent_store.journeys["j1"];assert j.actual_result_ready_at and j.actual_return_arrived_at and j.ready_for_review_at==j.actual_return_arrived_at
 
+def test_completed_return_review_is_not_reopened(persistent_store):
+    apply_event(persistent_store,event("review-order","SERVICE_ORDERED","review","ROOM-A",task_type="RETURN_REVIEW"));r=event("result","RESULT_READY","review","ROOM-A",task_type="RETURN_REVIEW");r.event_time=NOW+timedelta(minutes=1);apply_event(persistent_store,r);a=event("return","RETURN_ARRIVED","review","ROOM-A",task_type="RETURN_REVIEW");a.event_time=NOW+timedelta(minutes=2);apply_event(persistent_store,a);done=event("review-complete","SERVICE_COMPLETED","review","ROOM-A",task_type="RETURN_REVIEW");done.event_time=NOW+timedelta(minutes=3);apply_event(persistent_store,done)
+    assert persistent_store.tasks["review"].readiness_status==ReadinessStatus.COMPLETED
+
 def test_incompatible_model_schema_falls_back(tmp_path,monkeypatch):
     joblib.dump({},tmp_path/"quantile_models.joblib");(tmp_path/"baseline.json").write_text("{}")
     (tmp_path/"feature_schema.json").write_text(json.dumps({"features":[]}));(tmp_path/"training_metadata.json").write_text(json.dumps({"feature_schema_version":"999","production_policy":"model"}));monkeypatch.setenv("MODEL_SCHEMA_VERSION","1")

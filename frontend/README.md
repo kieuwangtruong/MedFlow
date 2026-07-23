@@ -33,7 +33,7 @@ Mặc định ứng dụng sử dụng mock API nên chạy được khi backend
 Sửa `.env`:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_API_BASE_URL=http://localhost:3000/api/v1
 VITE_USE_MOCK_API=false
 ```
 

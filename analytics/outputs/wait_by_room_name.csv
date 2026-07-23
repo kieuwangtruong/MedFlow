@@ -1,0 +1,17 @@
+room_name,tasks,median_wait,p80_wait,sla_breach_rate
+,20,13.713125,18.297063333333334,0.05
+Phòng khám Tiêu hóa - Gan mật 304,8,2.304975,3.3992600000000004,0.0
+Phòng khám Tổng quát 101,7,1.6082750000000001,2.2967000000000004,0.0
+Phòng khám Thần kinh 202,8,1.6599916666666665,1.7333366666666667,0.0
+Phòng khám Tai Mũi Họng 203,29,1.0292333333333332,1.0292333333333332,0.0
+Phòng Phân loại Cấp cứu 102,9,0.8085166666666667,0.9000966666666667,0.0
+Phòng khám Tiết niệu 402,6,0.6563666666666667,0.6563666666666667,0.0
+Phòng khám Tim mạch 201,7,0.4351333333333333,0.4351333333333333,0.0
+Phòng khám Cơ Xương Khớp 303,7,,,0.0
+Phòng khám Da liễu 204,5,,,0.0
+Phòng khám Hô hấp 401,5,,,0.0
+Phòng khám Mắt 403,5,,,0.0
+Phòng khám Nhi 301,5,,,0.0
+Phòng khám Nội tiết 404,5,,,0.0
+Phòng khám Sản Phụ khoa 302,5,,,0.0
+Phòng khám Tâm thần - Tâm lý 405,5,,,0.0

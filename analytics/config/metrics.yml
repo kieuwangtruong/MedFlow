@@ -1,0 +1,24 @@
+timezone: Asia/Ho_Chi_Minh
+data_classification: operational_healthcare_demo
+sla_minutes:
+  EMERGENCY: 5
+  URGENT: 15
+  NORMAL: 30
+  NON_URGENT: 60
+definitions:
+  operational_wait_minutes: "service_start - max(ready_at, arrival_time); actual_wait_time is fallback only"
+  physical_wait_minutes: "service_start - arrival_time"
+  service_duration_minutes: "service_end - service_start"
+  result_turnaround_minutes: "result_ready_at - service_end"
+  journey_completion_minutes: "last completed_at/service_end - journey checkin_at (or first arrival_time fallback)"
+  throughput: "distinct completed tasks per hour/day at the selected grain"
+  backlog: "unfinished eligible tasks; backlog_minutes uses remaining expected service time where available"
+  no_show_rate: "no_show tasks / eligible non-cancelled tasks"
+  sla_breach_rate: "tasks with operational wait above the configured priority threshold / tasks with measurable wait"
+  emergency_insertion_delay: "difference in normal-patient wait between workload runs with and without emergency insertion"
+  normal_fairness: "P90-P50 spread and coefficient of variation among NORMAL-priority waits"
+assumptions:
+  - "SLA thresholds are configurable demo assumptions until hospital-approved targets are supplied."
+  - "All reader-facing daily/hourly buckets use Asia/Ho_Chi_Minh."
+  - "Synthetic and seeded results are descriptive demo evidence, not causal clinical evidence."
+

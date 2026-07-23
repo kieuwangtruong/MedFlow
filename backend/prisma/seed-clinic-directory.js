@@ -59,7 +59,7 @@ const DOCTORS = [
 
 const ROOMS = [
   { id: 'ROOM-GENERAL-101', specialtyId: 'SPEC-GENERAL-ADULT', doctorUsername: 'bs.nguyen.minh.khang@vaic.vn', code: 'PK-TQ-101', name: 'Phòng khám Tổng quát 101', floor: 'Tầng 1' },
-  { id: 'ROOM-ER-102', specialtyId: 'SPEC-ER-TRIAGE', doctorUsername: 'bs.tran.hoang.lan@vaic.vn', code: 'CC-102', name: 'Phòng Phân loại Cấp cứu 102', floor: 'Tầng 1' },
+  { id: 'ROOM-ER-102', specialtyId: 'SPEC-ER-TRIAGE', doctorUsername: 'nam01@gmail.com', code: 'CC-102', name: 'Phòng Phân loại Cấp cứu 102', floor: 'Tầng 1' },
   { id: 'ROOM-CARD-201', specialtyId: 'SPEC-CARD-CONSULT', doctorUsername: 'bs.le.quang.huy@vaic.vn', code: 'TM-201', name: 'Phòng khám Tim mạch 201', floor: 'Tầng 2' },
   { id: 'ROOM-NEURO-202', specialtyId: 'SPEC-NEURO-CONSULT', doctorUsername: 'bs.pham.thu.ha@vaic.vn', code: 'TK-202', name: 'Phòng khám Thần kinh 202', floor: 'Tầng 2' },
   { id: 'ROOM-ENT-203', specialtyId: 'SPEC-ENT-CONSULT', doctorUsername: 'bs.vo.thanh.dat@vaic.vn', code: 'TMH-203', name: 'Phòng khám Tai Mũi Họng 203', floor: 'Tầng 2' },
@@ -75,6 +75,12 @@ const ROOMS = [
   { id: 'ROOM-PSYCH-405', specialtyId: 'SPEC-PSYCH-CONSULT', doctorUsername: 'bs.dang.ngoc.anh@vaic.vn', code: 'TTL-405', name: 'Phòng khám Tâm thần - Tâm lý 405', floor: 'Tầng 4' },
 ];
 
+// A doctor may have several home rooms, but only one active room during a shift.
+// For demo data, each doctor receives the first room listed under their account.
+const ACTIVE_ROOM_ASSIGNMENTS = ROOMS.filter((room, index, rooms) => (
+  rooms.findIndex((candidate) => candidate.doctorUsername === room.doctorUsername) === index
+));
+
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.pbkdf2Sync(password, salt, HASH_ITERATIONS, 64, 'sha512').toString('hex');
@@ -88,6 +94,7 @@ function publicSummary() {
     doctors: DOCTORS.length,
     clinicalSpecialties: SPECIALTIES.length,
     clinicRooms: ROOMS.length,
+    activeRoomAssignments: ACTIVE_ROOM_ASSIGNMENTS.length,
   };
 }
 
@@ -187,6 +194,41 @@ async function seedClinicDirectory() {
       });
     }
 
+    const now = new Date();
+    // Demo assignments remain usable across review sessions. A production
+    // deployment should replace these with roster-managed daily shifts.
+    const shiftStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const shiftEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    await prisma.doctorRoomAssignment.updateMany({
+      where: { id: { startsWith: 'SHIFT-' }, status: 'ACTIVE' },
+      data: { status: 'ENDED' },
+    });
+
+    for (const assignment of ACTIVE_ROOM_ASSIGNMENTS) {
+      const doctor = doctorsByUsername.get(assignment.doctorUsername);
+      await prisma.doctorRoomAssignment.upsert({
+        where: { id: `SHIFT-${assignment.id}` },
+        create: {
+          id: `SHIFT-${assignment.id}`,
+          doctorId: doctor.id,
+          roomId: assignment.id,
+          role: 'PRIMARY',
+          status: 'ACTIVE',
+          shiftStart,
+          shiftEnd,
+        },
+        update: {
+          doctorId: doctor.id,
+          roomId: assignment.id,
+          role: 'PRIMARY',
+          status: 'ACTIVE',
+          shiftStart,
+          shiftEnd,
+        },
+      });
+    }
+
     return {
       seeded: publicSummary(),
       databaseCounts: {
@@ -194,6 +236,9 @@ async function seedClinicDirectory() {
         doctors: await prisma.staffUser.count({ where: { role: 'DOCTOR' } }),
         clinicalSpecialties: await prisma.clinicalSpecialty.count(),
         clinicRooms: await prisma.clinicRoom.count(),
+        activeRoomAssignments: await prisma.doctorRoomAssignment.count({
+          where: { status: 'ACTIVE', shiftStart: { lte: now }, shiftEnd: { gt: now } },
+        }),
       },
     };
   } finally {

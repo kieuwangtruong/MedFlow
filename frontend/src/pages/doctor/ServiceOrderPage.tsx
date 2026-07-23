@@ -13,7 +13,7 @@ import { ServiceOrderForm } from '../../components/doctor/ServiceOrderForm'
 import type { ServiceOrderFormData } from '../../schemas/serviceOrderSchema'
 
 export function ServiceOrderPage() {
-  const { visitId = 'VIS-100' } = useParams()
+  const { visitId = '' } = useParams()
   const [draft, setDraft] = useState<ServiceOrderFormData | null>(null)
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [created, setCreated] = useState(false)

@@ -42,7 +42,8 @@ def apply_event(s,e):
         if e.event_type==EventType.SERVICE_COMPLETED and t.task_type==TaskType.DIAGNOSTIC_SERVICE:t.readiness_status=ReadinessStatus.RESULT_PENDING
         if e.event_type==EventType.RESULT_READY:t.actual_result_ready_at=local
         if e.event_type==EventType.RETURN_ARRIVED:t.actual_return_arrived_at=local
-        if t.task_type==TaskType.RETURN_REVIEW and t.actual_result_ready_at and t.actual_return_arrived_at:
+        if (t.task_type==TaskType.RETURN_REVIEW and t.actual_result_ready_at and t.actual_return_arrived_at
+                and t.readiness_status not in {ReadinessStatus.COMPLETED,ReadinessStatus.CANCELLED}):
             t.ready_for_review_at=max(t.actual_result_ready_at,t.actual_return_arrived_at);t.ready_at=t.ready_for_review_at;t.readiness_status=ReadinessStatus.READY
         if e.event_type==EventType.PRIORITY_CHANGED:
             old=t.clinical_priority;t.clinical_priority=e.clinical_priority;audits.append(_audit(e,"TASK",t.task_id,"PRIORITY_CHANGED",old,e.clinical_priority))
@@ -95,6 +96,7 @@ def apply_event(s,e):
     if j.actual_result_ready_at and j.actual_return_arrived_at:j.ready_for_review_at=max(j.actual_result_ready_at,j.actual_return_arrived_at)
     if j.ready_for_review_at:
         for review in (x for x in s.tasks.values() if x.journey_id==e.journey_id and x.task_type==TaskType.RETURN_REVIEW):
-            review.actual_result_ready_at=j.actual_result_ready_at;review.actual_return_arrived_at=j.actual_return_arrived_at;review.ready_for_review_at=j.ready_for_review_at;review.ready_at=j.ready_for_review_at;review.readiness_status=ReadinessStatus.READY
+            review.actual_result_ready_at=j.actual_result_ready_at;review.actual_return_arrived_at=j.actual_return_arrived_at;review.ready_for_review_at=j.ready_for_review_at;review.ready_at=j.ready_for_review_at
+            if review.readiness_status not in {ReadinessStatus.COMPLETED,ReadinessStatus.CANCELLED}:review.readiness_status=ReadinessStatus.READY
     s.journeys[e.journey_id]=j;s.events.add(e.event_id);s.entity_event_times[key]=local;s.version+=1;s.updated_at=max(s.updated_at,local)
     s.persist(e,audits);return True

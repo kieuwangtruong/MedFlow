@@ -1,33 +1,42 @@
 @import "tailwindcss" source(".");
 
 @theme {
-  --color-background: #f5f7f9;
-  --color-foreground: #172b3a;
+  --color-background: #f4f7f9;
+  --color-foreground: #142b3a;
   --color-card: #ffffff;
-  --color-card-foreground: #172b3a;
-  --color-primary: #176b9b;
+  --color-card-foreground: #142b3a;
+  --color-primary: #126b86;
   --color-primary-foreground: #ffffff;
-  --color-secondary: #eaf3f9;
-  --color-secondary-foreground: #164e70;
-  --color-muted: #eef2f5;
-  --color-muted-foreground: #657785;
-  --color-border: #dce3e8;
-  --color-destructive: #d13c45;
-  --font-sans: "Inter", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+  --color-secondary: #e8f3f6;
+  --color-secondary-foreground: #155267;
+  --color-muted: #edf2f5;
+  --color-muted-foreground: #607482;
+  --color-border: #d8e2e8;
+  --color-destructive: #c9343d;
+  --font-sans: "Be Vietnam Pro", "Inter", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root { font-family: var(--font-sans); color: var(--color-foreground); background: var(--color-background); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: #f5f7f9; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(circle at 82% -10%, rgba(18,107,134,.055), transparent 26rem), #f4f7f9; }
 button, input, textarea, select { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
-::selection { background: rgba(23,107,155,.18); color: #123b55; }
-.card { @apply rounded-xl border border-border bg-card p-5 text-card-foreground shadow-[0_1px_3px_rgba(15,23,42,.04)]; }
-.icon-box { @apply grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-primary/10 bg-primary/8 text-primary; }
-.section-title { @apply flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground; }
-.form-control { @apply w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground/65 hover:border-primary/30 focus:border-primary focus:ring-4 focus:ring-primary/10; }
-.field-label { @apply mb-1.5 block text-sm font-semibold text-foreground/80; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 3px solid rgba(18,107,134,.22); outline-offset: 2px; }
+::selection { background: rgba(18,107,134,.18); color: #10394a; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: #b7c6cf; background-clip: padding-box; }
+.card { @apply rounded-2xl border border-border/90 bg-card p-5 text-card-foreground shadow-[0_1px_2px_rgba(15,23,42,.035),0_8px_24px_rgba(15,23,42,.035)]; }
+.icon-box { @apply grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-primary/10 bg-primary/[.075] text-primary; }
+.section-title { @apply flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-foreground; }
+.form-control { @apply w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground shadow-[0_1px_2px_rgba(15,23,42,.03)] outline-none transition placeholder:text-muted-foreground/60 hover:border-primary/35 focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:bg-slate-100 disabled:text-slate-500; }
+.field-label { @apply mb-2 block text-sm font-bold text-foreground/80; }
+.clinical-surface { @apply rounded-2xl border border-border/90 bg-white shadow-[0_1px_2px_rgba(15,23,42,.04),0_12px_32px_rgba(15,23,42,.04)]; }
+.status-dot { @apply inline-block h-2.5 w-2.5 rounded-full ring-4 ring-current/10; }
+.skip-link { @apply fixed left-4 top-3 z-[100] -translate-y-20 rounded-lg bg-slate-950 px-4 py-2 text-sm font-bold text-white transition focus:translate-y-0; }
 .health-grid { background: transparent; }
 @media (max-width: 640px) { .card { @apply p-4; } body { font-size: 16px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }

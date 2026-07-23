@@ -18,6 +18,17 @@ function authenticate(req, _res, next) {
   return next();
 }
 
+function authorize(...roles) {
+  return (req, _res, next) => {
+    if (!req.auth || !roles.includes(req.auth.role)) {
+      return next(new AppError('You do not have permission to access this resource', 403, 'FORBIDDEN'));
+    }
+
+    return next();
+  };
+}
+
 module.exports = {
   authenticate,
+  authorize,
 };

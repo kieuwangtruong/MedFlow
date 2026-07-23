@@ -1,11 +1,27 @@
-import { Building2, Check, Clock3, Headphones, MapPin, Route, Users } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
+import { Check, Route } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { AppButton } from '../../components/common/AppButton'
+import { LoadingSkeleton } from '../../components/common/LoadingSkeleton'
 import { PageHeader } from '../../components/common/PageHeader'
 import { RoutingRecommendationCard } from '../../components/patient/RoutingRecommendationCard'
-import { rooms, routingRecommendation } from '../../mocks/data'
+import { usePatientPathway } from '../../hooks/usePatientPathway'
 import { useVisitStore } from '../../stores/visitStore'
 
-export function RoutingPage() { const navigate = useNavigate(); const recommendation = useVisitStore((s) => s.recommendation) ?? routingRecommendation; const urgent = ['EMERGENCY', 'URGENT'].includes(recommendation.priority); const alternatives = rooms.filter((room) => room.status === 'OPEN').slice(0, 3); return <><PageHeader title="Phòng bạn cần đến" description="Lộ trình được sắp xếp theo thứ tự khám trong lượt hôm nay." action={<span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700"><Check size={16}/>Đã xác nhận thông tin</span>}/>{urgent && <div className="mb-5 rounded-2xl border border-red-800 bg-red-700 p-5 font-bold text-white shadow-lg">Tình trạng cần hỗ trợ khẩn cấp. Vui lòng không rời màn hình và làm theo hướng dẫn nhân viên y tế.</div>}<RoutingRecommendationCard recommendation={recommendation}/><section className="mt-6"><div className="mb-3 flex items-end justify-between"><div><h2 className="text-lg font-bold text-foreground">Các phòng trong khu khám</h2><p className="text-sm text-muted-foreground">Nhân viên sẽ xác nhận phòng cụ thể khi bạn check-in.</p></div></div><div className="grid gap-4 md:grid-cols-3">{alternatives.map((room,index) => <div key={room.id} className={`relative rounded-2xl border bg-card p-5 shadow-sm ${index === 0 ? 'border-primary ring-4 ring-primary/5' : 'border-border'}`}>{index === 0 && <span className="absolute right-4 top-4 rounded-full bg-primary px-2.5 py-1 text-xs font-bold text-white">Đang tiếp nhận</span>}<span className="icon-box"><Building2/></span><h3 className="mt-4 font-bold text-foreground">{room.name}</h3><p className="text-sm text-muted-foreground">{room.department}</p><div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4 text-center"><Metric icon={<Clock3/>} value={`${room.averageWait}'`} label="Chờ"/><Metric icon={<Users/>} value={`${room.waitingCount}`} label="Hàng đợi"/><Metric icon={<MapPin/>} value={`T${room.floor}`} label="Tầng"/></div></div>)}</div></section><div className="sticky bottom-4 z-20 mt-6 flex flex-col gap-3 rounded-2xl border border-border bg-card/95 p-4 shadow-xl sm:flex-row"><AppButton className="flex-1 text-base" onClick={() => { toast.success('Đã xác nhận lộ trình'); navigate('/patient/pathway') }}><Route/>Xem thứ tự các phòng cần đi</AppButton><AppButton variant="secondary" className="flex-1 text-base" onClick={() => toast.success('Nhân viên hỗ trợ đã nhận yêu cầu')}><Headphones/>Yêu cầu hỗ trợ</AppButton></div></> }
-function Metric({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) { return <div className="text-muted-foreground"><span className="mx-auto block w-fit text-primary [&>svg]:h-4 [&>svg]:w-4">{icon}</span><p className="mt-1 text-sm font-bold text-foreground">{value}</p><p className="text-[10px] uppercase tracking-wider">{label}</p></div> }
+export function RoutingPage() {
+  const navigate = useNavigate()
+  const { visitId, recommendation } = useVisitStore()
+  const pathway = usePatientPathway(visitId)
+
+  if (!visitId || !recommendation) return <>
+    <PageHeader title="Phân phòng" description="Chưa có kết quả phân luồng cho lượt khám hiện tại."/>
+    <div className="card mx-auto max-w-xl text-center"><p>Hãy khai báo triệu chứng để hệ thống tạo lộ trình thật.</p><Link to="/patient/symptoms" className="mt-4 inline-flex rounded-xl bg-primary px-5 py-3 font-bold text-white">Khai báo triệu chứng</Link></div>
+  </>
+  if (pathway.isLoading) return <LoadingSkeleton rows={6}/>
+
+  return <>
+    <PageHeader title="Phòng bạn cần đến" description="Phòng và số thứ tự dưới đây đã được ghi vào backend cho đúng CCCD của bạn." action={<span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700"><Check size={16}/>Đã tạo lộ trình</span>}/>
+    <RoutingRecommendationCard recommendation={recommendation}/>
+    {pathway.data && <section className="card mt-5"><h2 className="text-lg font-extrabold">Lộ trình đã lưu</h2><div className="mt-4 space-y-3">{pathway.data.steps.map((step, index) => <div key={step.id} className="flex gap-3 rounded-xl border p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">{index + 1}</span><div><p className="font-bold">{step.title}</p><p className="text-sm text-slate-500">{step.department} · {step.room}</p></div></div>)}</div></section>}
+    <AppButton className="mt-6 w-full text-base" onClick={() => navigate('/patient/pathway')}><Route/>Xem toàn bộ hành trình</AppButton>
+  </>
+}

@@ -4,6 +4,9 @@ const crypto = require('node:crypto');
 const AppError = require('../../errors/app-error');
 const prisma = require('../../config/database');
 const { createAccessToken } = require('./token');
+const { currentQueueEntry, formatQueueNumber } = require('../shared/presenters');
+
+const activeTaskStatuses = ['PENDING', 'READY', 'IN_QUEUE', 'IN_SERVICE', 'WAITING_RESULT'];
 
 function buildPatientToken() {
   return `pt_${crypto.randomBytes(16).toString('hex')}`;
@@ -16,6 +19,8 @@ function toAuthUser(patient) {
     role: 'PATIENT',
     cccd: patient.identificationCode,
     patient_token: patient.patientToken,
+    date_of_birth: patient.dateOfBirth?.toISOString().slice(0, 10),
+    phone_number: patient.phoneNumber || undefined,
   };
 }
 
@@ -61,6 +66,31 @@ function verifyPassword(password, passwordHash) {
   return timingSafeTextEqual(password, passwordHash);
 }
 
+async function findActivePatientVisit(patientToken) {
+  const journey = await prisma.patientJourney.findFirst({
+    where: {
+      patientToken,
+      tasks: { some: { status: { in: activeTaskStatuses } } },
+    },
+    include: {
+      tasks: {
+        where: { status: { in: activeTaskStatuses } },
+        include: { queueEntries: { orderBy: { enqueuedAt: 'desc' } } },
+        orderBy: [{ sequenceOrder: 'asc' }, { createdAt: 'asc' }],
+        take: 1,
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (!journey?.tasks[0]) return null;
+  const entry = currentQueueEntry(journey.tasks[0]);
+  return {
+    visitId: journey.id,
+    queueNumber: formatQueueNumber(entry?.queueNumber),
+  };
+}
+
 async function loginWithCccd(cccd) {
   const patient = await prisma.patient.upsert({
     where: { identificationCode: cccd },
@@ -74,6 +104,7 @@ async function loginWithCccd(cccd) {
     },
   });
   const user = toAuthUser(patient);
+  const activeVisit = await findActivePatientVisit(patient.patientToken);
   const accessToken = createAccessToken({
     sub: patient.id,
     role: user.role,
@@ -85,6 +116,7 @@ async function loginWithCccd(cccd) {
     access_token: accessToken,
     token_type: 'Bearer',
     user,
+    active_visit: activeVisit,
   };
 }
 

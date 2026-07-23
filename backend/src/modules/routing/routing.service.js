@@ -112,7 +112,7 @@ async function optimizeServiceSequence(journeyId, patientToken) {
   const pendingTasks = await prisma.patientJourneyTask.findMany({
     where: {
       journeyId,
-      status: { in: ['PENDING', 'READY'] },
+      status: { in: ['PENDING', 'READY', 'IN_QUEUE'] },
     },
   });
 

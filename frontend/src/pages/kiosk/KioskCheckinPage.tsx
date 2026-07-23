@@ -1,30 +1,36 @@
-import { CheckCircle2, DoorOpen, Hospital, Keyboard, Ticket } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { ArrowLeft, CheckCircle2, DoorOpen, Hospital, Keyboard, ShieldCheck, Ticket } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { patientApi } from '../../api/patientApi'
 import kioskBackground from '../../assets/backgrounds/hospital-kiosk.png'
 
 export function KioskCheckinPage() {
   const [cccd, setCccd] = useState('')
-  const [ticket, setTicket] = useState<string | null>(null)
+  const mutation = useMutation({ mutationFn: () => patientApi.kioskCheckin(cccd) })
   const valid = /^\d{9,12}$/.test(cccd)
-  const checkin = () => { if (valid) setTicket('T-024') }
+  const result = mutation.data
 
-  return <main className="min-h-screen bg-cover bg-center bg-fixed p-5 sm:p-8" style={{ backgroundImage: `linear-gradient(rgba(23,50,77,.34), rgba(23,50,77,.22)), url(${kioskBackground})` }}>
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/94 shadow-[0_24px_80px_rgba(15,23,42,.18)] backdrop-blur-sm">
-      <header className="flex items-center justify-between border-b border-slate-200 px-6 py-5 sm:px-10">
-        <div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-lg bg-[#176b9b] text-white"><Hospital/></span><strong className="text-xl text-slate-900">Bệnh viện An Tâm</strong></div>
-        <div className="hidden items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 sm:flex"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500"/>Sẵn sàng phục vụ</div>
+  return <main className="min-h-screen bg-cover bg-center p-3 sm:p-8" style={{ backgroundImage: `linear-gradient(rgba(23,50,77,.42), rgba(23,50,77,.25)), url(${kioskBackground})` }}>
+    <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-5xl flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/96 shadow-2xl sm:min-h-[calc(100vh-4rem)]">
+      <header className="flex min-h-20 items-center justify-between gap-4 border-b border-border px-5 py-4 sm:px-9">
+        <div className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-white"><Hospital/></span><span><strong className="block text-lg font-black">Bệnh viện An Tâm</strong><span className="text-xs font-semibold text-slate-500">Kiosk check-in tự phục vụ</span></span></div>
+        <Link to="/login" className="inline-flex min-h-11 items-center gap-2 rounded-xl border px-3 text-sm font-bold"><ArrowLeft size={17}/>Quay lại</Link>
       </header>
-      <section className="grid flex-1 place-items-center px-6 py-10 sm:px-10">
-        {!ticket ? <div className="w-full max-w-2xl text-center">
-          <span className="mx-auto grid h-20 w-20 place-items-center rounded-2xl bg-emerald-50 text-[#126b5b]"><DoorOpen size={38}/></span>
-          <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-950 sm:text-5xl">Check-in vào phòng khám</h1>
-          <p className="mx-auto mt-4 max-w-xl text-lg leading-8 text-slate-600">Nhập số CCCD để xác nhận bạn đã có mặt và nhận số thứ tự tại phòng.</p>
-          <label className="mx-auto mt-9 block max-w-xl text-left"><span className="mb-2 block text-base font-bold text-slate-800">Số căn cước công dân</span><input autoFocus inputMode="numeric" value={cccd} onChange={(e) => setCccd(e.target.value.replace(/\D/g, '').slice(0, 12))} onKeyDown={(e) => e.key === 'Enter' && checkin()} placeholder="Nhập 9–12 chữ số" className="h-20 w-full rounded-xl border-2 border-slate-300 bg-white px-6 text-2xl font-bold tracking-[.12em] outline-none transition focus:border-[#176b9b] focus:ring-4 focus:ring-sky-100"/></label>
-          <button disabled={!valid} onClick={checkin} className="mx-auto mt-6 flex h-16 w-full max-w-xl items-center justify-center gap-3 rounded-lg bg-[#176b9b] px-8 text-xl font-bold text-white transition hover:bg-[#145b84] disabled:cursor-not-allowed disabled:bg-slate-300"><Keyboard/>Xác nhận check-in</button>
+      <section className="grid flex-1 place-items-center px-5 py-9">
+        {!result ? <div className="w-full max-w-2xl text-center">
+          <span className="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-emerald-50 text-[#126b5b]"><DoorOpen size={38}/></span>
+          <h1 className="mt-5 text-4xl font-black">Xác nhận có mặt</h1>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600">Nhập CCCD để tạo hoặc khôi phục lượt khám hiện tại. Kiosk không sử dụng số thứ tự hay phòng cố định.</p>
+          <label className="mx-auto mt-8 block max-w-xl text-left"><span className="mb-2 block font-bold">Số CCCD</span><input autoFocus value={cccd} onChange={(event) => setCccd(event.target.value.replace(/\D/g, '').slice(0, 12))} onKeyDown={(event) => event.key === 'Enter' && valid && mutation.mutate()} className="h-20 w-full rounded-2xl border-2 px-6 text-2xl font-black tracking-[.12em]" placeholder="9–12 chữ số"/></label>
+          <button disabled={!valid || mutation.isPending} onClick={() => mutation.mutate()} className="mx-auto mt-5 flex h-16 w-full max-w-xl items-center justify-center gap-3 rounded-2xl bg-primary text-xl font-black text-white disabled:bg-slate-300"><Keyboard/>{mutation.isPending ? 'Đang check-in...' : 'Xác nhận check-in'}</button>
+          {mutation.isError && <p className="mt-4 font-semibold text-red-700">Không thể check-in. Vui lòng kiểm tra backend hoặc liên hệ quầy tiếp nhận.</p>}
+          <p className="mt-5 flex items-center justify-center gap-2 text-sm text-slate-500"><ShieldCheck size={17}/>Thông tin chỉ dùng cho lượt khám hiện tại.</p>
         </div> : <div className="w-full max-w-2xl text-center">
-          <CheckCircle2 className="mx-auto text-emerald-600" size={80}/><p className="mt-5 text-xl font-bold text-emerald-700">Check-in thành công</p><h1 className="mt-2 text-4xl font-extrabold text-slate-950">Phòng khám Tai</h1>
-          <div className="mx-auto mt-8 max-w-md rounded-3xl border-2 border-[#126b5b] bg-emerald-50 p-8"><Ticket className="mx-auto text-[#126b5b]" size={36}/><p className="mt-3 text-sm font-bold uppercase tracking-[.18em] text-slate-500">Số thứ tự của bạn</p><p className="mt-2 text-7xl font-black text-[#126b5b]">{ticket}</p><p className="mt-4 text-lg text-slate-700">Còn <strong>3 bệnh nhân</strong> phía trước</p></div>
-          <p className="mt-7 text-lg text-slate-600">Vui lòng ngồi chờ gần cửa phòng và theo dõi màn hình gọi số.</p><button onClick={() => { setTicket(null); setCccd('') }} className="mt-7 rounded-xl border border-slate-300 px-6 py-3 font-bold text-slate-700 hover:bg-slate-50">Hoàn tất</button>
+          <CheckCircle2 className="mx-auto text-emerald-700" size={72}/><h1 className="mt-4 text-4xl font-black">Check-in thành công</h1>
+          <div className="mx-auto mt-7 max-w-md rounded-[2rem] border-2 border-[#126b5b] bg-emerald-50 p-8"><Ticket className="mx-auto text-[#126b5b]" size={36}/><p className="mt-3 text-sm font-bold uppercase text-slate-500">Mã lượt khám</p><p className="mt-2 break-all text-2xl font-black text-[#126b5b]">{result.visitId}</p><p className="mt-4 text-lg">{result.currentRoom ? `${result.currentRoom} · số ${result.queueNumber}` : 'Chưa phân phòng'}</p></div>
+          <p className="mx-auto mt-7 max-w-xl text-lg text-slate-600">Hãy đăng nhập cổng bệnh nhân bằng CCCD vừa nhập để khai báo triệu chứng và nhận phòng thực tế.</p>
+          <div className="mt-6 flex justify-center gap-3"><Link to="/login" className="rounded-xl bg-primary px-6 py-3 font-bold text-white">Đăng nhập và khai triệu chứng</Link><button onClick={() => { mutation.reset(); setCccd('') }} className="rounded-xl border px-6 py-3 font-bold">Lượt tiếp theo</button></div>
         </div>}
       </section>
     </div>

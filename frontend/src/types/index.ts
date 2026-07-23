@@ -4,9 +4,10 @@ export type VisitStatus = 'CHECKED_IN' | 'SYMPTOM_SUBMITTED' | 'WAITING_TRIAGE' 
 export type StepStatus = 'PENDING' | 'WAITING' | 'CALLED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
 export type PeakLevel = 'low' | 'normal' | 'high' | 'very_high'
 
-export interface User { id: string; full_name: string; role: UserRole; email?: string; cccd?: string; patient_token?: string; staff_role?: string }
+export interface User { id: string; full_name: string; role: UserRole; email?: string; cccd?: string; patient_token?: string; staff_role?: string; date_of_birth?: string; phone_number?: string }
 export interface Patient { id: string; code: string; fullName: string; birthYear: number; phone: string; gender: string; insuranceNumber?: string }
 export interface Doctor { id: string; fullName: string; department: string; room: string; status: 'AVAILABLE' | 'BUSY' | 'OFFLINE'; examinedToday: number; waitingPatients: number; averageMinutes: number }
+export interface DoctorAssignment { id: string; role: 'PRIMARY' | 'SUPPORT' | 'COVERING'; status: 'ACTIVE'; shiftStart: string; shiftEnd: string; room: { id: string; code: string; name: string; floor: number; department: string } }
 export interface Department { id: string; name: string; waitingCount: number }
 export interface Room { id: string; code: string; name: string; department: string; floor: number; doctor?: string; waitingCount: number; servingPatient?: string; averageWait: number; status: 'OPEN' | 'PAUSED' | 'CLOSED' }
 export interface PatientVisit { id: string; patientId: string; patientName: string; queueNumber: string; checkinTime: string; priority: Priority; status: VisitStatus; department: string; room: string; doctor?: string; waitingMinutes: number; nextStep: string; estimatedCompletion: string }
@@ -24,5 +25,5 @@ export interface PeakHourForecast { checkin_time: string; slot_index: number; pr
 export interface Notification { id: string; title: string; message: string; createdAt: string; read: boolean }
 export interface ApiResponse<T> { data: T; message?: string }
 export interface PaginatedResponse<T> { data: T[]; page: number; pageSize: number; total: number }
-export interface AuthResponse { access_token: string; user: User }
+export interface AuthResponse { access_token: string; user: User; active_visit?: { visitId: string; queueNumber: string } | null }
 export interface DashboardKpi { label: string; value: number | string; trend?: string }

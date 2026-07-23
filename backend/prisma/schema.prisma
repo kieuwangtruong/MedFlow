@@ -17,7 +17,8 @@ model StaffUser {
   createdAt    DateTime    @default(now()) @map("created_at")
   updatedAt    DateTime    @updatedAt @map("updated_at")
 
-  assignedClinicRooms ClinicRoom[] @relation("ClinicRoomDoctor")
+  assignedClinicRooms ClinicRoom[]           @relation("ClinicRoomDoctor")
+  roomAssignments     DoctorRoomAssignment[]
 
   @@map("staff_users")
 }
@@ -55,10 +56,29 @@ enum StaffStatus {
   LOCKED
 }
 
+enum DoctorRoomAssignmentRole {
+  PRIMARY
+  SUPPORT
+  COVERING
+}
+
+enum DoctorRoomAssignmentStatus {
+  SCHEDULED
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
 enum PatientStatus {
   ACTIVE
   INACTIVE
   MERGED
+}
+
+enum IntakeSource {
+  PATIENT_SELF
+  STAFF_DESK
+  KIOSK
 }
 
 enum JourneyStep {
@@ -148,13 +168,14 @@ model ClinicRoom {
   floor       String?
   isActive    Boolean @default(true) @map("is_active")
 
-  specialty     ClinicalSpecialty    @relation(fields: [specialtyId], references: [id])
-  doctor        StaffUser?           @relation("ClinicRoomDoctor", fields: [doctorId], references: [id], onDelete: SetNull)
-  queues        ServiceQueue[]
-  tasks         PatientJourneyTask[]
-  outgoingEdges HospitalEdge[]       @relation("EdgeFrom")
-  incomingEdges HospitalEdge[]       @relation("EdgeTo")
-  equipments    Equipment[]
+  specialty         ClinicalSpecialty      @relation(fields: [specialtyId], references: [id])
+  doctor            StaffUser?             @relation("ClinicRoomDoctor", fields: [doctorId], references: [id], onDelete: SetNull)
+  queues            ServiceQueue[]
+  tasks             PatientJourneyTask[]
+  outgoingEdges     HospitalEdge[]         @relation("EdgeFrom")
+  incomingEdges     HospitalEdge[]         @relation("EdgeTo")
+  equipments        Equipment[]
+  doctorAssignments DoctorRoomAssignment[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -163,6 +184,27 @@ model ClinicRoom {
   @@index([specialtyId])
   @@index([doctorId])
   @@map("clinic_rooms")
+}
+
+model DoctorRoomAssignment {
+  id         String                     @id @default(cuid())
+  doctorId   String                     @map("doctor_id")
+  roomId     String                     @map("room_id")
+  role       DoctorRoomAssignmentRole   @default(PRIMARY)
+  status     DoctorRoomAssignmentStatus @default(SCHEDULED)
+  shiftStart DateTime                   @map("shift_start") @db.Timestamptz(6)
+  shiftEnd   DateTime                   @map("shift_end") @db.Timestamptz(6)
+
+  doctor StaffUser  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  room   ClinicRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([doctorId, roomId, shiftStart])
+  @@index([doctorId, status, shiftStart, shiftEnd])
+  @@index([roomId, status, shiftStart, shiftEnd])
+  @@map("doctor_room_assignments")
 }
 
 model Department {
@@ -224,6 +266,10 @@ model PatientJourney {
   patientToken  String               @map("patient_token")
   checkinAt     DateTime?            @map("checkin_at") @db.Timestamptz(6)
   severityScore Int?                 @map("severity_score")
+  symptomDescription String?         @map("symptom_description")
+  symptomPayload     Json?           @map("symptom_payload")
+  symptomsSubmittedAt DateTime?      @map("symptoms_submitted_at") @db.Timestamptz(6)
+  intakeSource       IntakeSource?   @map("intake_source")
   patient       Patient              @relation(fields: [patientToken], references: [patientToken])
   tasks         PatientJourneyTask[]
 

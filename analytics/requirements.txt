@@ -1,0 +1,14 @@
+pandas>=2.2,<3.0
+numpy>=1.26,<3.0
+SQLAlchemy>=2.0,<3.0
+psycopg2-binary>=2.9,<3.0
+PyYAML>=6.0,<7.0
+plotly>=5.20,<7.0
+streamlit>=1.36,<2.0
+matplotlib>=3.8,<4.0
+seaborn>=0.13,<1.0
+jupyter>=1.0,<2.0
+nbformat>=5.10,<6.0
+nbclient>=0.10,<1.0
+pytest>=8.0,<9.0
+

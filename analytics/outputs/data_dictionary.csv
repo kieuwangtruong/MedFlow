@@ -1,0 +1,63 @@
+column,dtype,missing,missing_rate,grain_or_meaning
+task_id,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+journey_id,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+journey_step,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+parent_task_id,object,113,0.8308823529411765,task-level field; see Prisma schema and metrics.yml
+depends_on_task_id,object,113,0.8308823529411765,task-level field; see Prisma schema and metrics.yml
+department_id,object,20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+specialty_id,object,20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+queue_id,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+room_id,object,20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+room_name,object,20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+room_code,object,20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+queue_name,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+task_type,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+status,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+service_type,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+clinical_priority,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+readiness_status,object,4,0.029411764705882353,task-level field; see Prisma schema and metrics.yml
+scheduling_mode,object,4,0.029411764705882353,task-level field; see Prisma schema and metrics.yml
+doctor_id,object,2,0.014705882352941176,task-level field; see Prisma schema and metrics.yml
+device_id,object,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+assigned_at,"datetime64[ns, UTC]",20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+arrival_time,"datetime64[ns, UTC]",1,0.007352941176470588,task-level field; see Prisma schema and metrics.yml
+ready_at,"datetime64[ns, UTC]",0,0.0,task-level field; see Prisma schema and metrics.yml
+service_start,"datetime64[ns, UTC]",104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
+service_end,"datetime64[ns, UTC]",98,0.7205882352941176,task-level field; see Prisma schema and metrics.yml
+completed_at,"datetime64[ns, UTC]",103,0.7573529411764706,task-level field; see Prisma schema and metrics.yml
+cancelled_at,"datetime64[ns, UTC]",125,0.9191176470588235,task-level field; see Prisma schema and metrics.yml
+result_ready_at,"datetime64[ns, UTC]",114,0.8382352941176471,task-level field; see Prisma schema and metrics.yml
+result_urgency,object,115,0.8455882352941176,task-level field; see Prisma schema and metrics.yml
+result_delay_minutes,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+return_timing,object,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+schedule_window_start,"datetime64[ns, UTC]",136,1.0,task-level field; see Prisma schema and metrics.yml
+schedule_window_end,"datetime64[ns, UTC]",136,1.0,task-level field; see Prisma schema and metrics.yml
+sequence_order,int64,0,0.0,task-level field; see Prisma schema and metrics.yml
+queue_length,float64,6,0.04411764705882353,task-level field; see Prisma schema and metrics.yml
+arrival_rate_15m,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+avg_service_30m,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+resource_status,object,6,0.04411764705882353,task-level field; see Prisma schema and metrics.yml
+resource_failure,bool,0,0.0,task-level field; see Prisma schema and metrics.yml
+doctor_pause,bool,0,0.0,task-level field; see Prisma schema and metrics.yml
+case_complexity,object,6,0.04411764705882353,task-level field; see Prisma schema and metrics.yml
+active_service_duration,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+interruption_duration,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+elapsed_service_duration,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+actual_wait_time,float64,116,0.8529411764705882,task-level field; see Prisma schema and metrics.yml
+no_show,bool,0,0.0,task-level field; see Prisma schema and metrics.yml
+emergency_insertion,bool,0,0.0,task-level field; see Prisma schema and metrics.yml
+recent_emergency_count,int64,0,0.0,task-level field; see Prisma schema and metrics.yml
+checkin_at,"datetime64[ns, UTC]",20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+severity_score,float64,20,0.14705882352941177,task-level field; see Prisma schema and metrics.yml
+created_at,"datetime64[ns, UTC]",0,0.0,task-level field; see Prisma schema and metrics.yml
+updated_at,"datetime64[ns, UTC]",0,0.0,task-level field; see Prisma schema and metrics.yml
+patient_alias,object,0,0.0,task-level field; see Prisma schema and metrics.yml
+operational_wait_minutes,float64,104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
+physical_wait_minutes,float64,104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
+service_duration_minutes,float64,104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
+result_turnaround_minutes,float64,114,0.8382352941176471,task-level field; see Prisma schema and metrics.yml
+sla_minutes,int64,0,0.0,task-level field; see Prisma schema and metrics.yml
+sla_breach,bool,0,0.0,task-level field; see Prisma schema and metrics.yml
+event_date,object,104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
+event_hour,float64,104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
+day_of_week,object,104,0.7647058823529411,task-level field; see Prisma schema and metrics.yml
