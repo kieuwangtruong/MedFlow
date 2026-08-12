@@ -5,7 +5,10 @@ from zoneinfo import ZoneInfo
 from ..domain.models import *
 
 TZ=ZoneInfo("Asia/Ho_Chi_Minh")
-class RequoteRequired(ValueError): pass
+class RequoteRequired(ValueError):
+    def __init__(self,current_estimate_version,based_on_estimate_version,reason_code="QUEUE_VERSION_CHANGED"):
+        self.current_estimate_version=current_estimate_version;self.based_on_estimate_version=based_on_estimate_version;self.reason_code=reason_code
+        super().__init__(f"REQUOTE_REQUIRED: current estimate_version is {current_estimate_version}")
 def _dt(value):return datetime.fromisoformat(value) if isinstance(value,str) else value
 
 def _audit(e,entity_type,entity_id,action,previous,new,reason=None):
@@ -15,13 +18,17 @@ def _audit(e,entity_type,entity_id,action,previous,new,reason=None):
         "actor_id":e.actor_id,"actor_type":e.actor_type,"created_at":datetime.now(TZ),"correlation_id":e.correlation_id}
 
 def apply_event(s,e):
+    with s.lock:return _apply_event(s,e)
+
+def _apply_event(s,e):
     if e.event_id in s.events:return False
-    if e.event_type in {EventType.TASK_ASSIGNED_TO_QUEUE,EventType.TASK_REASSIGNED_TO_QUEUE} and e.based_on_estimate_version!=s.version:
-        raise RequoteRequired(f"REQUOTE_REQUIRED: current estimate_version is {s.version}")
+    target_version=s.version
+    if e.event_type in {EventType.TASK_ASSIGNED_TO_QUEUE,EventType.TASK_REASSIGNED_TO_QUEUE} and e.based_on_estimate_version!=target_version:
+        raise RequoteRequired(target_version,e.based_on_estimate_version,"STATE_VERSION_CHANGED")
     local=e.event_time.astimezone(TZ);key=(e.queue_id,e.task_id if not e.event_type.name.startswith("RESOURCE_") else (e.resource_id or "unknown"))
     previous_time=s.entity_event_times.get(key)
     if previous_time and local<previous_time:raise ValueError("event_time precedes the latest event for this entity")
-    t=s.tasks.get(e.task_id);previous_task=t.model_dump(mode="json") if t else None;audits=[]
+    t=s.tasks.get(e.task_id);previous_task=t.model_dump(mode="json") if t else None;previous_queue=t.queue_id if t else None;audits=[]
     creates={EventType.PATIENT_CHECKED_IN,EventType.SERVICE_ORDERED,EventType.ARRIVED_QUEUE,EventType.EMERGENCY_ARRIVED,EventType.TASK_ASSIGNED_TO_QUEUE,EventType.PATIENT_ARRIVED,EventType.PATIENT_CHECKED_IN_EARLY,EventType.PATIENT_READY_AT_QUEUE}
     if not t and e.event_type in creates:
         t=Task(task_id=e.task_id,journey_id=e.journey_id,patient_token=e.patient_token,queue_id=e.queue_id,task_type=e.task_type,
@@ -47,6 +54,8 @@ def apply_event(s,e):
             t.ready_for_review_at=max(t.actual_result_ready_at,t.actual_return_arrived_at);t.ready_at=t.ready_for_review_at;t.readiness_status=ReadinessStatus.READY
         if e.event_type==EventType.PRIORITY_CHANGED:
             old=t.clinical_priority;t.clinical_priority=e.clinical_priority;audits.append(_audit(e,"TASK",t.task_id,"PRIORITY_CHANGED",old,e.clinical_priority))
+        if e.event_type==EventType.OVERRIDE_RECORDED:
+            audits.append(_audit(e,"TASK",t.task_id,"OVERRIDE_RECORDED",None,{"override_type":e.metadata.get("override_type","UNSPECIFIED")},e.reason_code))
         if e.event_type==EventType.SERVICE_STARTED and e.resource_id:t.resource_id=e.resource_id;t.actual_service_start_at=local;t.remaining_service_minutes=float(e.metadata.get("remaining_minutes",t.predicted_minutes))
         if e.event_type==EventType.PATIENT_ARRIVED:t.physical_arrival_at=local;t.presence_status=PresenceStatus.AVAILABLE_ON_SITE;t.current_location=e.metadata.get("current_location",t.current_location)
         if e.event_type==EventType.PATIENT_CHECKED_IN_EARLY:t.physical_arrival_at=t.physical_arrival_at or _dt(e.metadata.get("physical_arrival_at")) or local;t.checkin_at=local;t.presence_status=PresenceStatus.CHECKED_IN_EARLY
@@ -98,5 +107,5 @@ def apply_event(s,e):
         for review in (x for x in s.tasks.values() if x.journey_id==e.journey_id and x.task_type==TaskType.RETURN_REVIEW):
             review.actual_result_ready_at=j.actual_result_ready_at;review.actual_return_arrived_at=j.actual_return_arrived_at;review.ready_for_review_at=j.ready_for_review_at;review.ready_at=j.ready_for_review_at
             if review.readiness_status not in {ReadinessStatus.COMPLETED,ReadinessStatus.CANCELLED}:review.readiness_status=ReadinessStatus.READY
-    s.journeys[e.journey_id]=j;s.events.add(e.event_id);s.entity_event_times[key]=local;s.version+=1;s.updated_at=max(s.updated_at,local)
+    s.journeys[e.journey_id]=j;s.events.add(e.event_id);s.entity_event_times[key]=local;s.version+=1;s.bump_queue_versions(e.queue_id,previous_queue if previous_queue!=e.queue_id else None);s.updated_at=max(s.updated_at,local)
     s.persist(e,audits);return True

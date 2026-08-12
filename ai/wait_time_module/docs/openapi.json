@@ -5,10 +5,58 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/health/live": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
         "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "summary": "Health Ready",
+        "operationId": "health_ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/version": {
+      "get": {
+        "summary": "Health Version",
+        "operationId": "health_version_health_version_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -605,6 +653,7 @@
           "RETURN_STARTED",
           "RETURN_ARRIVED",
           "PRIORITY_CHANGED",
+          "OVERRIDE_RECORDED",
           "NO_SHOW_CONFIRMED",
           "RESOURCE_AVAILABLE",
           "RESOURCE_FAILED",
@@ -1049,6 +1098,13 @@
           "type": {
             "type": "string",
             "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
           }
         },
         "type": "object",

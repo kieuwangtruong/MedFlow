@@ -9,8 +9,10 @@ router.get('/queue', controller.queue);
 router.post('/intake', controller.intake);
 router.get('/visits/:visitId', controller.visit);
 router.patch('/visits/:visitId/priority', controller.updatePriority);
+router.post('/visits/:visitId/call', controller.callVisit);
 router.post('/visits/:visitId/start', controller.startVisit);
 router.post('/visits/:visitId/orders', controller.createOrder);
 router.post('/visits/:visitId/complete', controller.completeVisit);
+router.post('/visits/:visitId/results/validate', controller.validateResult);
 
 module.exports = router;

@@ -3,8 +3,8 @@ from pathlib import Path
 import numpy as np,pandas as pd
 BASE={"CLINICAL_CONSULT":12,"ABDOMINAL_ULTRASOUND":15,"XRAY":8,"RESULT_REVIEW":5}
 def generate(n=10000,days=45,seed=42):
-    if n<10000 or not 30<=days<=60: raise ValueError("rows must be >=10000 and days must be between 30 and 60")
-    rng=np.random.default_rng(seed); end=pd.Timestamp("2026-07-17 18:00",tz="Asia/Ho_Chi_Minh"); arrival=end-pd.to_timedelta(rng.uniform(0,days,n),unit="D")
+    if n<20 or n%4 or not 30<=days<=60: raise ValueError("rows must be a multiple of 4, >=20, and days must be between 30 and 60")
+    rng=np.random.default_rng(seed); end=pd.Timestamp("2026-07-17 18:00",tz="Asia/Ho_Chi_Minh");journeys=n//4;base=end-pd.to_timedelta(rng.uniform(0,days,journeys),unit="D");step_offset=np.tile(np.array([0,35,75,120]),journeys)+rng.uniform(0,8,n);arrival=np.repeat(base,4)+pd.to_timedelta(step_offset,unit="m")
     steps=np.resize(np.array(["INITIAL_CONSULT","DIAGNOSTIC_SERVICE","RESULT_PENDING","RETURN_REVIEW"]),n)
     service=np.where(steps=="INITIAL_CONSULT","CLINICAL_CONSULT",np.where(steps=="RETURN_REVIEW","RESULT_REVIEW",rng.choice(["ABDOMINAL_ULTRASOUND","XRAY"],n)))
     complexity=rng.choice(["SIMPLE","NORMAL","COMPLEX"],n,p=[.25,.55,.2]); cf=pd.Series(complexity).map({"SIMPLE":.8,"NORMAL":1,"COMPLEX":1.35}).to_numpy()

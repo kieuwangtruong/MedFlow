@@ -1,8 +1,6 @@
 const AppError = require('../../errors/app-error');
 const envConfig = require('../../config/env');
 
-const REQUEST_TIMEOUT_MS = 20000;
-
 function serviceBaseUrl(value) {
   return /^https?:\/\//i.test(value) ? value : `https://${value}`;
 }
@@ -11,7 +9,7 @@ async function requestAi(path, options = {}) {
   const controller = new globalThis.AbortController();
   const timeout = globalThis.setTimeout(
     () => controller.abort(),
-    options.timeoutMs || REQUEST_TIMEOUT_MS,
+    options.timeoutMs || envConfig.aiRequestTimeoutMs,
   );
 
   try {

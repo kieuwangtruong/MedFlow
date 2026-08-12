@@ -1,10 +1,11 @@
 const asyncHandler = require('../../utils/async-handler');
 const adminService = require('../admin/admin.service');
+const doctorService = require('../doctor/doctor.service');
 const { toDatabasePriority } = require('../shared/presenters');
 const { requestAi } = require('./ai-client');
 
 const health = asyncHandler(async (_req, res) => {
-  res.json(await requestAi('/api/v1/health'));
+  res.json(await requestAi('/health/live'));
 });
 
 const forecasts = asyncHandler(async (req, res) => {
@@ -48,15 +49,23 @@ function serviceCode(type) {
   return 'CLINICAL_CONSULT';
 }
 
+function selectCandidateRooms(allRooms, targetDepartment, excludedRoomId) {
+  const department = String(targetDepartment || '').toLowerCase();
+  const openRooms = allRooms.filter((room) => (
+    room.status === 'OPEN' && room.id !== excludedRoomId
+  ));
+  const matchingRooms = openRooms.filter((room) => (
+    !department || room.department.toLowerCase().includes(department)
+  ));
+  return matchingRooms.length ? matchingRooms : openRooms;
+}
+
 const fastestRoom = asyncHandler(async (req, res) => {
   const allRooms = await adminService.getRooms();
-  const department = String(req.body.targetDepartment || '').toLowerCase();
-  const matchingRooms = allRooms.filter((room) => (
-    room.status === 'OPEN' && (!department || room.department.toLowerCase().includes(department))
-  ));
-  const candidates = matchingRooms.length
-    ? matchingRooms
-    : allRooms.filter((room) => room.status === 'OPEN');
+  const currentRoomId = req.body.visitId
+    ? await doctorService.getCurrentRoomId(req.body.visitId, req.auth)
+    : null;
+  const candidates = selectCandidateRooms(allRooms, req.body.targetDepartment, currentRoomId);
   if (!candidates.length) return res.json([]);
 
   let options = [];
@@ -104,4 +113,5 @@ module.exports = {
   roomOptions,
   roomsStatus,
   scenario,
+  selectCandidateRooms,
 };

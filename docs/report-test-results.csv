@@ -1,0 +1,6 @@
+suite,pass,fail,skip,note
+Wait-Time Engine,57,0,0,One Starlette/httpx deprecation warning
+Routing,4,0,0,Artifact/runtime sklearn versions aligned
+Analytics,8,0,0,Baseline metrics and data quality
+Backend Node,8,0,0,Prisma and backend-to-AI contract
+Frontend Node,4,0,0,API config and production mock guard

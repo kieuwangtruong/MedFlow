@@ -3,6 +3,7 @@ import { CheckCircle2, HeartPulse, LockKeyhole, ShieldAlert } from 'lucide-react
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { aiApi } from '../../api/aiApi'
+import { apiErrorMessage, isVisitNotFoundError } from '../../api/axiosClient'
 import { patientApi } from '../../api/patientApi'
 import { PageHeader } from '../../components/common/PageHeader'
 import { SymptomForm } from '../../components/patient/SymptomForm'
@@ -11,7 +12,7 @@ import { useVisitStore } from '../../stores/visitStore'
 
 export function SymptomPage() {
   const navigate = useNavigate()
-  const { visitId, setRecommendation, setVisit } = useVisitStore()
+  const { visitId, setRecommendation, setVisit, clearVisit } = useVisitStore()
   const mutation = useMutation({
     mutationFn: async (data: SymptomFormData) => {
       if (!visitId) throw new Error('Bạn cần check-in trước khi khai báo triệu chứng')
@@ -31,7 +32,15 @@ export function SymptomPage() {
       toast.success(`Đã phân phòng: ${routing.currentRoom} · số ${routing.queueNumber}`)
       navigate('/patient/routing')
     },
-    onError: (error) => toast.error(error instanceof Error ? error.message : 'Không thể phân tích triệu chứng'),
+    onError: (error) => {
+      if (isVisitNotFoundError(error)) {
+        clearVisit()
+        toast.error('Lượt khám cũ không còn tồn tại. Vui lòng check-in lại.')
+        navigate('/patient/checkin', { replace: true })
+        return
+      }
+      toast.error(apiErrorMessage(error, 'Không thể phân tích triệu chứng'))
+    },
   })
 
   if (!visitId) return <>

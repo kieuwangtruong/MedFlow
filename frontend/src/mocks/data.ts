@@ -25,7 +25,7 @@ export const routingRecommendation: AIRecommendation = {
 }
 
 export const pathway: PatientPathway = {
-  visitId: 'VIS-260718-042', visitStatus: 'WAITING', queueNumber: 'A042', currentRoom: 'Phòng Nội 201', peopleAhead: 3, estimatedWait: 18,
+  visitId: 'VIS-260718-042', visitStatus: 'WAITING', queueNumber: 'A042', currentRoom: 'Phòng Nội 201', currentTaskType: 'INITIAL_CONSULT', peopleAhead: 3, estimatedWait: 18,
   steps: [
     { id: 's1', title: 'Check-in', department: 'Tiếp đón', room: 'Quầy A', status: 'COMPLETED', estimatedWait: 0, estimatedStart: isoAt(8, 5), actualTime: isoAt(8, 4), directions: 'Sảnh tầng 1' },
     { id: 's2', title: 'Đang chờ phòng khám', department: 'Nội tổng hợp', room: 'Phòng 201', doctor: 'BS. Trần Minh An', status: 'WAITING', estimatedWait: 18, estimatedStart: isoAt(8, 35), directions: 'Tầng 2, rẽ phải sau thang máy' },
@@ -39,10 +39,10 @@ export const pathway: PatientPathway = {
 const names = ['Nguyễn Văn Nam', 'Trần Thị Lan', 'Lê Minh Tuấn', 'Phạm Ngọc Anh', 'Vũ Hoàng Long', 'Đỗ Thu Hà', 'Bùi Gia Huy', 'Ngô Thảo Vy']
 const priorities = ['EMERGENCY', 'URGENT', 'HIGH', 'NORMAL', 'LOW'] as const
 export const queue: QueueEntry[] = names.map((name, index) => ({
-  visitId: `VIS-${100 + index}`, queueNumber: `A${String(31 + index).padStart(3, '0')}`, patientName: name, age: 24 + index * 5,
+  visitId: `VIS-${100 + index}`, queueNumber: `A${String(31 + index).padStart(3, '0')}`, orderNumber: 31 + index, patientName: name, age: 24 + index * 5,
   mainSymptom: ['Khó thở, tức ngực', 'Đau bụng', 'Sốt cao', 'Đau đầu', 'Ho kéo dài'][index % 5] ?? 'Mệt mỏi',
   priority: priorities[Math.min(index, 4)] ?? 'NORMAL', waitedMinutes: 42 - index * 4,
-  status: index === 0 ? 'CALLED' : 'WAITING', department: 'Nội tổng hợp', room: '201',
+  status: index === 0 ? 'CALLED' : 'WAITING', department: 'Nội tổng hợp', room: '201', taskType: 'INITIAL_CONSULT', serviceType: 'CLINICAL_CONSULT', resultValidated: false,
 }))
 
 export const liveVisits: PatientVisit[] = queue.map((item, index) => ({

@@ -41,10 +41,23 @@ const updatePriority = asyncHandler(async (req, res) => {
   const { priority } = z.object({ priority: prioritySchema }).parse(req.body);
   res.json(await service.updatePriority(req.params.visitId, priority, req.auth));
 });
+const callVisit = asyncHandler(async (req, res) => res.json(await service.callVisit(req.params.visitId, req.auth)));
 const startVisit = asyncHandler(async (req, res) => res.json(await service.startVisit(req.params.visitId, req.auth)));
 const createOrder = asyncHandler(async (req, res) => {
   res.status(201).json(await service.createOrder(req.params.visitId, orderSchema.parse(req.body), req.auth));
 });
 const completeVisit = asyncHandler(async (req, res) => res.json(await service.completeVisit(req.params.visitId, req.auth)));
+const validateResult = asyncHandler(async (req, res) => res.json(await service.validateResult(req.params.visitId, req.auth)));
 
-module.exports = { assignment, completeVisit, createOrder, intake, queue, startVisit, updatePriority, visit };
+module.exports = {
+  assignment,
+  callVisit,
+  completeVisit,
+  createOrder,
+  intake,
+  queue,
+  startVisit,
+  updatePriority,
+  validateResult,
+  visit,
+};

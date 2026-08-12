@@ -8,6 +8,7 @@ Never put secret values in this file or `render.yaml`.
 |---|---|---:|---|
 | `VITE_USE_MOCK_API` | Blueprint value `false` | Yes | Production build fails for any other value |
 | `VITE_API_BASE_URL` | Backend `RENDER_EXTERNAL_HOSTNAME` | Yes | Hostname or full URL accepted; `/api/v1` is appended when absent |
+| `VITE_API_TIMEOUT_MS` | Blueprint value `120000` | Yes | Covers the combined backend and AI cold-start window on the free plan |
 
 ## medflow-backend
 
@@ -20,6 +21,7 @@ Never put secret values in this file or `render.yaml`.
 | `APP_ORIGIN` | Frontend `RENDER_EXTERNAL_HOSTNAME` | Yes | Comma-separated explicit origins are also accepted outside Blueprint wiring |
 | `AI_SERVICE_URL` | AI `RENDER_EXTERNAL_HOSTNAME` | Yes | Hostname or full URL accepted |
 | `AI_SERVICE_API_KEY` | AI-generated `SERVICE_API_KEY` | Yes | Forwarded as `X-API-Key`; value is never logged |
+| `AI_REQUEST_TIMEOUT_MS` | Blueprint value `90000` | Yes | Must be longer than the observed AI cold-start window |
 | `REDIS_URL` | Render secret/manual | No | Currently reserved; no Redis client is active |
 
 Seed-only variables are not deployment variables: `SEED_ADMIN_PASSWORD`, `SEED_DOCTOR_PASSWORD`, and `SEED_NURSE_PASSWORD` are required only when an operator deliberately runs the staff seed command.

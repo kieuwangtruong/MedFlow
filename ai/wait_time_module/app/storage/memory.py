@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json, os
+from threading import RLock
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -17,7 +18,7 @@ class Store:
         if self.database_url.startswith("sqlite:///"):
             Path(self.database_url.removeprefix("sqlite:///")).parent.mkdir(parents=True,exist_ok=True)
         self.engine=make_engine(self.database_url);Base.metadata.create_all(self.engine)
-        self.tasks={};self.resources={};self.events=set();self.journeys={};self.version=0;self.updated_at=datetime.now(TZ);self.entity_event_times={}
+        self.lock=RLock();self.tasks={};self.resources={};self.events=set();self.journeys={};self.version=0;self.queue_versions={};self.updated_at=datetime.now(TZ);self.entity_event_times={}
         self.load()
     def load(self):
         with Session(self.engine) as db:
@@ -25,7 +26,7 @@ class Store:
             self.resources={r.resource_id:Resource.model_validate_json(r.payload) for r in db.scalars(select(ResourceRecord))}
             records=list(db.scalars(select(EventRecord)));self.events={r.event_id for r in records}
             self.journeys={r.journey_id:JourneyTimestamps.model_validate_json(r.payload) for r in db.scalars(select(JourneyRecord))}
-            meta={r.key:r.value for r in db.scalars(select(MetaRecord))};self.version=int(meta.get("version",0))
+            meta={r.key:r.value for r in db.scalars(select(MetaRecord))};self.version=int(meta.get("version",0));self.queue_versions={str(k):int(v) for k,v in json.loads(meta.get("queue_versions","{}")).items()}
             if meta.get("updated_at"): self.updated_at=datetime.fromisoformat(meta["updated_at"])
             self.entity_event_times=json.loads(meta.get("entity_event_times","{}"))
             self.entity_event_times={tuple(k.split("|",1)):datetime.fromisoformat(v) for k,v in self.entity_event_times.items()}
@@ -36,8 +37,11 @@ class Store:
             for r in self.resources.values():db.merge(ResourceRecord(resource_id=r.resource_id,queue_id=r.queue_id,payload=r.model_dump_json(),version=self.version))
             for j in self.journeys.values():db.merge(JourneyRecord(journey_id=j.journey_id,payload=j.model_dump_json(),version=self.version))
             encoded={"|".join(str(x) for x in k):v.isoformat() for k,v in self.entity_event_times.items()}
-            db.merge(MetaRecord(key="version",value=str(self.version)));db.merge(MetaRecord(key="updated_at",value=self.updated_at.isoformat()));db.merge(MetaRecord(key="entity_event_times",value=json.dumps(encoded)))
+            db.merge(MetaRecord(key="version",value=str(self.version)));db.merge(MetaRecord(key="queue_versions",value=json.dumps(self.queue_versions,sort_keys=True)));db.merge(MetaRecord(key="updated_at",value=self.updated_at.isoformat()));db.merge(MetaRecord(key="entity_event_times",value=json.dumps(encoded)))
             for a in audits:db.add(AuditRecord(**a))
+    def queue_version(self,queue_id:str)->int:return int(self.queue_versions.get(queue_id,0))
+    def bump_queue_versions(self,*queue_ids:str)->None:
+        for queue_id in {q for q in queue_ids if q}:self.queue_versions[queue_id]=self.queue_version(queue_id)+1
     def audit(self,**values):
         with Session(self.engine) as db,db.begin():db.add(AuditRecord(**values))
     def list_audits(self):
@@ -46,6 +50,6 @@ class Store:
         if persist:
             with Session(self.engine) as db,db.begin():
                 for model in (AuditRecord,EventRecord,TaskRecord,ResourceRecord,JourneyRecord,MetaRecord):db.execute(delete(model))
-        self.tasks={};self.resources={};self.events=set();self.journeys={};self.version=0;self.updated_at=datetime.now(TZ);self.entity_event_times={}
+        self.tasks={};self.resources={};self.events=set();self.journeys={};self.version=0;self.queue_versions={};self.updated_at=datetime.now(TZ);self.entity_event_times={}
 
 store=Store()

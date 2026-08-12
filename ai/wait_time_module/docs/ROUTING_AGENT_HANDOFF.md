@@ -7,7 +7,7 @@
 3. Gọi `POST /api/v1/estimates/room-options` với `dry_run=true`.
 4. Đọc từng option; module không trả `selected_room`.
 5. Routing Agent tự chọn phòng.
-6. Gửi `TASK_ASSIGNED_TO_QUEUE` với `based_on_estimate_version` của option.
+6. Gửi `TASK_ASSIGNED_TO_QUEUE` với `based_on_estimate_version` cấp quote. Response room-options cũng có `estimate_versions` theo từng queue để đối chiếu và chẩn đoán.
 7. Nếu HTTP 409/`REQUOTE_REQUIRED`, gọi room-options lại rồi quyết định lại.
 
 P50 là median vận hành; P80 dùng làm operational display band; P90 là risk indicator, không gọi P50–P80 là confidence interval. Không dùng option sau `valid_until`. `STALE_DATA` cần refresh/requote; `RESOURCE_UNAVAILABLE` có estimate null và không nên chọn; `INVALID_CANDIDATE_ROOM` cho biết room chưa tồn tại trong state.

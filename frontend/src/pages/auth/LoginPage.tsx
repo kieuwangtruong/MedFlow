@@ -1,11 +1,13 @@
 import { ArrowLeft, Hospital, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
+import { authApi } from "../../api/authApi";
 import loginBackground from "../../assets/backgrounds/hospital-login.png";
 import { useAuth } from "../../hooks/useAuth";
 
 type LoginMode = "patient" | "staff";
+type BackendStatus = "warming" | "ready" | "unavailable";
 
 export function LoginPage() {
   const { user, login, staffLogin, isAuthenticated } = useAuth();
@@ -13,9 +15,26 @@ export function LoginPage() {
   const [cccd, setCccd] = useState("001204012345");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>("warming");
   const cccdValid = /^\d{9,12}$/.test(cccd);
   const staffValid = userName.trim().length > 0 && password.length > 0;
   const pending = login.isPending || staffLogin.isPending;
+
+  useEffect(() => {
+    let active = true;
+
+    authApi.warmup()
+      .then(() => {
+        if (active) setBackendStatus("ready");
+      })
+      .catch(() => {
+        if (active) setBackendStatus("unavailable");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   if (isAuthenticated && user) {
     return <Navigate to={`/${user.role.toLowerCase()}`} replace />;
@@ -70,6 +89,7 @@ export function LoginPage() {
                 cccd={cccd}
                 valid={cccdValid}
                 pending={pending}
+                backendStatus={backendStatus}
                 onChangeCccd={setCccd}
                 onSubmit={submitPatient}
                 onStaffMode={() => {
@@ -120,6 +140,7 @@ function PatientLoginForm({
   cccd,
   valid,
   pending,
+  backendStatus,
   onChangeCccd,
   onSubmit,
   onStaffMode,
@@ -127,6 +148,7 @@ function PatientLoginForm({
   cccd: string;
   valid: boolean;
   pending: boolean;
+  backendStatus: BackendStatus;
   onChangeCccd: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
   onStaffMode: () => void;
@@ -144,6 +166,16 @@ function PatientLoginForm({
       </div>
 
       <form onSubmit={onSubmit} className="mt-8">
+        {backendStatus === "warming" && (
+          <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800" role="status">
+            Máy chủ đang khởi động. Bạn có thể nhập CCCD trong lúc chờ.
+          </p>
+        )}
+        {backendStatus === "unavailable" && (
+          <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert">
+            Chưa kết nối được máy chủ. Hệ thống sẽ thử lại khi bạn đăng nhập.
+          </p>
+        )}
         <label>
           <span className="field-label">Số căn cước công dân</span>
           <input
@@ -164,7 +196,7 @@ function PatientLoginForm({
           disabled={!valid || pending}
           className="mt-6 h-12 w-full rounded-lg bg-[#176b9b] px-6 font-bold text-white hover:bg-[#145b84] disabled:bg-slate-300"
         >
-          {pending ? "Đang kiểm tra..." : "Tiếp tục"}
+          {pending && backendStatus === "warming" ? "Máy chủ đang khởi động..." : pending ? "Đang kiểm tra..." : "Tiếp tục"}
         </button>
       </form>
 

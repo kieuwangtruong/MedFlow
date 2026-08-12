@@ -1,29 +1,87 @@
 {
   "p50": {
-    "mae": 0.7410305824343719,
-    "rmse": 0.9270480762862391,
-    "p90_absolute_error": 1.515903619805288,
-    "quantile_loss": 0.37051529121718596,
-    "coverage": 0.5133333333333333
+    "mae": 0.7195914319971917,
+    "rmse": 0.9108569499271492,
+    "p90_absolute_error": 1.4810918984844237,
+    "quantile_loss": 0.35979571599859583,
+    "coverage": 0.49733333333333335
   },
   "p80": {
-    "mae": 0.9988308190841743,
-    "rmse": 1.223235810800166,
-    "p90_absolute_error": 1.9624859073636116,
-    "quantile_loss": 0.26393219424417985,
-    "coverage": 0.796
+    "mae": 0.9660494808359344,
+    "rmse": 1.1875248127356872,
+    "p90_absolute_error": 1.9009466466483156,
+    "quantile_loss": 0.254616656565891,
+    "coverage": 0.794
   },
   "p90": {
-    "mae": 1.2855453262502916,
-    "rmse": 1.5242661291890716,
-    "p90_absolute_error": 2.388353466502895,
-    "quantile_loss": 0.16614453878990687,
-    "coverage": 0.8886666666666667
+    "mae": 1.2459783868791212,
+    "rmse": 1.4788473135534785,
+    "p90_absolute_error": 2.2827632378933305,
+    "quantile_loss": 0.15948540999254396,
+    "coverage": 0.8986666666666666
   },
   "baseline": {
-    "mae": 2.502184734259581,
-    "rmse": 3.548587979554098,
-    "p90_absolute_error": 5.435372063277822
+    "mae": 2.5002478109933897,
+    "rmse": 3.589627479948071,
+    "p90_absolute_error": 5.477791117049178
   },
-  "model_selected": true
+  "model_selected": true,
+  "segments": {
+    "service_type": {
+      "ABDOMINAL_ULTRASOUND": {
+        "rows": 369,
+        "mae": 0.8015925658865162,
+        "median_absolute_error": 0.6821734026901645
+      },
+      "CLINICAL_CONSULT": {
+        "rows": 373,
+        "mae": 0.7908847784310098,
+        "median_absolute_error": 0.6597465977673984
+      },
+      "RESULT_REVIEW": {
+        "rows": 377,
+        "mae": 0.619688999889567,
+        "median_absolute_error": 0.5045372371538175
+      },
+      "XRAY": {
+        "rows": 381,
+        "mae": 0.6692302253819679,
+        "median_absolute_error": 0.5517616869015622
+      }
+    },
+    "queue_id": {
+      "CLINIC-A": {
+        "rows": 750,
+        "mae": 0.7048303670841779,
+        "median_absolute_error": 0.5884899062017706
+      },
+      "ULTRASOUND-01": {
+        "rows": 369,
+        "mae": 0.8015925658865162,
+        "median_absolute_error": 0.6821734026901645
+      },
+      "XRAY-01": {
+        "rows": 381,
+        "mae": 0.6692302253819679,
+        "median_absolute_error": 0.5517616869015622
+      }
+    },
+    "clinical_priority": {
+      "EMERGENCY": {
+        "rows": 27,
+        "mae": 0.6526821886110589,
+        "median_absolute_error": 0.5926805704061122
+      },
+      "NORMAL": {
+        "rows": 1369,
+        "mae": 0.7242937708363402,
+        "median_absolute_error": 0.6066105947171962
+      },
+      "URGENT": {
+        "rows": 104,
+        "mae": 0.6750630445032632,
+        "median_absolute_error": 0.5531916134240831
+      }
+    }
+  }
 }

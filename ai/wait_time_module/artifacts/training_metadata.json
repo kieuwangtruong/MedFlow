@@ -1,12 +1,22 @@
 {
-  "model_version": "20260718041056",
+  "model_version": "20260811092622",
   "training_data_type": "SYNTHETIC",
-  "trained_at": "2026-07-18T04:10:56.434031+00:00",
+  "trained_at": "2026-08-11T09:26:22.495879+00:00",
   "feature_schema_version": "1",
   "split": "time 70/15/15",
+  "training_row_count": 7000,
   "train_rows": 7000,
   "validation_rows": 1500,
   "test_rows": 1500,
+  "metrics": {
+    "p50_mae": 0.7195914319971917,
+    "p50_rmse": 0.9108569499271492,
+    "baseline_mae": 2.5002478109933897,
+    "p50_coverage": 0.49733333333333335,
+    "p80_coverage": 0.794,
+    "p90_coverage": 0.8986666666666666
+  },
   "fallback_if_model_load_fails": true,
-  "production_policy": "model"
+  "production_policy": "model",
+  "clinically_validated": false
 }

@@ -18,8 +18,13 @@ class QueueEngine:
             eligible=[t for t in tasks if t.readiness_status not in TERMINAL|{ReadinessStatus.IN_SERVICE} and t.presence_status!=PresenceStatus.LEFT_HOSPITAL]
         else:eligible=[t for t in tasks if self.hard_eligible(t,tasks,now)]
         def key(t):
-            wait=max(0,(now-t.ready_at).total_seconds()/60);sla_risk=t.task_type==TaskType.RETURN_REVIEW and wait>=.8*t.return_review_sla_minutes
-            return (PRIORITY[t.clinical_priority],0 if sla_risk else 1,t.ready_at,t.created_seq)
+            wait=max(0,(now-t.ready_at).total_seconds()/60);normal_sla=float(os.getenv("NORMAL_SLA_MINUTES","30"))
+            if t.clinical_priority==ClinicalPriority.EMERGENCY:bucket=0
+            elif t.clinical_priority==ClinicalPriority.URGENT:bucket=1
+            elif t.task_type!=TaskType.RETURN_REVIEW and wait>=.8*normal_sla:bucket=2
+            elif t.task_type==TaskType.RETURN_REVIEW and wait>=.8*t.return_review_sla_minutes:bucket=3
+            else:bucket=4
+            return (bucket,t.ready_at,t.created_seq)
         return sorted(eligible,key=key)
     def schedule(self,tasks:list[Task],resources:list[Resource],now:datetime,duration_factor:float=1.0,include_future:bool=False)->dict[str,float]:
         active=[r for r in resources if r.status!=ResourceStatus.FAILED]

@@ -1,0 +1,5 @@
+phase,metric,value,rows,checks
+Before,Failed checks,1,136,24
+After,Failed checks,0,20,26
+Before,Critical/high affected records,5,136,24
+After,Critical/high affected records,0,20,26

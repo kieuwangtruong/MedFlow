@@ -60,4 +60,4 @@ def test_openapi_contains_new_room_option_fields():
 def test_old_database_snapshot_migrates_without_data_loss(tmp_path):
     url=f"sqlite:///{(tmp_path/'old.db').as_posix()}";engine=make_engine(url);Base.metadata.create_all(engine);payload=json.dumps({"task_id":"old","journey_id":"j","patient_token":"P","queue_id":"Q","task_type":"INITIAL_CONSULT","ready_at":datetime.now(TZ).isoformat(),"predicted_minutes":10})
     with Session(engine) as db,db.begin():db.add(TaskRecord(task_id="old",queue_id="Q",payload=payload,version=1));db.add(MetaRecord(key="version",value="1"))
-    first=migrate(url);second=migrate(url);restored=Store(url);assert first["schema_version"]=="2" and second["schema_version"]=="2" and restored.tasks["old"].presence_status==PresenceStatus.READY_AT_ROOM and restored.version==1
+    first=migrate(url);second=migrate(url);restored=Store(url);assert first["schema_version"]=="3" and second["schema_version"]=="3" and restored.tasks["old"].presence_status==PresenceStatus.READY_AT_ROOM and restored.version==1

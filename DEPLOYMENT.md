@@ -22,9 +22,11 @@ Render Free instances are appropriate for a portfolio/hackathon MVP, not a produ
 The Blueprint wires service hostnames through Render-provided environment variables:
 
 - frontend `VITE_API_BASE_URL` ← backend external hostname;
+- frontend `VITE_API_TIMEOUT_MS` = `120000` to cover a chained backend/AI cold start;
 - backend `APP_ORIGIN` ← frontend external hostname;
 - backend `AI_SERVICE_URL` ← AI external hostname;
 - backend `AI_SERVICE_API_KEY` ← AI-generated service key;
+- backend `AI_REQUEST_TIMEOUT_MS` = `90000` to cover the AI service cold start;
 - AI `DATABASE_URL` ← the backend secret;
 - AI `CORS_ORIGINS` ← frontend external hostname.
 
@@ -35,12 +37,12 @@ The application normalises Render hostnames to HTTPS at runtime/build time. No R
 `medflow-backend` runs:
 
 ```text
-npm run prisma:generate
+npm run prisma:generate # build phase
 npm run prisma:deploy
 npm start
 ```
 
-The commands are chained with `&&`; Express does not start when generation or migration fails. Production deployment never runs seed commands and never uses `prisma db push`.
+Prisma Client is generated once during the Render build instead of being regenerated on every Free-instance wake-up. The production start commands are chained with `&&`; Express does not start when migration fails. Production deployment never runs seed commands and never uses `prisma db push`.
 
 Before the first deployment to a database that already contains data:
 

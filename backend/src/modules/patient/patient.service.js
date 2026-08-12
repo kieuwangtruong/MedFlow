@@ -480,6 +480,15 @@ async function getPathway(patientToken, visitId) {
       : 'CHECKED_IN',
     queueNumber: formatQueueNumber(entry?.queueNumber),
     currentRoom: currentTask ? taskRoom(currentTask) : 'Quầy tiếp nhận',
+    currentTaskType: currentTask?.taskType,
+    waitingForValidatedResult: Boolean(
+      currentTask?.taskType === 'DIAGNOSTIC_SERVICE' && currentTask.status === 'WAITING_RESULT'
+    ),
+    resultValidated: Boolean(
+      currentTask?.taskType === 'RETURN_REVIEW'
+      && currentTask.readinessStatus === 'COMPLETED'
+      && currentTask.resultReadyAt
+    ),
     peopleAhead,
     estimatedWait,
     steps,
@@ -491,17 +500,17 @@ async function getResults(patientToken, visitId) {
   assertPatientJourney(journey, patientToken);
 
   return journey.tasks
-    .filter((task) => task.taskType === 'DIAGNOSTIC_SERVICE' || task.status === 'WAITING_RESULT')
+    .filter((task) => task.taskType === 'DIAGNOSTIC_SERVICE')
     .map((task) => ({
       id: task.id,
       serviceName: taskTitle(task),
-      status: task.completedAt || task.resultReadyAt
+      status: task.completedAt && task.resultReadyAt
         ? 'READY'
-        : task.status === 'IN_SERVICE' || task.status === 'WAITING_RESULT'
+        : task.status === 'IN_SERVICE' || task.status === 'WAITING_RESULT' || task.serviceEnd
           ? 'PROCESSING'
           : 'PENDING',
       estimatedAt: (task.resultReadyAt || task.scheduleWindowEnd || new Date(Date.now() + 30 * 60000)).toISOString(),
-      doctorConfirmed: Boolean(task.completedAt),
+      doctorConfirmed: Boolean(task.completedAt && task.resultReadyAt),
     }));
 }
 
@@ -509,19 +518,42 @@ async function getNotifications(patientToken) {
   const journey = await prisma.patientJourney.findFirst({
     where: { patientToken },
     orderBy: { createdAt: 'desc' },
-    include: { tasks: { include: taskInclude, orderBy: { createdAt: 'desc' }, take: 1 } },
+    include: {
+      patient: true,
+      tasks: {
+        where: { status: { in: activeTaskStatuses } },
+        include: taskInclude,
+        orderBy: [{ sequenceOrder: 'asc' }, { createdAt: 'asc' }],
+      },
+    },
   });
   if (!journey) return [];
   const task = journey.tasks[0];
   const entry = task ? currentQueueEntry(task) : null;
   const now = new Date().toISOString();
+  const patientName = journey.patient.fullName || `Bệnh nhân ${journey.patient.identificationCode}`;
+  const isCalled = entry?.status === 'CALLED';
+  const waitingForResult = task?.taskType === 'DIAGNOSTIC_SERVICE' && task.status === 'WAITING_RESULT';
+  const returningForReview = task?.taskType === 'RETURN_REVIEW' && task.status === 'IN_QUEUE';
   return [
     {
       id: `${journey.id}-queue`,
-      title: 'Lượt khám đang hoạt động',
-      message: entry
-        ? `Số ${formatQueueNumber(entry.queueNumber)} tại ${taskRoom(task)}.`
-        : 'Hành trình khám của bạn đã được ghi nhận.',
+      title: isCalled
+        ? 'Đã đến lượt của bạn'
+        : waitingForResult
+          ? 'Kết quả đang được kiểm định'
+          : returningForReview
+            ? 'Kết quả đã được kiểm định'
+            : 'Lượt khám đang hoạt động',
+      message: isCalled
+        ? `Mời ${patientName}, số ${formatQueueNumber(entry.queueNumber)}, vào ${taskRoom(task)}.`
+        : waitingForResult
+          ? `Vui lòng chờ ${taskRoom(task)} kiểm định kết quả; chưa cần quay lại phòng khám ban đầu.`
+          : returningForReview
+            ? `Mời quay lại ${taskRoom(task)} theo số ${formatQueueNumber(entry?.queueNumber)} để bác sĩ trả kết quả.`
+            : entry
+              ? `Số ${formatQueueNumber(entry.queueNumber)} tại ${taskRoom(task)}.`
+              : 'Hành trình khám của bạn đã được ghi nhận.',
       createdAt: now,
       read: false,
     },

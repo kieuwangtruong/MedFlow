@@ -1,5 +1,7 @@
 # VAIC Hospital Data Analytics
 
+> Safety default: report/demo uses `ai/wait_time_module/data/examples/sample_20.csv`. Set `ANALYTICS_USE_LIVE=true` only in an explicitly authorized environment to let the report builder prefer PostgreSQL/Neon. Outputs never retain raw `patient_token`.
+
 Bộ analytics này dùng PostgreSQL/Neon làm nguồn ưu tiên và tự động fallback sang `ai/wait_time_module/data/examples/sample_20.csv`. Không có credential hoặc PII được ghi vào output; `patient_token` được chuyển thành alias SHA-256 rút gọn.
 
 ## Deliverables

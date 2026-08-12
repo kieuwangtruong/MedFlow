@@ -71,15 +71,15 @@ export const aiApi = {
     return toAIRecommendation(response.data)
   },
   patientIntakeRouting: async (symptoms: SymptomReport, context: SymptomRoutingContext): Promise<AIRecommendation> => {
+    if (USE_MOCK_API) return mockDelay(routingRecommendation, 1200)
+
     const response = await axiosClient.post<SymptomRoutingResponse>('/symptom-routing', toSymptomRoutingPayload(symptoms, context))
-    const specialistRecommendations = response.data.recommendations.filter((item) => item.department_code !== 'GENERAL')
-    if (!specialistRecommendations.length) throw new Error('Chưa tìm được phòng chuyên khoa phù hợp, cần nhân viên xác nhận')
+    if (!response.data.recommendations.length) throw new Error('Chưa tìm được phòng tiếp nhận phù hợp, cần nhân viên xác nhận')
 
     return toAIRecommendation({
       ...response.data,
-      recommendations: specialistRecommendations,
       message: response.data.requires_human_review
-        ? 'Đã chọn phương án phòng chuyên khoa phù hợp nhất; cần nhân viên xác nhận trước khi tạo lộ trình.'
+        ? 'Đã chọn phương án phòng tiếp nhận phù hợp nhất; cần nhân viên xác nhận trước khi tạo lộ trình.'
         : response.data.message,
     })
   },

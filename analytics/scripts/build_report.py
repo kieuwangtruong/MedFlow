@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import os
 import re
 import sys
 from pathlib import Path
@@ -22,7 +23,7 @@ def fmt(value, suffix=""):
     return "n/a" if pd.isna(value) else f"{value:,.1f}{suffix}"
 
 
-raw, source = load_tasks(prefer_live=True)
+raw, source = load_tasks(prefer_live=os.getenv("ANALYTICS_USE_LIVE", "false").lower() == "true")
 tasks = prepare_tasks(raw); summary = kpis(tasks); journeys = journey_summary(tasks)
 quality = save_profile(raw, OUTPUTS)
 baseline_path = OUTPUTS / "baseline_comparison.csv"
@@ -56,7 +57,7 @@ report = f"""# Báo cáo vận hành hàng đợi bệnh viện VAIC
 
 - **Dữ liệu hiện có đủ để demo một pipeline DA end-to-end, nhưng chưa đủ để suy luận hiệu quả lâm sàng.** Nguồn phân tích: `{source}`, gồm {summary['tasks']} task và {summary['journeys']} journey.
 - **Tail wait cần được quản trị cùng median.** Median operational wait là {fmt(summary['median_wait'],' phút')}, P80 {fmt(summary['p80_wait'],' phút')} và P90 {fmt(summary['p90_wait'],' phút')}; SLA breach theo ngưỡng demo là {fmt(summary['sla_breach_rate']*100,'%')}.
-- **Journey A → B → quay lại A đã đo được ở cấp task.** Có {int(journeys['has_a_b_return'].sum()) if not journeys.empty else 0} journey đủ ba bước trong extract hiện tại; median completion là {fmt(summary['median_journey_minutes'],' phút')}. Average bị ảnh hưởng mạnh bởi journey kéo dài qua ngày nên chỉ giữ trong output audit.
+- **Journey A → B → quay lại A đã đo được ở cấp task.** Có {int(journeys['has_a_b_return'].sum()) if not journeys.empty else 0} journey đủ ba bước trong extract hiện tại; median completion là {fmt(summary['median_journey_minutes'],' phút')}. Average chỉ nên dùng ở output audit vì mẫu synthetic nhỏ và nhạy với outlier.
 - **Khuyến nghị ưu tiên chất lượng timestamp và resource events trước khi tối ưu vận hành thật.** Có {quality['failed_checks']} quality check phát hiện failure; metric vẫn cần được xác nhận với nghiệp vụ bệnh viện.
 
 ## 1. Business question và phạm vi

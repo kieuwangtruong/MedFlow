@@ -47,7 +47,7 @@ test('seed datasets parse and satisfy their source contract', () => {
   assert.deepEqual(summary.sourceSummary, {
     departments: 15,
     serviceQueues: 3,
-    patients: 5,
+    patients: 6,
     journeys: 5,
     journeyTasks: 20,
     taskDependencies: 15,

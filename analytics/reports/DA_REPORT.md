@@ -2,10 +2,10 @@
 
 ## Executive Summary
 
-- **Dữ liệu hiện có đủ để demo một pipeline DA end-to-end, nhưng chưa đủ để suy luận hiệu quả lâm sàng.** Nguồn phân tích: `PostgreSQL/ep-falling-recipe-awd1tcj2.c-12.us-east-1.aws.neon.tech/neondb`, gồm 136 task và 112 journey.
-- **Tail wait cần được quản trị cùng median.** Median operational wait là 8.0 phút, P80 16.5 phút và P90 19.5 phút; SLA breach theo ngưỡng demo là 3.1%.
-- **Journey A → B → quay lại A đã đo được ở cấp task.** Có 6 journey đủ ba bước trong extract hiện tại; median completion là 574.6 phút. Average bị ảnh hưởng mạnh bởi journey kéo dài qua ngày nên chỉ giữ trong output audit.
-- **Khuyến nghị ưu tiên chất lượng timestamp và resource events trước khi tối ưu vận hành thật.** Có 1 quality check phát hiện failure; metric vẫn cần được xác nhận với nghiệp vụ bệnh viện.
+- **Dữ liệu hiện có đủ để demo một pipeline DA end-to-end, nhưng chưa đủ để suy luận hiệu quả lâm sàng.** Nguồn phân tích: `seeded synthetic CSV: sample_20.csv`, gồm 20 task và 5 journey.
+- **Tail wait cần được quản trị cùng median.** Median operational wait là 12.4 phút, P80 17.3 phút và P90 23.2 phút; SLA breach theo ngưỡng demo là 10.0%.
+- **Journey A → B → quay lại A đã đo được ở cấp task.** Có 5 journey đủ ba bước trong extract hiện tại; median completion là 137.9 phút. Average chỉ nên dùng ở output audit vì mẫu synthetic nhỏ và nhạy với outlier.
+- **Khuyến nghị ưu tiên chất lượng timestamp và resource events trước khi tối ưu vận hành thật.** Có 0 quality check phát hiện failure; metric vẫn cần được xác nhận với nghiệp vụ bệnh viện.
 
 ## 1. Business question và phạm vi
 
@@ -17,19 +17,19 @@ Phạm vi là dữ liệu task hiện có trong PostgreSQL hoặc seeded CSV fal
 
 Operational wait được tính từ thời điểm muộn hơn giữa `ready_at` và `arrival_time` đến `service_start`. Physical wait được giữ riêng. Journey completion tính từ check-in đến thời điểm hoàn thành cuối cùng. SLA EMERGENCY/URGENT/NORMAL/NON_URGENT lần lượt là 5/15/30/60 phút và được gắn nhãn **demo assumption**.
 
-Quality profile kiểm tra uniqueness, missing field chính, timestamp parse, thứ tự timestamp, duration âm và enum priority. Kết quả: 1/24 check có failure; tổng failure critical/high là 5. Các lỗi này có thể làm sai percentile, SLA và journey duration, vì vậy dashboard không nên dùng cho điều hành thật trước khi remediation.
+Quality profile kiểm tra uniqueness, missing field chính, timestamp parse, thứ tự timestamp, duration âm và enum priority. Kết quả: 0/26 check có failure; tổng failure critical/high là 0. Các lỗi này có thể làm sai percentile, SLA và journey duration, vì vậy dashboard không nên dùng cho điều hành thật trước khi remediation.
 
 ## 3. Wait time và bottleneck
 
-**P90 cho thấy trải nghiệm đuôi dài rõ hơn median.** Phòng/queue có P90 cao nhất trong extract là **CLINIC-A**, P90 23.5 phút, trên 10 task. Cần đối chiếu volume, staffing và failure events trước khi quy nguyên nhân.
+**P90 cho thấy trải nghiệm đuôi dài rõ hơn median.** Phòng/queue có P90 cao nhất trong extract là **ULTRASOUND-01**, P90 28.1 phút, trên 6 task. Cần đối chiếu volume, staffing và failure events trước khi quy nguyên nhân.
 
 ![P90 operational wait](figures/room_p90.png)
 
-**Bước hành trình có median wait cao nhất là RETURN_REVIEW.** Median wait tại bước này là 10.1 phút. `RESULT_PENDING` phải được xem là future workload thay vì hard queue; nếu không dashboard sẽ phóng đại backlog vật lý.
+**Bước hành trình có median wait cao nhất là RETURN_REVIEW.** Median wait tại bước này là 14.4 phút. `RESULT_PENDING` phải được xem là future workload thay vì hard queue; nếu không dashboard sẽ phóng đại backlog vật lý.
 
 ## 4. SLA, no-show và resource pressure
 
-SLA breach hiện là 3.1% trên các task có wait đo được. No-show rate là 8.9% trên task không bị cancel. Resource failure comparison trong SQL là association mô tả; không được diễn giải là failure “gây ra” phần chờ tăng nếu chưa có counterfactual hoặc event timeline đầy đủ.
+SLA breach hiện là 10.0% trên các task có wait đo được. No-show rate là 5.0% trên task không bị cancel. Resource failure comparison trong SQL là association mô tả; không được diễn giải là failure “gây ra” phần chờ tăng nếu chưa có counterfactual hoặc event timeline đầy đủ.
 
 Emergency insertion được đánh giá theo hai lớp: mô tả trên dữ liệu task và simulation giữ cùng workload. Chỉ simulation mới chủ động bật/tắt emergency để đo số bệnh nhân NORMAL bị tăng wait trong điều kiện giả lập.
 

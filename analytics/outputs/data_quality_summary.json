@@ -1,7 +1,7 @@
 {
-  "rows": 136,
-  "columns": 62,
-  "quality_checks": 24,
-  "failed_checks": 1,
-  "critical_or_high_failures": 5
+  "rows": 20,
+  "columns": 61,
+  "quality_checks": 26,
+  "failed_checks": 0,
+  "critical_or_high_failures": 0
 }

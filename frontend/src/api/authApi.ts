@@ -1,9 +1,29 @@
 import type { AuthResponse } from '../types'
 import axiosClient, { mockDelay, USE_MOCK_API } from './axiosClient'
 
+let backendWarmupRequest: Promise<void> | null = null
+
+function warmupBackend() {
+  if (USE_MOCK_API) return Promise.resolve()
+
+  if (!backendWarmupRequest) {
+    backendWarmupRequest = axiosClient.get('/health')
+      .then(() => undefined)
+      .finally(() => {
+        backendWarmupRequest = null
+      })
+  }
+
+  return backendWarmupRequest
+}
+
 export const authApi = {
+  warmup: warmupBackend,
   login: async (cccd: string): Promise<AuthResponse> => {
-    if (!USE_MOCK_API) return (await axiosClient.post<AuthResponse>('/auth/login', { cccd })).data
+    if (!USE_MOCK_API) {
+      if (backendWarmupRequest) await backendWarmupRequest.catch(() => undefined)
+      return (await axiosClient.post<AuthResponse>('/auth/login', { cccd })).data
+    }
 
     return mockDelay({
       access_token: 'demo-patient-token',

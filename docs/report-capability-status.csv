@@ -1,0 +1,7 @@
+capability,status,evidence_or_gap
+Dry-run quote and impact,VERIFIED LOCAL,No state/version/audit mutation and no selected_room
+Assignment restart idempotency and audit,VERIFIED LOCAL,SQLite temp DB and event contract tests
+Requote and same-process concurrency,VERIFIED LOCAL,One accepted assignment and one HTTP 409
+PostgreSQL multi-process concurrency,PARTIAL,No verified row lock or atomic compare-and-swap
+Model and analytics,SYNTHETIC_ONLY,Measured holdout and clean demo data; no clinical validation
+External deployment,CONFIGURED_NOT_DEPLOYED,No cloud mutation or real credential use

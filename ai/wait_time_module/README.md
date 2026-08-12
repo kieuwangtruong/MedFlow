@@ -48,7 +48,7 @@ Mặc định `DATABASE_URL=sqlite:///./data/wait_time.db`. Khởi tạo schema:
 
 PostgreSQL dùng URL SQLAlchemy, ví dụ `postgresql+psycopg://user:password@host/db`; cần cài driver `psycopg` ở môi trường triển khai. Schema hiện được tạo bằng SQLAlchemy `create_all`; khi thay đổi schema production nên đưa metadata sang Alembic. SQLite local/demo chỉ nên chạy **một worker**. PostgreSQL dùng transaction và unique constraint cho event ID; optimistic check dùng `estimate_version`.
 
-Migration local schema `2` chuẩn hóa JSON task snapshot cũ và thêm schema marker theo cách idempotent, không xóa database/bảng/dữ liệu. Đây không phải Alembic migration production; `create_all` tự nó không nâng cấp cột bảng cũ.
+Migration local schema `3` chuẩn hóa JSON task snapshot cũ, thêm queue-version map và schema marker theo cách idempotent, không xóa database/bảng/dữ liệu. Đây không phải Alembic migration production; `create_all` tự nó không nâng cấp cột bảng cũ.
 
 ## Auth
 

@@ -17,7 +17,7 @@ export function ServiceOrderPage() {
   const [draft, setDraft] = useState<ServiceOrderFormData | null>(null)
   const [selectedRoom, setSelectedRoom] = useState<string>()
   const [created, setCreated] = useState(false)
-  const rooms = useMutation({ mutationFn: (data: ServiceOrderFormData) => aiApi.fastestRoom(data), onSuccess: (data) => setSelectedRoom(data[0]?.id) })
+  const rooms = useMutation({ mutationFn: (data: ServiceOrderFormData) => aiApi.fastestRoom({ ...data, visitId }), onSuccess: (data) => setSelectedRoom(data[0]?.id) })
   const create = useMutation({ mutationFn: (data: ServiceOrderFormData) => doctorApi.createOrder(visitId, { ...data, room: selectedRoom }), onSuccess: () => { setCreated(true); toast.success('Đã tạo chỉ định và cập nhật lộ trình bệnh nhân') }, onError: () => toast.error('Không thể tạo chỉ định') })
   const submit = (data: ServiceOrderFormData) => { setDraft(data); setCreated(false); if (data.useAI) rooms.mutate(data); else create.mutate(data) }
   if (created) return <><PageHeader title="Tạo chỉ định dịch vụ"/><div className="card mx-auto max-w-xl text-center"><span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-emerald-700"><CheckCircle2 size={34}/></span><h2 className="mt-4 text-2xl font-black">Tạo chỉ định thành công</h2><p className="mt-2 text-slate-500">Bước dịch vụ mới đã được thêm vào lộ trình và bệnh nhân sẽ nhận được thông báo.</p><AppButton className="mt-6" onClick={() => { setCreated(false); setDraft(null); rooms.reset() }}>Tạo chỉ định khác</AppButton></div></>

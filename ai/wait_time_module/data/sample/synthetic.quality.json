@@ -26,10 +26,10 @@
     "presence_status": 0.0,
     "current_location": 0.0,
     "cross_room_task_count": 0.0,
-    "other_service_started_at": 0.897,
-    "other_service_completed_at": 0.897,
-    "predicted_available_at": 0.897,
-    "actual_available_at": 0.897,
+    "other_service_started_at": 0.8993,
+    "other_service_completed_at": 0.8993,
+    "predicted_available_at": 0.8993,
+    "actual_available_at": 0.8993,
     "missed_call": 0.0,
     "backlog_at_arrival_minutes": 0.0,
     "waiting_area_occupancy": 0.0,
@@ -57,40 +57,40 @@
     "emergency_insertion": 0.0,
     "recent_emergency_count": 0.0
   },
-  "no_show_rate": 0.0433,
-  "missed_call_rate": 0.0252,
-  "early_checkin_rate": 0.1157,
-  "in_other_service_rate": 0.103,
-  "mean_early_arrival_minutes": 23.75451563756388,
-  "mean_backlog_at_arrival_minutes": 11.89175539530752,
+  "no_show_rate": 0.0417,
+  "missed_call_rate": 0.0242,
+  "early_checkin_rate": 0.12,
+  "in_other_service_rate": 0.1007,
+  "mean_early_arrival_minutes": 23.80193660333262,
+  "mean_backlog_at_arrival_minutes": 11.88511721325593,
   "emergency_rate": 0.0216,
-  "resource_failure_rate": 0.0219,
+  "resource_failure_rate": 0.023,
   "negative_duration_count": 0,
   "timestamp_order_invalid": 0,
   "duration_by_service": {
     "mean": {
-      "ABDOMINAL_ULTRASOUND": 15.290403185654364,
-      "CLINICAL_CONSULT": 12.151814426214138,
-      "RESULT_REVIEW": 5.105528978190892,
-      "XRAY": 8.103497451358223
+      "ABDOMINAL_ULTRASOUND": 15.19288754469667,
+      "CLINICAL_CONSULT": 12.135582155591123,
+      "RESULT_REVIEW": 5.090533635393752,
+      "XRAY": 8.081231314789626
     },
     "median": {
-      "ABDOMINAL_ULTRASOUND": 14.52265410409647,
-      "CLINICAL_CONSULT": 11.56454463967724,
-      "RESULT_REVIEW": 4.8773843162394375,
-      "XRAY": 7.6316166024388234
+      "ABDOMINAL_ULTRASOUND": 14.505001398801845,
+      "CLINICAL_CONSULT": 11.584489588369031,
+      "RESULT_REVIEW": 4.797681064448989,
+      "XRAY": 7.666955733286735
     },
     "p80": {
-      "ABDOMINAL_ULTRASOUND": 19.010777416678422,
-      "CLINICAL_CONSULT": 14.963599524475354,
-      "RESULT_REVIEW": 6.296839887476599,
-      "XRAY": 9.924653470360271
+      "ABDOMINAL_ULTRASOUND": 18.895118410752282,
+      "CLINICAL_CONSULT": 14.97695875470765,
+      "RESULT_REVIEW": 6.314182607681088,
+      "XRAY": 9.984331439149296
     },
     "p90": {
-      "ABDOMINAL_ULTRASOUND": 21.783739452662243,
-      "CLINICAL_CONSULT": 16.998361709236015,
-      "RESULT_REVIEW": 7.208457694286964,
-      "XRAY": 11.603445238484376
+      "ABDOMINAL_ULTRASOUND": 21.596547520517273,
+      "CLINICAL_CONSULT": 17.085394501978477,
+      "RESULT_REVIEW": 7.244963676000779,
+      "XRAY": 11.579786987671046
     }
   }
 }

@@ -34,8 +34,30 @@ def test_room_options_three_rooms_and_dry_run(persistent_store):
 
 def test_assignment_impact_detects_affected_patients(persistent_store):
     add_rooms(persistent_store,"ROOM-A");persistent_store.tasks["waiting"]=Task(task_id="waiting",journey_id="j",patient_token="W",queue_id="ROOM-A",task_type="INITIAL_CONSULT",clinical_priority="NORMAL",readiness_status="READY",ready_at=NOW,predicted_minutes=10)
+    before=(persistent_store.version,len(persistent_store.events),len(persistent_store.tasks),len(persistent_store.list_audits()))
     body={"patient_token":"P","task_type":"INITIAL_CONSULT","service_code":"CLINICAL_CONSULT","clinical_priority":"URGENT","ready_at":NOW.isoformat(),"room_id":"ROOM-A","predicted_minutes":12,"dry_run":True}
     impact=TestClient(main.app).post("/api/v1/estimates/assignment-impact",json=body).json()["assignment_impact"];assert impact["affected_patients"]==1 and impact["max_added_wait_minutes"]==12
+    assert before==(persistent_store.version,len(persistent_store.events),len(persistent_store.tasks),len(persistent_store.list_audits()))
+
+def test_reassignment_bumps_old_and_new_queue_versions(persistent_store):
+    add_rooms(persistent_store,"ROOM-A","ROOM-B")
+    assert apply_event(persistent_store,event("assign-a","TASK_ASSIGNED_TO_QUEUE","move-me","ROOM-A",0))
+    version=persistent_store.version
+    assert apply_event(persistent_store,event("assign-b","TASK_REASSIGNED_TO_QUEUE","move-me","ROOM-B",version))
+    assert persistent_store.tasks["move-me"].queue_id=="ROOM-B"
+    assert persistent_store.queue_version("ROOM-A")==2
+    assert persistent_store.queue_version("ROOM-B")==1
+    assert persistent_store.list_audits()[-1].action=="ROOM_REASSIGNED"
+
+def test_resource_and_no_show_events_are_audited(persistent_store):
+    add_rooms(persistent_store,"ROOM-A")
+    apply_event(persistent_store,event("patient","PATIENT_CHECKED_IN","patient","ROOM-A"))
+    failed=event("resource-failed","RESOURCE_FAILED","resource-event","ROOM-A");failed.resource_id="r-ROOM-A";failed.event_time=NOW+timedelta(minutes=1)
+    apply_event(persistent_store,failed)
+    no_show=event("no-show","NO_SHOW_CONFIRMED","patient","ROOM-A");no_show.resource_id=None;no_show.event_time=NOW+timedelta(minutes=2)
+    apply_event(persistent_store,no_show)
+    actions=[audit.action for audit in persistent_store.list_audits()]
+    assert "RESOURCE_FAILED" in actions and "NO_SHOW" in actions
 
 def test_old_estimate_version_requires_requote(persistent_store):
     add_rooms(persistent_store,"ROOM-A");apply_event(persistent_store,event("seed"));payload=event("assign","TASK_ASSIGNED_TO_QUEUE","new","ROOM-A",0).model_dump(mode="json")

@@ -4,7 +4,9 @@ Mọi timestamp là ISO 8601 có offset và được chuẩn hóa về `Asia/Ho_
 
 | Phương thức | Endpoint | Scope |
 |---|---|---|
-| GET | `/health` | công khai |
+| GET | `/health/live` | công khai |
+| GET | `/health/ready` | công khai |
+| GET | `/health/version` | công khai |
 | POST | `/api/v1/events` | `events.write` |
 | GET | `/api/v1/patients/{patient_token}/estimate` | `wait.read` |
 | GET | `/api/v1/queues/{queue_id}/estimates` | `wait.read` |
@@ -39,7 +41,9 @@ Event mới: `PATIENT_ARRIVED`, `PATIENT_CHECKED_IN_EARLY`, `TASK_BECAME_ELIGIBL
 {"event_id":"EVT-ASSIGN-001","event_time":"2026-07-18T09:21:00+07:00","event_type":"TASK_ASSIGNED_TO_QUEUE","patient_token":"A173","task_id":"TASK-001","journey_id":"JOURNEY-001","queue_id":"ROOM-B","task_type":"INITIAL_CONSULT","clinical_priority":"NORMAL","based_on_estimate_version":21,"actor_id":"ROUTING-AGENT-01","actor_type":"SERVICE","metadata":{"service_type":"CLINICAL_CONSULT"}}
 ```
 
-Nếu version hiện tại khác `based_on_estimate_version`, API trả HTTP 409 với `status=REQUOTE_REQUIRED` và current version; event bị từ chối được audit. Duplicate event trả `accepted=false`, `duplicate=true`, kể cả sau restart.
+Nếu version hiện tại khác `based_on_estimate_version`, API trả HTTP 409 với `status=REQUOTE_REQUIRED`, `current_estimate_version`, `based_on_estimate_version`, `reason_code=STATE_VERSION_CHANGED` và `next_action=CALL_ROOM_OPTIONS_AGAIN`; event bị từ chối được audit. Duplicate event trả `accepted=false`, `duplicate=true`, kể cả sau restart.
+
+`actor_id` và `actor_type` trong payload không phải nguồn tin cậy. Service luôn lấy actor từ API key đã xác thực; local mode dùng actor cố định `development`. Override nghiệp vụ dùng event `OVERRIDE_RECORDED` và bắt buộc có `reason_code`.
 
 ## Lỗi
 

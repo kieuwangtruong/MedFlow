@@ -293,6 +293,18 @@ async function seedDatabase(seedData) {
       });
     }
 
+    await prisma.patient.upsert({
+      where: { patientToken: 'PATIENT-DEMO-001' },
+      create: {
+        identificationCode: '001204012345',
+        patientToken: 'PATIENT-DEMO-001',
+      },
+      update: {
+        identificationCode: '001204012345',
+        status: 'ACTIVE',
+      },
+    });
+
     for (const journeyId of seedData.journeyIds) {
       const patientToken = seedData.journeyTasks.find((row) => row.journey_id === journeyId).patient_token;
       await prisma.patientJourney.upsert({
@@ -430,7 +442,7 @@ async function main() {
   const sourceSummary = {
     departments: seedData.departments.length,
     serviceQueues: seedData.queues.length,
-    patients: seedData.patientTokens.length,
+    patients: seedData.patientTokens.length + 1,
     journeys: seedData.journeyIds.length,
     journeyTasks: seedData.journeyTasks.length,
     taskDependencies: seedData.journeyTasks.filter((row) => row.depends_on_task_id).length,

@@ -8,7 +8,7 @@
 - Cache nằm trong process; deployment nhiều worker nên dùng shared cache hoặc đọc snapshot đã tính từ DB.
 - Assignment impact là mô phỏng scheduler trên snapshot hiện tại, không phải cam kết SLA.
 - Không lưu PII và không dùng `patient_token` làm authorization.
-- Migration schema 2 là script JSON-snapshot idempotent cho local, không phải Alembic production migration.
+- Migration schema 3 là script JSON-snapshot idempotent cho local, không phải Alembic production migration.
 - Module không xác định hai dịch vụ có thể song song và không tính transfer time; Routing Agent phải cung cấp.
 - Arrival/other-service distributions là synthetic assumptions, chưa học correlation từ dữ liệu thật.
 - Vòng này chỉ test SQLite local một Uvicorn worker; không test cloud, Redis, Docker/Kubernetes hoặc PostgreSQL server.

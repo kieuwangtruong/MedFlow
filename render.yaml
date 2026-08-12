@@ -101,6 +101,8 @@ services:
           type: web
           name: medflow-ai
           envVarKey: SERVICE_API_KEY
+      - key: AI_REQUEST_TIMEOUT_MS
+        value: "90000"
 
   - type: web
     name: medflow-frontend
@@ -117,6 +119,8 @@ services:
           type: web
           name: medflow-backend
           envVarKey: RENDER_EXTERNAL_HOSTNAME
+      - key: VITE_API_TIMEOUT_MS
+        value: "120000"
     routes:
       - type: rewrite
         source: /*

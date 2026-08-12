@@ -26,5 +26,11 @@ class RoomOptionsRequest(BaseModel):
     presence_status:PresenceStatus=PresenceStatus.READY_AT_ROOM;predicted_available_at:datetime|None=None;dependency_task_ids:list[str]=Field(default_factory=list)
     @model_validator(mode="after")
     def unique_rooms(self):
+        if not self.dry_run:raise ValueError("room-options is dry-run only")
         self.candidate_room_ids=list(dict.fromkeys(self.candidate_room_ids));return self
-class AssignmentImpactRequest(BaseModel):patient_token:str;task_type:TaskType;service_code:str;clinical_priority:ClinicalPriority;ready_at:datetime;room_id:str;predicted_minutes:float=Field(default=12,ge=0);dry_run:bool=True
+class AssignmentImpactRequest(BaseModel):
+    patient_token:str;task_type:TaskType;service_code:str;clinical_priority:ClinicalPriority;ready_at:datetime;room_id:str;predicted_minutes:float=Field(default=12,ge=0);dry_run:bool=True
+    @model_validator(mode="after")
+    def dry_run_only(self):
+        if not self.dry_run:raise ValueError("assignment-impact is dry-run only")
+        return self

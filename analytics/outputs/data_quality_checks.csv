@@ -1,25 +1,27 @@
 check,failures,rate,severity,note
 duplicate task_id,0,0.0,critical,Task grain must be unique.
+duplicate event_id,0,0.0,critical,Not evaluated: task extract does not contain event_id; validate on the event-journal extract.
 missing task_id,0,0.0,critical,Primary task identifier is required.
 missing journey_id,0,0.0,high,Required analytical dimension.
 missing task_type,0,0.0,high,Required analytical dimension.
 missing service_type,0,0.0,high,Required analytical dimension.
 missing clinical_priority,0,0.0,high,Required analytical dimension.
-invalid timestamp: checkin_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
-invalid timestamp: assigned_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
+missing ready_at,0,0.0,high,Required for queue eligibility and wait-time calculation.
+missing queue_id,0,0.0,high,Required for queue eligibility and wait-time calculation.
 invalid timestamp: arrival_time,0,0.0,high,Value cannot be parsed as UTC timestamp.
 invalid timestamp: ready_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
 invalid timestamp: service_start,0,0.0,high,Value cannot be parsed as UTC timestamp.
 invalid timestamp: service_end,0,0.0,high,Value cannot be parsed as UTC timestamp.
-invalid timestamp: completed_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
-invalid timestamp: cancelled_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
 invalid timestamp: result_ready_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
 invalid timestamp: schedule_window_start,0,0.0,high,Value cannot be parsed as UTC timestamp.
 invalid timestamp: schedule_window_end,0,0.0,high,Value cannot be parsed as UTC timestamp.
-invalid timestamp: created_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
-invalid timestamp: updated_at,0,0.0,high,Value cannot be parsed as UTC timestamp.
 negative operational wait,0,0.0,high,Service started before readiness/arrival.
 negative service duration,0,0.0,critical,Service end precedes service start.
 invalid task timestamp order,0,0.0,high,Expected ready <= service start <= service end.
 invalid priority,0,0.0,medium,Outside Prisma enum.
-journey duration above 24 hours,5,0.03676470588235294,high,"Likely stale check-in, cross-day demo data, or incomplete event boundary; exclude or investigate before operational use."
+invalid readiness_status,0,0.0,high,Outside the Wait-Time state contract.
+service without resource reference,0,0.0,high,Started service must reference a doctor or device resource.
+actual and estimated timestamp collision,0,0.0,high,Actual and estimated timestamps must retain distinct provenance.
+cyclic journey dependency,0,0.0,critical,Task dependency graph must be acyclic.
+invalid patient anonymization,0,0.0,critical,patient_alias must be a truncated SHA-256 alias; raw token is forbidden.
+journey duration above 24 hours,0,0.0,high,"Likely stale check-in, cross-day demo data, or incomplete event boundary; exclude or investigate before operational use."

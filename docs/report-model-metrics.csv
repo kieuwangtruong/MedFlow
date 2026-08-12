@@ -1,0 +1,7 @@
+metric,value,unit
+P50 MAE,0.7196,minutes
+P50 RMSE,0.9109,minutes
+Median baseline MAE,2.5002,minutes
+P50 coverage,0.4973,fraction
+P80 coverage,0.7940,fraction
+P90 coverage,0.8987,fraction

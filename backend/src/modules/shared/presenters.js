@@ -38,6 +38,7 @@ function toDatabasePriority(priority) {
 }
 
 function toVisitStatus(taskStatus, queueStatus) {
+  if (taskStatus === 'WAITING_RESULT') return 'WAITING_RESULT';
   return QUEUE_STATUS_TO_FRONTEND[queueStatus] || TASK_STATUS_TO_FRONTEND[taskStatus] || 'WAITING';
 }
 

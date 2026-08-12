@@ -1,20 +1,35 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
+import { useVisitStore } from '../stores/visitStore'
+import { apiBaseUrl, apiTimeoutMs, shouldUseMockApi } from './apiConfig'
 
-export const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API !== 'false'
-
-function apiBaseUrl(value: string | undefined) {
-  const configured = value?.trim() || 'http://localhost:3000/api/v1'
-  const withProtocol = /^https?:\/\//i.test(configured) ? configured : `https://${configured}`
-  const url = new URL(withProtocol)
-  if (!url.pathname || url.pathname === '/') url.pathname = '/api/v1'
-  return url.toString().replace(/\/$/, '')
-}
+export const USE_MOCK_API = shouldUseMockApi(import.meta.env.VITE_USE_MOCK_API, import.meta.env.PROD)
 
 const axiosClient = axios.create({
   baseURL: apiBaseUrl(import.meta.env.VITE_API_BASE_URL),
-  timeout: 15_000,
+  timeout: apiTimeoutMs(import.meta.env.VITE_API_TIMEOUT_MS),
 })
+
+interface ApiErrorBody {
+  error?: {
+    code?: string
+    message?: string
+  }
+}
+
+function apiErrorDetails(error: unknown) {
+  return axios.isAxiosError<ApiErrorBody>(error) ? error.response?.data?.error : undefined
+}
+
+export function isVisitNotFoundError(error: unknown) {
+  return axios.isAxiosError(error)
+    && error.response?.status === 404
+    && apiErrorDetails(error)?.code === 'VISIT_NOT_FOUND'
+}
+
+export function apiErrorMessage(error: unknown, fallback: string) {
+  return apiErrorDetails(error)?.message || (error instanceof Error ? error.message : fallback)
+}
 
 axiosClient.interceptors.request.use((config) => {
   const token = useAuthStore.getState().token
@@ -23,6 +38,10 @@ axiosClient.interceptors.request.use((config) => {
 })
 
 axiosClient.interceptors.response.use((response) => response, (error: unknown) => {
+  if (isVisitNotFoundError(error)) {
+    useVisitStore.getState().clearVisit()
+  }
+
   if (axios.isAxiosError(error) && error.response?.status === 401) {
     const requestUrl = error.config?.url ?? ''
     const isAuthRequest = requestUrl.includes('/auth/')
