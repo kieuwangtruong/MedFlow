@@ -423,16 +423,27 @@ async function confirmRouting(patientToken, visitId, payload) {
   };
 }
 
-async function kioskCheckin(cccd, payload) {
-  const patient = await prisma.patient.upsert({
+async function kioskCheckin(cccd, fullName, payload) {
+  const normalizedFullName = fullName.trim().replace(/\s+/g, ' ');
+  const existingPatient = await prisma.patient.findUnique({
     where: { identificationCode: cccd },
-    create: {
-      identificationCode: cccd,
-      patientToken: `pt_${crypto.randomBytes(16).toString('hex')}`,
-      status: 'ACTIVE',
-    },
-    update: { status: 'ACTIVE' },
   });
+  const patient = existingPatient
+    ? await prisma.patient.update({
+      where: { id: existingPatient.id },
+      data: {
+        status: 'ACTIVE',
+        ...(!existingPatient.fullName ? { fullName: normalizedFullName } : {}),
+      },
+    })
+    : await prisma.patient.create({
+      data: {
+        identificationCode: cccd,
+        patientToken: `pt_${crypto.randomBytes(16).toString('hex')}`,
+        fullName: normalizedFullName,
+        status: 'ACTIVE',
+      },
+    });
   return checkin(patient.patientToken, { ...payload, intakeSource: 'KIOSK' });
 }
 

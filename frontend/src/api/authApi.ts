@@ -19,17 +19,17 @@ function warmupBackend() {
 
 export const authApi = {
   warmup: warmupBackend,
-  login: async (cccd: string): Promise<AuthResponse> => {
+  login: async (cccd: string, fullName: string): Promise<AuthResponse> => {
     if (!USE_MOCK_API) {
       if (backendWarmupRequest) await backendWarmupRequest.catch(() => undefined)
-      return (await axiosClient.post<AuthResponse>('/auth/login', { cccd })).data
+      return (await axiosClient.post<AuthResponse>('/auth/login', { cccd, fullName })).data
     }
 
     return mockDelay({
       access_token: 'demo-patient-token',
       user: {
         id: `patient-${cccd}`,
-        full_name: 'Benh nhan demo',
+        full_name: fullName,
         role: 'PATIENT',
         cccd,
         patient_token: `pt-demo-${cccd}`,

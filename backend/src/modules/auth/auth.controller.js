@@ -7,6 +7,7 @@ const authService = require('./auth.service');
 const loginSchema = z.object({
   cccd: z.string().regex(/^\d{9,12}$/, 'CCCD must contain 9 to 12 digits').optional(),
   identifier: z.string().regex(/^\d{9,12}$/, 'CCCD must contain 9 to 12 digits').optional(),
+  fullName: z.string().trim().min(2).max(100).optional(),
 }).refine((value) => value.cccd || value.identifier, {
   message: 'CCCD is required',
 });
@@ -26,7 +27,10 @@ const login = asyncHandler(async (req, res) => {
   }
 
   const payload = validation.data;
-  const result = await authService.loginWithCccd(payload.cccd || payload.identifier);
+  const result = await authService.loginWithCccd(
+    payload.cccd || payload.identifier,
+    payload.fullName
+  );
 
   res.json(result);
 });

@@ -24,6 +24,7 @@ const routingSchema = z.object({
 
 const kioskSchema = z.object({
   cccd: z.string().regex(/^\d{9,12}$/),
+  fullName: z.string().trim().min(2).max(100),
   examinationType: z.string().default('GENERAL'),
   patientType: z.string().default('INSURANCE'),
 });
@@ -44,8 +45,8 @@ const confirmRouting = asyncHandler(async (req, res) => {
 });
 
 const kioskCheckin = asyncHandler(async (req, res) => {
-  const { cccd, ...payload } = kioskSchema.parse(req.body);
-  res.status(201).json(await service.kioskCheckin(cccd, payload));
+  const { cccd, fullName, ...payload } = kioskSchema.parse(req.body);
+  res.status(201).json(await service.kioskCheckin(cccd, fullName, payload));
 });
 
 const pathway = asyncHandler(async (req, res) => {

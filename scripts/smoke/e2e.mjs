@@ -34,7 +34,10 @@ function passed(step) {
 }
 
 try {
-  const auth = await request('/auth/login', { method: 'POST', body: { cccd } })
+  const auth = await request('/auth/login', {
+    method: 'POST',
+    body: { cccd, fullName: 'Bệnh nhân Smoke Test' },
+  })
   if (!auth.access_token) throw new Error('Patient login returned no access token')
   passed('patient login')
 

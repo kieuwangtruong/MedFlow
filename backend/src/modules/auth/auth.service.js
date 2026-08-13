@@ -91,18 +91,29 @@ async function findActivePatientVisit(patientToken) {
   };
 }
 
-async function loginWithCccd(cccd) {
-  const patient = await prisma.patient.upsert({
+async function loginWithCccd(cccd, fullName) {
+  const normalizedFullName = fullName?.trim().replace(/\s+/g, ' ') || null;
+  const existingPatient = await prisma.patient.findUnique({
     where: { identificationCode: cccd },
-    create: {
-      identificationCode: cccd,
-      patientToken: buildPatientToken(),
-      status: 'ACTIVE',
-    },
-    update: {
-      status: 'ACTIVE',
-    },
   });
+  const patient = existingPatient
+    ? await prisma.patient.update({
+      where: { id: existingPatient.id },
+      data: {
+        status: 'ACTIVE',
+        ...(!existingPatient.fullName && normalizedFullName
+          ? { fullName: normalizedFullName }
+          : {}),
+      },
+    })
+    : await prisma.patient.create({
+      data: {
+        identificationCode: cccd,
+        patientToken: buildPatientToken(),
+        fullName: normalizedFullName,
+        status: 'ACTIVE',
+      },
+    });
   const user = toAuthUser(patient);
   const activeVisit = await findActivePatientVisit(patient.patientToken);
   const accessToken = createAccessToken({

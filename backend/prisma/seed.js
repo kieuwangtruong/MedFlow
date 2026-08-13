@@ -298,9 +298,11 @@ async function seedDatabase(seedData) {
       create: {
         identificationCode: '001204012345',
         patientToken: 'PATIENT-DEMO-001',
+        fullName: 'Nguyễn Văn An',
       },
       update: {
         identificationCode: '001204012345',
+        fullName: 'Nguyễn Văn An',
         status: 'ACTIVE',
       },
     });

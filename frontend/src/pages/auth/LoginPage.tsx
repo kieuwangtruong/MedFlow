@@ -13,10 +13,13 @@ export function LoginPage() {
   const { user, login, staffLogin, isAuthenticated } = useAuth();
   const [mode, setMode] = useState<LoginMode>("patient");
   const [cccd, setCccd] = useState("001204012345");
+  const [fullName, setFullName] = useState("Nguyễn Văn An");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("warming");
   const cccdValid = /^\d{9,12}$/.test(cccd);
+  const fullNameValid = fullName.trim().length >= 2;
+  const patientValid = cccdValid && fullNameValid;
   const staffValid = userName.trim().length > 0 && password.length > 0;
   const pending = login.isPending || staffLogin.isPending;
 
@@ -42,7 +45,7 @@ export function LoginPage() {
 
   const submitPatient = (event: FormEvent) => {
     event.preventDefault();
-    if (cccdValid) login.mutate({ cccd });
+    if (patientValid) login.mutate({ cccd, fullName: fullName.trim() });
   };
 
   const submitStaff = (event: FormEvent) => {
@@ -87,10 +90,14 @@ export function LoginPage() {
             {mode === "patient" ? (
               <PatientLoginForm
                 cccd={cccd}
-                valid={cccdValid}
+                fullName={fullName}
+                cccdValid={cccdValid}
+                fullNameValid={fullNameValid}
+                valid={patientValid}
                 pending={pending}
                 backendStatus={backendStatus}
                 onChangeCccd={setCccd}
+                onChangeFullName={setFullName}
                 onSubmit={submitPatient}
                 onStaffMode={() => {
                   staffLogin.reset();
@@ -138,18 +145,26 @@ function getLoginErrorMessage(error: unknown) {
 
 function PatientLoginForm({
   cccd,
+  fullName,
+  cccdValid,
+  fullNameValid,
   valid,
   pending,
   backendStatus,
   onChangeCccd,
+  onChangeFullName,
   onSubmit,
   onStaffMode,
 }: {
   cccd: string;
+  fullName: string;
+  cccdValid: boolean;
+  fullNameValid: boolean;
   valid: boolean;
   pending: boolean;
   backendStatus: BackendStatus;
   onChangeCccd: (value: string) => void;
+  onChangeFullName: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
   onStaffMode: () => void;
 }) {
@@ -176,18 +191,34 @@ function PatientLoginForm({
             Chưa kết nối được máy chủ. Hệ thống sẽ thử lại khi bạn đăng nhập.
           </p>
         )}
-        <label>
+        <label className="block">
+          <span className="field-label">Họ và tên</span>
+          <input
+            autoFocus
+            autoComplete="name"
+            value={fullName}
+            onChange={(event) => onChangeFullName(event.target.value.slice(0, 100))}
+            className="form-control"
+            placeholder="Nhập họ và tên bệnh nhân"
+          />
+        </label>
+        {fullName && !fullNameValid && (
+          <p className="mt-2 text-sm font-medium text-red-600">
+            Họ và tên cần có ít nhất 2 ký tự.
+          </p>
+        )}
+        <label className="mt-5 block">
           <span className="field-label">Số căn cước công dân</span>
           <input
             inputMode="numeric"
-            autoFocus
+            autoComplete="off"
             value={cccd}
             onChange={(event) => onChangeCccd(event.target.value.replace(/\D/g, "").slice(0, 12))}
             className="form-control text-lg tracking-wider"
             placeholder="Nhập 9-12 chữ số"
           />
         </label>
-        {cccd && !valid && (
+        {cccd && !cccdValid && (
           <p className="mt-2 text-sm font-medium text-red-600">
             CCCD cần có từ 9 đến 12 chữ số.
           </p>

@@ -9,7 +9,8 @@ export const useAuth = () => {
   const { user, token, setAuth, logout: clearAuth } = useAuthStore()
   const clearVisit = useVisitStore((state) => state.clearVisit)
   const login = useMutation({
-    mutationFn: ({ cccd }: { cccd: string }) => authApi.login(cccd),
+    mutationFn: ({ cccd, fullName }: { cccd: string; fullName: string }) =>
+      authApi.login(cccd, fullName),
     onSuccess: ({ access_token, user: nextUser, active_visit: activeVisit }) => {
       if (activeVisit) useVisitStore.getState().setVisit(activeVisit.visitId, activeVisit.queueNumber)
       else clearVisit()
