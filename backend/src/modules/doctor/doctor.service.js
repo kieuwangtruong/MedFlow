@@ -156,11 +156,6 @@ async function getVisit(visitId, auth) {
     queueNumber: entry?.queueNumber || 0,
     task: { ...task, patient: journey.patient, journey },
   });
-  const waitingCount = task.queueId
-    ? await prisma.patientQueueEntry.count({
-      where: { queueId: task.queueId, status: { in: ['WAITING', 'CALLED'] } },
-    })
-    : 0;
   const pathway = await patientService.getPathway(journey.patientToken, visitId);
   const validatedResults = journey.tasks
     .filter((item) => (
@@ -181,17 +176,6 @@ async function getVisit(visitId, auth) {
     queue,
     pathway,
     validatedResults,
-    recommendation: {
-      department: patientService.taskDepartment(task),
-      room: patientService.taskRoom(task),
-      floor: floorNumber(task.room?.floor),
-      estimatedWait: Math.round(task.queue?.estimatedWaitMinutes || 0),
-      waitingCount,
-      reason: 'Đề xuất dựa trên chuyên khoa, trạng thái phòng và hàng đợi hiện tại.',
-      confidence: 0.75,
-      priority: toFrontendPriority(task.clinicalPriority),
-      requiresHumanReview: true,
-    },
   };
 }
 
