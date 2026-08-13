@@ -23,6 +23,7 @@ const DEPARTMENTS = [
   { id: 'OPH', code: 'OPH', name: 'Khoa Mắt' },
   { id: 'ENDO', code: 'ENDO', name: 'Khoa Nội tiết' },
   { id: 'PSYCH', code: 'PSYCH', name: 'Khoa Tâm thần - Tâm lý' },
+  { id: 'IMAGING', code: 'IMAGING', name: 'Khoa Chẩn đoán hình ảnh' },
 ];
 
 const SPECIALTIES = [
@@ -41,6 +42,7 @@ const SPECIALTIES = [
   { id: 'SPEC-OPH-CONSULT', departmentId: 'OPH', code: 'SPEC-OPH-CONSULT', name: 'Khám Mắt' },
   { id: 'SPEC-ENDO-CONSULT', departmentId: 'ENDO', code: 'SPEC-ENDO-CONSULT', name: 'Khám Nội tiết' },
   { id: 'SPEC-PSYCH-CONSULT', departmentId: 'PSYCH', code: 'SPEC-PSYCH-CONSULT', name: 'Khám Tâm thần - Tâm lý' },
+  { id: 'SPEC-IMAGING', departmentId: 'IMAGING', code: 'SPEC-IMAGING', name: 'Chẩn đoán hình ảnh' },
 ];
 
 const DOCTORS = [
@@ -55,6 +57,7 @@ const DOCTORS = [
   { username: 'bs.do.my.linh@vaic.vn', fullName: 'BS. Đỗ Mỹ Linh' },
   { username: 'bs.hoang.gia.bao@vaic.vn', fullName: 'BS. Hoàng Gia Bảo' },
   { username: 'bs.ngo.thanh.van@vaic.vn', fullName: 'BS. Ngô Thanh Vân' },
+  { username: 'bs.nguyen.thu.huong@vaic.vn', fullName: 'BS. Nguyễn Thu Hương' },
 ];
 
 const ROOMS = [
@@ -73,6 +76,27 @@ const ROOMS = [
   { id: 'ROOM-OPH-403', specialtyId: 'SPEC-OPH-CONSULT', doctorUsername: 'bs.tran.hoang.lan@vaic.vn', code: 'MAT-403', name: 'Phòng khám Mắt 403', floor: 'Tầng 4' },
   { id: 'ROOM-ENDO-404', specialtyId: 'SPEC-ENDO-CONSULT', doctorUsername: 'bs.pham.thu.ha@vaic.vn', code: 'NT-404', name: 'Phòng khám Nội tiết 404', floor: 'Tầng 4' },
   { id: 'ROOM-PSYCH-405', specialtyId: 'SPEC-PSYCH-CONSULT', doctorUsername: 'bs.dang.ngoc.anh@vaic.vn', code: 'TTL-405', name: 'Phòng khám Tâm thần - Tâm lý 405', floor: 'Tầng 4' },
+  { id: 'ROOM-IMAGING-501', specialtyId: 'SPEC-IMAGING', doctorUsername: 'bs.nguyen.thu.huong@vaic.vn', code: 'CDHA-501', name: 'Phòng Chẩn đoán hình ảnh 501', floor: 'Tầng 5' },
+];
+
+const SERVICE_QUEUES = [
+  {
+    id: 'QUEUE-ROOM-IMAGING-501-XRAY',
+    name: 'Hàng đợi X-quang - Phòng Chẩn đoán hình ảnh 501',
+    roomId: 'ROOM-IMAGING-501',
+    serviceType: 'XRAY',
+  },
+  {
+    id: 'QUEUE-ROOM-IMAGING-501-ULTRASOUND',
+    name: 'Hàng đợi Siêu âm - Phòng Chẩn đoán hình ảnh 501',
+    roomId: 'ROOM-IMAGING-501',
+    serviceType: 'ABDOMINAL_ULTRASOUND',
+  },
+];
+
+const EQUIPMENTS = [
+  { id: 'EQUIP-XRAY-501', code: 'XRAY-501', name: 'Máy X-quang 501', roomId: 'ROOM-IMAGING-501' },
+  { id: 'EQUIP-ULTRASOUND-501', code: 'US-501', name: 'Máy Siêu âm 501', roomId: 'ROOM-IMAGING-501' },
 ];
 
 // A doctor may have several home rooms, but only one active room during a shift.
@@ -94,6 +118,8 @@ function publicSummary() {
     doctors: DOCTORS.length,
     clinicalSpecialties: SPECIALTIES.length,
     clinicRooms: ROOMS.length,
+    serviceQueues: SERVICE_QUEUES.length,
+    equipments: EQUIPMENTS.length,
     activeRoomAssignments: ACTIVE_ROOM_ASSIGNMENTS.length,
   };
 }
@@ -194,6 +220,32 @@ async function seedClinicDirectory() {
       });
     }
 
+    for (const queue of SERVICE_QUEUES) {
+      await prisma.serviceQueue.upsert({
+        where: { id: queue.id },
+        create: { ...queue, isActive: true, estimatedWaitMinutes: 0 },
+        update: {
+          name: queue.name,
+          roomId: queue.roomId,
+          serviceType: queue.serviceType,
+          isActive: true,
+        },
+      });
+    }
+
+    for (const equipment of EQUIPMENTS) {
+      await prisma.equipment.upsert({
+        where: { id: equipment.id },
+        create: { ...equipment, status: 'ACTIVE' },
+        update: {
+          code: equipment.code,
+          name: equipment.name,
+          roomId: equipment.roomId,
+          status: 'ACTIVE',
+        },
+      });
+    }
+
     const now = new Date();
     // Demo assignments remain usable across review sessions. A production
     // deployment should replace these with roster-managed daily shifts.
@@ -236,6 +288,12 @@ async function seedClinicDirectory() {
         doctors: await prisma.staffUser.count({ where: { role: 'DOCTOR' } }),
         clinicalSpecialties: await prisma.clinicalSpecialty.count(),
         clinicRooms: await prisma.clinicRoom.count(),
+        serviceQueues: await prisma.serviceQueue.count({
+          where: { roomId: 'ROOM-IMAGING-501', isActive: true },
+        }),
+        equipments: await prisma.equipment.count({
+          where: { roomId: 'ROOM-IMAGING-501', status: 'ACTIVE' },
+        }),
         activeRoomAssignments: await prisma.doctorRoomAssignment.count({
           where: { status: 'ACTIVE', shiftStart: { lte: now }, shiftEnd: { gt: now } },
         }),

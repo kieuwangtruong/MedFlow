@@ -9,7 +9,7 @@ export interface Patient { id: string; code: string; fullName: string; birthYear
 export interface Doctor { id: string; fullName: string; department: string; room: string; status: 'AVAILABLE' | 'BUSY' | 'OFFLINE'; examinedToday: number; waitingPatients: number; averageMinutes: number }
 export interface DoctorAssignment { id: string; role: 'PRIMARY' | 'SUPPORT' | 'COVERING'; status: 'ACTIVE'; shiftStart: string; shiftEnd: string; room: { id: string; code: string; name: string; floor: number; department: string } }
 export interface Department { id: string; name: string; waitingCount: number }
-export interface Room { id: string; code: string; name: string; department: string; floor: number; doctor?: string; waitingCount: number; servingPatient?: string; averageWait: number; status: 'OPEN' | 'PAUSED' | 'CLOSED' }
+export interface Room { id: string; code: string; name: string; department: string; floor: number; doctor?: string; waitingCount: number; servingPatient?: string; averageWait: number; status: 'OPEN' | 'PAUSED' | 'CLOSED'; serviceTypes?: string[] }
 export interface PatientVisit { id: string; patientId: string; patientName: string; queueNumber: string; checkinTime: string; priority: Priority; status: VisitStatus; department: string; room: string; doctor?: string; waitingMinutes: number; nextStep: string; estimatedCompletion: string }
 export interface SymptomReport { description: string; onset: string; painLevel: number; commonSymptoms: string[]; dangerSigns: string[] }
 export interface TriageAssessment { priority: Priority; summary: string; warning?: string }

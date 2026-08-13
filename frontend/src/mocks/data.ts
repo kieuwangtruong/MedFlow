@@ -56,13 +56,13 @@ export const rooms: Room[] = [
   { id: 'r1', code: '201', name: 'Phòng khám Nội 1', department: 'Nội tổng hợp', floor: 2, doctor: 'BS. Trần Minh An', waitingCount: 8, servingPatient: 'A029', averageWait: 22, status: 'OPEN' },
   { id: 'r2', code: '202', name: 'Phòng khám Nội 2', department: 'Nội tổng hợp', floor: 2, doctor: 'BS. Lê Thanh Bình', waitingCount: 5, servingPatient: 'A018', averageWait: 16, status: 'OPEN' },
   { id: 'r3', code: '105', name: 'Phòng lấy mẫu', department: 'Xét nghiệm', floor: 1, waitingCount: 11, servingPatient: 'X051', averageWait: 28, status: 'OPEN' },
-  { id: 'r4', code: '301', name: 'Phòng X-quang', department: 'Chẩn đoán hình ảnh', floor: 3, waitingCount: 0, averageWait: 0, status: 'PAUSED' },
+  { id: 'r4', code: 'CDHA-501', name: 'Phòng Chẩn đoán hình ảnh 501', department: 'Khoa Chẩn đoán hình ảnh', floor: 5, doctor: 'BS. Nguyễn Thu Hương', waitingCount: 0, averageWait: 0, status: 'OPEN', serviceTypes: ['XRAY', 'ABDOMINAL_ULTRASOUND'] },
 ]
 
 export const doctors: Doctor[] = [
   { id: 'd1', fullName: 'BS. Trần Minh An', department: 'Nội tổng hợp', room: '201', status: 'BUSY', examinedToday: 12, waitingPatients: 8, averageMinutes: 14 },
   { id: 'd2', fullName: 'BS. Lê Thanh Bình', department: 'Nội tổng hợp', room: '202', status: 'AVAILABLE', examinedToday: 10, waitingPatients: 5, averageMinutes: 12 },
-  { id: 'd3', fullName: 'BS. Nguyễn Thu Hương', department: 'Chẩn đoán hình ảnh', room: '301', status: 'OFFLINE', examinedToday: 7, waitingPatients: 0, averageMinutes: 18 },
+  { id: 'd3', fullName: 'BS. Nguyễn Thu Hương', department: 'Chẩn đoán hình ảnh', room: 'CDHA-501', status: 'AVAILABLE', examinedToday: 7, waitingPatients: 0, averageMinutes: 18 },
 ]
 
 export const serviceResults: ServiceResult[] = [

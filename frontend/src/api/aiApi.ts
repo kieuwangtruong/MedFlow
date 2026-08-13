@@ -83,5 +83,13 @@ export const aiApi = {
         : response.data.message,
     })
   },
-  fastestRoom: async (payload: object): Promise<Room[]> => USE_MOCK_API ? mockDelay(rooms.filter((room) => room.status === 'OPEN')) : (await axiosClient.post<Room[]>('/ai/fastest-room', payload)).data,
+  fastestRoom: async (payload: { type?: string } & Record<string, unknown>): Promise<Room[]> => {
+    if (USE_MOCK_API) {
+      const serviceType = payload.type === 'Siêu âm' ? 'ABDOMINAL_ULTRASOUND' : 'XRAY'
+      return mockDelay(rooms.filter((room) => (
+        room.status === 'OPEN' && room.serviceTypes?.includes(serviceType)
+      )))
+    }
+    return (await axiosClient.post<Room[]>('/ai/fastest-room', payload)).data
+  },
 }

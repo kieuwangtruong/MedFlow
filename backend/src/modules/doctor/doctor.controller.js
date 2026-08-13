@@ -4,7 +4,7 @@ const service = require('./doctor.service');
 
 const prioritySchema = z.enum(['EMERGENCY', 'URGENT', 'HIGH', 'NORMAL', 'LOW']);
 const orderSchema = z.object({
-  type: z.string().min(1),
+  type: z.enum(['X-quang', 'Siêu âm']),
   targetDepartment: z.string().min(1),
   priority: prioritySchema,
   clinicalNote: z.string().min(5),

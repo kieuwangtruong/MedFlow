@@ -6,6 +6,7 @@ const { test } = require('node:test');
 
 const app = require('../src/app');
 const { selectCandidateRooms } = require('../src/modules/ai-gateway/ai-gateway.controller');
+const { getServiceDefinition } = require('../src/modules/shared/service-routing');
 
 function requestJson(port, path) {
   return new Promise((resolve, reject) => {
@@ -49,25 +50,43 @@ test('backend AI health gateway calls the wait-time liveness contract', async (t
 
 test('room recommendations exclude the current examination room', () => {
   const rooms = [
-    { id: 'ROOM-CURRENT', department: 'Imaging', status: 'OPEN' },
-    { id: 'ROOM-ALTERNATIVE', department: 'Imaging', status: 'OPEN' },
-    { id: 'ROOM-CLOSED', department: 'Imaging', status: 'CLOSED' },
+    { id: 'ROOM-CURRENT', department: 'Imaging', status: 'OPEN', serviceTypes: ['XRAY'] },
+    { id: 'ROOM-ALTERNATIVE', department: 'Imaging', status: 'OPEN', serviceTypes: ['XRAY'] },
+    { id: 'ROOM-CLOSED', department: 'Imaging', status: 'CLOSED', serviceTypes: ['XRAY'] },
   ];
 
   assert.deepEqual(
-    selectCandidateRooms(rooms, 'Imaging', 'ROOM-CURRENT').map((room) => room.id),
+    selectCandidateRooms(rooms, 'Imaging', 'ROOM-CURRENT', 'XRAY').map((room) => room.id),
     ['ROOM-ALTERNATIVE'],
   );
 });
 
-test('room recommendation fallback still excludes the current room', () => {
+test('room recommendations never fall back to another department', () => {
   const rooms = [
-    { id: 'ROOM-CURRENT', department: 'Imaging', status: 'OPEN' },
-    { id: 'ROOM-OTHER', department: 'Laboratory', status: 'OPEN' },
+    { id: 'ROOM-CURRENT', department: 'Imaging', status: 'OPEN', serviceTypes: ['XRAY'] },
+    { id: 'ROOM-OTHER', department: 'Dermatology', status: 'OPEN', serviceTypes: ['XRAY'] },
   ];
 
   assert.deepEqual(
-    selectCandidateRooms(rooms, 'Missing department', 'ROOM-CURRENT').map((room) => room.id),
-    ['ROOM-OTHER'],
+    selectCandidateRooms(rooms, 'Imaging', 'ROOM-CURRENT', 'XRAY'),
+    [],
   );
+});
+
+test('room recommendations require service compatibility', () => {
+  const rooms = [
+    { id: 'ROOM-DERM', department: 'Imaging', status: 'OPEN', serviceTypes: ['CLINICAL_CONSULT'] },
+    { id: 'ROOM-XRAY', department: 'Imaging', status: 'OPEN', serviceTypes: ['XRAY'] },
+  ];
+
+  assert.deepEqual(
+    selectCandidateRooms(rooms, 'Imaging', null, 'XRAY').map((room) => room.id),
+    ['ROOM-XRAY'],
+  );
+});
+
+test('Vietnamese service labels map to explicit imaging capabilities', () => {
+  assert.equal(getServiceDefinition('X-quang ngực').serviceType, 'XRAY');
+  assert.equal(getServiceDefinition('Siêu âm ổ bụng').serviceType, 'ABDOMINAL_ULTRASOUND');
+  assert.equal(getServiceDefinition('Chụp CT'), null);
 });

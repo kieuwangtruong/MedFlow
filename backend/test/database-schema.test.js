@@ -141,3 +141,36 @@ test('patient intake migration persists symptoms and intake source', () => {
   assert.match(sql, /symptoms_submitted_at/);
   assert.match(sql, /intake_source/);
 });
+
+test('clinic directory seed includes a staffed imaging room and compatible queues', () => {
+  const result = spawnSync(
+    process.execPath,
+    [path.join(projectRoot, 'prisma', 'seed-clinic-directory.js'), '--dry-run'],
+    { cwd: projectRoot, encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const summary = JSON.parse(result.stdout);
+  assert.equal(summary.seeded.departments, 16);
+  assert.equal(summary.seeded.clinicRooms, 16);
+  assert.equal(summary.seeded.serviceQueues, 2);
+  assert.equal(summary.seeded.equipments, 2);
+  assert.equal(summary.seeded.activeRoomAssignments, 12);
+});
+
+test('imaging migration repairs cross-specialty diagnostic routing', () => {
+  const migrationPath = path.join(
+    projectRoot,
+    'prisma',
+    'migrations',
+    '20260813190000_add_imaging_service_room',
+    'migration.sql',
+  );
+  const sql = require('node:fs').readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /ROOM-IMAGING-501/);
+  assert.match(sql, /QUEUE-ROOM-IMAGING-501-XRAY/);
+  assert.match(sql, /QUEUE-ROOM-IMAGING-501-ULTRASOUND/);
+  assert.match(sql, /task\."service_type" IN \('XRAY', 'ABDOMINAL_ULTRASOUND'\)/);
+  assert.match(sql, /Consultation rooms must never advertise imaging capability/);
+});

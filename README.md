@@ -71,6 +71,7 @@ Mật khẩu chung cho toàn bộ tài khoản bác sĩ demo: **`12345678`**
 | `bs.hoang.gia.bao@vaic.vn` | BS. Hoàng Gia Bảo | Cơ Xương Khớp 303 (`CXK-303`) |
 | `bs.ngo.thanh.van@vaic.vn` | BS. Ngô Thanh Vân | Tiêu hóa - Gan mật 304 (`TH-304`) |
 | `bs.tran.hoang.lan@vaic.vn` | BS. Trần Hoàng Lan | Mắt 403 (`MAT-403`) |
+| `bs.nguyen.thu.huong@vaic.vn` | BS. Nguyễn Thu Hương | Chẩn đoán hình ảnh 501 (`CDHA-501`) |
 
 > Các thông tin đăng nhập trên chỉ dành cho môi trường demo. Không tái sử dụng mật khẩu này trong môi trường thật.
 

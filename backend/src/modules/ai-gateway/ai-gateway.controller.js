@@ -1,7 +1,9 @@
 const asyncHandler = require('../../utils/async-handler');
+const AppError = require('../../errors/app-error');
 const adminService = require('../admin/admin.service');
 const doctorService = require('../doctor/doctor.service');
 const { toDatabasePriority } = require('../shared/presenters');
+const { getServiceDefinition, normalizeText } = require('../shared/service-routing');
 const { requestAi } = require('./ai-client');
 
 const health = asyncHandler(async (_req, res) => {
@@ -42,31 +44,43 @@ const scenario = asyncHandler(async (req, res) => {
   res.json(await requestAi('/api/v1/simulations/scenario', { method: 'POST', body: req.body }));
 });
 
-function serviceCode(type) {
-  const normalized = String(type || '').toLowerCase();
-  if (normalized.includes('siêu âm')) return 'ABDOMINAL_ULTRASOUND';
-  if (normalized.includes('x-quang')) return 'XRAY';
-  return 'CLINICAL_CONSULT';
-}
-
-function selectCandidateRooms(allRooms, targetDepartment, excludedRoomId) {
-  const department = String(targetDepartment || '').toLowerCase();
-  const openRooms = allRooms.filter((room) => (
+function selectCandidateRooms(allRooms, targetDepartment, excludedRoomId, serviceType) {
+  const department = normalizeText(targetDepartment);
+  const compatibleRooms = allRooms.filter((room) => (
     room.status === 'OPEN' && room.id !== excludedRoomId
+    && room.serviceTypes?.includes(serviceType)
   ));
-  const matchingRooms = openRooms.filter((room) => (
-    !department || room.department.toLowerCase().includes(department)
+  return compatibleRooms.filter((room) => (
+    !department || normalizeText(room.department).includes(department)
   ));
-  return matchingRooms.length ? matchingRooms : openRooms;
 }
 
 const fastestRoom = asyncHandler(async (req, res) => {
+  const service = getServiceDefinition(req.body.type);
+  if (!service) {
+    throw new AppError('Dịch vụ này chưa được cấu hình phòng thực hiện', 422, 'UNSUPPORTED_SERVICE');
+  }
   const allRooms = await adminService.getRooms();
   const currentRoomId = req.body.visitId
     ? await doctorService.getCurrentRoomId(req.body.visitId, req.auth)
     : null;
-  const candidates = selectCandidateRooms(allRooms, req.body.targetDepartment, currentRoomId);
-  if (!candidates.length) return res.json([]);
+  const candidates = selectCandidateRooms(
+    allRooms,
+    service.department,
+    currentRoomId,
+    service.serviceType,
+  ).map((room) => ({
+    ...room,
+    averageWait: room.serviceMetrics?.[service.serviceType]?.averageWait ?? room.averageWait,
+    waitingCount: room.serviceMetrics?.[service.serviceType]?.waitingCount ?? room.waitingCount,
+  }));
+  if (!candidates.length) {
+    throw new AppError(
+      `Không có phòng đang mở hỗ trợ ${service.label}`,
+      422,
+      'COMPATIBLE_ROOM_NOT_FOUND',
+    );
+  }
 
   let options = [];
   try {
@@ -76,7 +90,7 @@ const fastestRoom = asyncHandler(async (req, res) => {
         request_id: `frontend-${Date.now()}`,
         patient_token: req.auth.patient_token || req.auth.sub,
         task_type: 'DIAGNOSTIC_SERVICE',
-        service_code: serviceCode(req.body.type),
+        service_code: service.serviceType,
         clinical_priority: toDatabasePriority(req.body.priority),
         ready_at: new Date().toISOString(),
         candidate_room_ids: candidates.map((room) => room.id),

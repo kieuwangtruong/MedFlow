@@ -4,6 +4,7 @@ const prisma = require('../../lib/prisma');
 const patientService = require('../patient/patient.service');
 const { emitAiEvents, taskEvent } = require('../shared/ai-events');
 const { activeAssignmentFilter, activeRoomFilter } = require('../shared/doctor-assignments');
+const { getServiceDefinition } = require('../shared/service-routing');
 const {
   currentQueueEntry,
   floorNumber,
@@ -283,13 +284,6 @@ async function startVisit(visitId, auth) {
   return { visitId, status: 'IN_EXAMINATION', aiSynced: aiSync.synced };
 }
 
-function serviceTypeFor(label) {
-  const normalized = label.toLowerCase();
-  if (normalized.includes('siêu âm')) return 'ABDOMINAL_ULTRASOUND';
-  if (normalized.includes('kết quả')) return 'RESULT_REVIEW';
-  return 'XRAY';
-}
-
 async function createIntake(payload) {
   const birthYear = new Date().getUTCFullYear() - payload.age;
   const patient = await prisma.patient.upsert({
@@ -334,6 +328,10 @@ async function createIntake(payload) {
 async function createOrder(visitId, payload, auth) {
   const sourceTask = await findAccessibleTask(visitId, auth);
   if (!sourceTask) throw new AppError('Visit is not assigned to your active room', 404, 'VISIT_NOT_ASSIGNED');
+  const service = getServiceDefinition(payload.type);
+  if (!service) {
+    throw new AppError('This service has no configured destination room', 422, 'UNSUPPORTED_SERVICE');
+  }
   if (payload.room && payload.room === sourceTask.roomId) {
     throw new AppError(
       'Destination room must differ from the current examination room',
@@ -348,6 +346,10 @@ async function createOrder(visitId, payload, auth) {
   const staffedRoomWhere = {
     isActive: true,
     doctorAssignments: { some: activeAssignmentFilter({ now }) },
+    queues: { some: { isActive: true, serviceType: service.serviceType } },
+    specialty: {
+      department: { name: { contains: service.department, mode: 'insensitive' } },
+    },
   };
 
   let room = null;
@@ -356,22 +358,44 @@ async function createOrder(visitId, payload, auth) {
       where: { id: payload.room, ...staffedRoomWhere },
       include: { specialty: { include: { department: true } }, queues: true },
     });
+    if (!room) {
+      throw new AppError(
+        'The selected room does not support this service',
+        422,
+        'ROOM_SERVICE_INCOMPATIBLE',
+      );
+    }
   }
-  if (!room) {
+  if (!payload.room) {
     room = await prisma.clinicRoom.findFirst({
       where: {
         ...staffedRoomWhere,
         ...(sourceTask.roomId ? { id: { not: sourceTask.roomId } } : {}),
-        specialty: { department: { name: { contains: payload.targetDepartment, mode: 'insensitive' } } },
       },
       include: { specialty: { include: { department: true } }, queues: true },
       orderBy: { code: 'asc' },
     });
   }
-  if (!room) throw new AppError('No staffed room is available for this service', 422, 'STAFFED_ROOM_NOT_FOUND');
+  if (!room) {
+    throw new AppError(
+      'No open room supports this service',
+      422,
+      'COMPATIBLE_ROOM_NOT_FOUND',
+    );
+  }
 
-  const queueId = room.queues.find((queue) => queue.isActive)?.id || `QUEUE-${room.id}`;
-  const serviceType = serviceTypeFor(payload.type);
+  const serviceQueue = room.queues.find((queue) => (
+    queue.isActive && queue.serviceType === service.serviceType
+  ));
+  if (!serviceQueue) {
+    throw new AppError(
+      'The selected room has no active queue for this service',
+      422,
+      'SERVICE_QUEUE_NOT_FOUND',
+    );
+  }
+  const queueId = serviceQueue.id;
+  const serviceType = service.serviceType;
   const diagnosticTaskId = `TASK-${crypto.randomUUID()}`;
   const returnTaskId = `TASK-${crypto.randomUUID()}`;
   if (!sourceTask.roomId || !sourceTask.queueId) {
@@ -379,17 +403,9 @@ async function createOrder(visitId, payload, auth) {
   }
 
   const created = await prisma.$transaction(async (tx) => {
-    const queue = await tx.serviceQueue.upsert({
+    const queue = await tx.serviceQueue.update({
       where: { id: queueId },
-      create: {
-        id: queueId,
-        name: `Hàng đợi ${room.name}`,
-        roomId: room.id,
-        serviceType,
-        isActive: true,
-        estimatedWaitMinutes: 0,
-      },
-      update: { roomId: room.id, isActive: true },
+      data: { isActive: true },
     });
     const queueNumber = await tx.patientQueueEntry.count({
       where: { queueId: queue.id, status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] } },

@@ -38,11 +38,18 @@ function roomStatus(room) {
 }
 
 function toRoom(room) {
-  const entries = room.queues.flatMap((queue) => queue.entries);
+  const activeQueues = room.queues.filter((queue) => queue.isActive);
+  const entries = activeQueues.flatMap((queue) => queue.entries);
   const serving = entries.find((entry) => entry.status === 'IN_SERVICE');
-  const averageWait = room.queues.length
-    ? Math.round(room.queues.reduce((sum, queue) => sum + queue.estimatedWaitMinutes, 0) / room.queues.length)
+  const averageWait = activeQueues.length
+    ? Math.round(activeQueues.reduce((sum, queue) => sum + queue.estimatedWaitMinutes, 0) / activeQueues.length)
     : 0;
+  const serviceMetrics = Object.fromEntries(activeQueues
+    .filter((queue) => queue.serviceType)
+    .map((queue) => [queue.serviceType, {
+      averageWait: Math.round(queue.estimatedWaitMinutes || 0),
+      waitingCount: queue.entries.filter((entry) => ['WAITING', 'CALLED'].includes(entry.status)).length,
+    }]));
   return {
     id: room.id,
     code: room.code || room.id,
@@ -53,6 +60,8 @@ function toRoom(room) {
     waitingCount: entries.filter((entry) => ['WAITING', 'CALLED'].includes(entry.status)).length,
     servingPatient: serving ? formatQueueNumber(serving.queueNumber) : undefined,
     averageWait,
+    serviceTypes: [...new Set(activeQueues.map((queue) => queue.serviceType).filter(Boolean))],
+    serviceMetrics,
     status: roomStatus(room),
   };
 }
