@@ -34,15 +34,13 @@ The application normalises Render hostnames to HTTPS at runtime/build time. No R
 
 ## Database deployment gate
 
-`medflow-backend` runs:
+`medflow-backend` builds and migrates with:
 
 ```text
-npm run prisma:generate # build phase
-npm run prisma:deploy
-npm start
+npm ci && npm run prisma:generate && npm run prisma:deploy
 ```
 
-Prisma Client is generated once during the Render build instead of being regenerated on every Free-instance wake-up. The production start commands are chained with `&&`; Express does not start when migration fails. Production deployment never runs seed commands and never uses `prisma db push`.
+The runtime start command is only `npm start`. This lets Express bind to Render's port immediately when a Free instance wakes instead of rerunning migrations on every cold start. Render Free does not provide a pre-deploy command, so migrations run during the build; a migration failure stops the new deploy before it replaces the working service. Production deployment never runs seed commands and never uses `prisma db push`.
 
 Before the first deployment to a database that already contains data:
 

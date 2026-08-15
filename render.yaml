@@ -73,8 +73,8 @@ services:
     runtime: node
     plan: free
     rootDir: backend
-    buildCommand: npm ci && npm run prisma:generate
-    startCommand: npm run start:production
+    buildCommand: npm ci && npm run prisma:generate && npm run prisma:deploy
+    startCommand: npm start
     healthCheckPath: /api/v1/health
     autoDeployTrigger: commit
     envVars:

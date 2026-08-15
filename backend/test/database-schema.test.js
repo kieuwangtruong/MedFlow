@@ -174,3 +174,17 @@ test('imaging migration repairs cross-specialty diagnostic routing', () => {
   assert.match(sql, /task\."service_type" IN \('XRAY', 'ABDOMINAL_ULTRASOUND'\)/);
   assert.match(sql, /Consultation rooms must never advertise imaging capability/);
 });
+
+test('Render starts the backend without rerunning migrations during cold starts', () => {
+  const blueprint = require('node:fs').readFileSync(
+    path.resolve(projectRoot, '..', 'render.yaml'),
+    'utf8',
+  );
+  const packageJson = require('../package.json');
+
+  assert.match(
+    blueprint,
+    /name: medflow-backend[\s\S]*?buildCommand: npm ci && npm run prisma:generate && npm run prisma:deploy[\s\S]*?startCommand: npm start/,
+  );
+  assert.equal(packageJson.scripts['start:production'], 'npm start');
+});

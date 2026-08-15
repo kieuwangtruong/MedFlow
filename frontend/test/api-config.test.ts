@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { apiBaseUrl, apiTimeoutMs, shouldUseMockApi } from '../src/api/apiConfig.ts'
+import {
+  apiBaseUrl,
+  apiTimeoutMs,
+  isTransientHttpStatus,
+  shouldUseMockApi,
+} from '../src/api/apiConfig.ts'
 
 test('API base URL defaults to the versioned local backend', () => {
   assert.equal(apiBaseUrl(undefined), 'http://localhost:3000/api/v1')
@@ -22,4 +27,12 @@ test('production can never enable mock API mode', () => {
   assert.equal(shouldUseMockApi('true', true), false)
   assert.equal(shouldUseMockApi(undefined, false), true)
   assert.equal(shouldUseMockApi('false', false), false)
+})
+
+test('warmup retries only temporary gateway and availability failures', () => {
+  assert.equal(isTransientHttpStatus(undefined), true)
+  assert.equal(isTransientHttpStatus(502), true)
+  assert.equal(isTransientHttpStatus(503), true)
+  assert.equal(isTransientHttpStatus(401), false)
+  assert.equal(isTransientHttpStatus(422), false)
 })
