@@ -5,3 +5,11 @@
 .env
 .env.*
 !.env.example
+
+# IDE & Editor configurations
+.claude/
+.cursor/
+.gemini/
+.vscode/
+.kiro/
+.qoder/
