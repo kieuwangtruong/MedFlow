@@ -21,7 +21,7 @@ class RedFlagMatch:
 NEGATIONS = ("khong", "chua", "khong bi", "khong co")
 RULES: tuple[tuple[str, str, tuple[tuple[str, ...], ...]], ...] = (
     ("CHEST_PAIN_WITH_DYSPNEA", "Đau ngực kèm khó thở", (("dau nguc", "kho tho"), ("tuc nguc", "kho tho"), ("tuc nguc", "hut hoi"))),
-    ("SUDDEN_NEURO_DEFICIT", "Dấu hiệu thần kinh xuất hiện đột ngột", (("meo mieng", "yeu tay"), ("noi kho", "yeu tay"), ("liet", "dot ngot"), ("yeu mot ben", "noi kho"), ("noi ngong", "khong nang duoc tay"))),
+    ("SUDDEN_NEURO_DEFICIT", "Dấu hiệu thần kinh xuất hiện đột ngột", (("te nua nguoi",), ("te mot ben",), ("meo mieng", "yeu tay"), ("noi kho", "yeu tay"), ("liet", "dot ngot"), ("yeu mot ben", "noi kho"), ("noi ngong", "khong nang duoc tay"))),
     ("LOSS_OF_CONSCIOUSNESS", "Mất ý thức hoặc bất tỉnh", (("bat tinh",), ("mat y thuc",), ("ngat lau",), ("ngat", "kho danh thuc"))),
     ("SEIZURE_ACTIVE", "Co giật", (("co giat",), ("giat toan than",))),
     ("SEVERE_BLEEDING", "Chảy máu nghiêm trọng", (("chay mau nhieu",), ("mau chay lien tuc",), ("chay mau", "choang"), ("chay mau", "uot nhieu gac"))),

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/authStore'
 import { useVisitStore } from '../stores/visitStore'
-import { apiBaseUrl, apiTimeoutMs, shouldUseMockApi } from './apiConfig'
+import { apiBaseUrl, apiTimeoutMs, safeApiErrorMessage, shouldUseMockApi } from './apiConfig'
 
 export const USE_MOCK_API = shouldUseMockApi(import.meta.env.VITE_USE_MOCK_API, import.meta.env.PROD)
 
@@ -28,7 +28,8 @@ export function isVisitNotFoundError(error: unknown) {
 }
 
 export function apiErrorMessage(error: unknown, fallback: string) {
-  return apiErrorDetails(error)?.message || (error instanceof Error ? error.message : fallback)
+  const message = apiErrorDetails(error)?.message || (error instanceof Error ? error.message : undefined)
+  return safeApiErrorMessage(message, fallback)
 }
 
 axiosClient.interceptors.request.use((config) => {

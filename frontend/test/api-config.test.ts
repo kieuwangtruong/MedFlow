@@ -5,6 +5,7 @@ import {
   apiBaseUrl,
   apiTimeoutMs,
   isTransientHttpStatus,
+  safeApiErrorMessage,
   shouldUseMockApi,
 } from '../src/api/apiConfig.ts'
 
@@ -35,4 +36,10 @@ test('warmup retries only temporary gateway and availability failures', () => {
   assert.equal(isTransientHttpStatus(503), true)
   assert.equal(isTransientHttpStatus(401), false)
   assert.equal(isTransientHttpStatus(422), false)
+})
+
+test('API error messages never expose an upstream HTML error page', () => {
+  const html502 = '<!DOCTYPE html><html><head><title>502</title><style>body {}</style></head></html>'
+  assert.equal(safeApiErrorMessage(html502, 'Không thể phân tích triệu chứng'), 'Không thể phân tích triệu chứng')
+  assert.equal(safeApiErrorMessage('Lượt khám không tồn tại', 'Lỗi'), 'Lượt khám không tồn tại')
 })

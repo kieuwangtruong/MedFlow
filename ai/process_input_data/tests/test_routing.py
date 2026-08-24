@@ -36,6 +36,12 @@ def test_negated_seizure_is_not_red_flag() -> None:
     assert detect_red_flag("Tôi không có cơn co giật") is None
 
 
+def test_unilateral_numbness_is_a_red_flag() -> None:
+    match = detect_red_flag("T\u00ea n\u1eeda ng\u01b0\u1eddi, v\u00e1ng \u0111\u1ea7u")
+    assert match is not None
+    assert match.code == "SUDDEN_NEURO_DEFICIT"
+
+
 def test_returns_top_three_departments() -> None:
     result = build_service().route(
         RoutingRequest(
