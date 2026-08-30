@@ -1,0 +1,4 @@
+Strategy,Median Wait (min),P80 Wait (min),P90 Wait (min),Mean Wait (min),SLA Breach Rate (%),Wait Reduction Delta W (%),Avg Journey Time (min),Room Imbalance (CV)
+Static Round-Robin,379.7,588.8,636.4,378.6,94.0,0.0,403.0,0.015
+Shortest Queue First (SQF),318.3,507.8,557.2,323.2,94.0,16.2,347.6,0.071
+AI-Driven P80 Balancing,318.8,507.6,557.0,323.2,94.0,16.1,347.6,0.015

@@ -1,0 +1,192 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/powerbi/semantic-model/v1.0.0/schema.json",
+  "name": "MedFlow_Operations_Semantic_Model",
+  "compatibilityLevel": 1550,
+  "description": "Star Schema semantic model for MedFlow hospital queue operations and patient journey analytics",
+  "tables": [
+    {
+      "name": "fact_task_execution",
+      "description": "Grain: 1 row per clinical task / diagnostic service execution",
+      "columns": [
+        { "name": "task_key", "dataType": "string", "isKey": true },
+        { "name": "journey_key", "dataType": "string" },
+        { "name": "patient_key", "dataType": "string" },
+        { "name": "doctor_key", "dataType": "string" },
+        { "name": "room_key", "dataType": "string" },
+        { "name": "specialty_key", "dataType": "string" },
+        { "name": "date_key", "dataType": "int64" },
+        { "name": "time_slot_key", "dataType": "int64" },
+        { "name": "task_type", "dataType": "string" },
+        { "name": "service_type", "dataType": "string" },
+        { "name": "clinical_priority", "dataType": "string" },
+        { "name": "status", "dataType": "string" },
+        { "name": "operational_wait_minutes", "dataType": "double" },
+        { "name": "physical_wait_minutes", "dataType": "double" },
+        { "name": "service_duration_minutes", "dataType": "double" },
+        { "name": "result_turnaround_minutes", "dataType": "double" },
+        { "name": "sla_target_minutes", "dataType": "double" },
+        { "name": "is_sla_breach", "dataType": "boolean" },
+        { "name": "queue_length_at_arrival", "dataType": "int64" },
+        { "name": "resource_failure", "dataType": "boolean" },
+        { "name": "emergency_insertion", "dataType": "boolean" }
+      ]
+    },
+    {
+      "name": "fact_patient_journey",
+      "description": "Grain: 1 row per overall patient episode of care",
+      "columns": [
+        { "name": "journey_key", "dataType": "string", "isKey": true },
+        { "name": "patient_key", "dataType": "string" },
+        { "name": "date_key", "dataType": "int64" },
+        { "name": "time_slot_key", "dataType": "int64" },
+        { "name": "intake_source", "dataType": "string" },
+        { "name": "severity_score", "dataType": "int64" },
+        { "name": "total_tasks", "dataType": "int64" },
+        { "name": "completed_tasks", "dataType": "int64" },
+        { "name": "has_a_b_return", "dataType": "boolean" },
+        { "name": "total_wait_minutes", "dataType": "double" },
+        { "name": "total_service_minutes", "dataType": "double" },
+        { "name": "journey_duration_minutes", "dataType": "double" },
+        { "name": "is_sla_breached", "dataType": "boolean" }
+      ]
+    },
+    {
+      "name": "dim_patient",
+      "description": "Dimension: Anonymized patient master",
+      "columns": [
+        { "name": "patient_key", "dataType": "string", "isKey": true },
+        { "name": "patient_alias", "dataType": "string" },
+        { "name": "anonymization_method", "dataType": "string" }
+      ]
+    },
+    {
+      "name": "dim_doctor",
+      "description": "Dimension: Clinical staff and physicians",
+      "columns": [
+        { "name": "doctor_key", "dataType": "string", "isKey": true },
+        { "name": "doctor_id", "dataType": "string" },
+        { "name": "doctor_name", "dataType": "string" },
+        { "name": "role", "dataType": "string" }
+      ]
+    },
+    {
+      "name": "dim_clinic_room",
+      "description": "Dimension: Clinic rooms, ultrasound/xray suites",
+      "columns": [
+        { "name": "room_key", "dataType": "string", "isKey": true },
+        { "name": "room_name", "dataType": "string" },
+        { "name": "department_name", "dataType": "string" },
+        { "name": "is_active", "dataType": "boolean" }
+      ]
+    },
+    {
+      "name": "dim_specialty",
+      "description": "Dimension: 12 Clinical Specialties",
+      "columns": [
+        { "name": "specialty_key", "dataType": "string", "isKey": true },
+        { "name": "specialty_name", "dataType": "string" },
+        { "name": "department_name", "dataType": "string" }
+      ]
+    },
+    {
+      "name": "dim_date",
+      "description": "Dimension: Enterprise Date Calendar Table",
+      "columns": [
+        { "name": "date_key", "dataType": "int64", "isKey": true },
+        { "name": "full_date", "dataType": "dateTime" },
+        { "name": "full_date_str", "dataType": "string" },
+        { "name": "year", "dataType": "int64" },
+        { "name": "quarter", "dataType": "string" },
+        { "name": "month", "dataType": "int64" },
+        { "name": "month_name", "dataType": "string" },
+        { "name": "day_of_month", "dataType": "int64" },
+        { "name": "day_of_week", "dataType": "int64" },
+        { "name": "day_name", "dataType": "string" },
+        { "name": "is_weekend", "dataType": "boolean" }
+      ]
+    },
+    {
+      "name": "dim_time_slot",
+      "description": "Dimension: 48 30-minute intervals per 24-hour cycle",
+      "columns": [
+        { "name": "time_slot_key", "dataType": "int64", "isKey": true },
+        { "name": "slot_start_time", "dataType": "string" },
+        { "name": "slot_end_time", "dataType": "string" },
+        { "name": "slot_label", "dataType": "string" },
+        { "name": "shift_period", "dataType": "string" }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "patient_key",
+      "toTable": "dim_patient",
+      "toColumn": "patient_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "doctor_key",
+      "toTable": "dim_doctor",
+      "toColumn": "doctor_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "room_key",
+      "toTable": "dim_clinic_room",
+      "toColumn": "room_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "specialty_key",
+      "toTable": "dim_specialty",
+      "toColumn": "specialty_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "date_key",
+      "toTable": "dim_date",
+      "toColumn": "date_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "time_slot_key",
+      "toTable": "dim_time_slot",
+      "toColumn": "time_slot_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_task_execution",
+      "fromColumn": "journey_key",
+      "toTable": "fact_patient_journey",
+      "toColumn": "journey_key",
+      "crossFilteringBehavior": "bothDirections"
+    },
+    {
+      "fromTable": "fact_patient_journey",
+      "fromColumn": "patient_key",
+      "toTable": "dim_patient",
+      "toColumn": "patient_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_patient_journey",
+      "fromColumn": "date_key",
+      "toTable": "dim_date",
+      "toColumn": "date_key",
+      "crossFilteringBehavior": "oneDirection"
+    },
+    {
+      "fromTable": "fact_patient_journey",
+      "fromColumn": "time_slot_key",
+      "toTable": "dim_time_slot",
+      "toColumn": "time_slot_key",
+      "crossFilteringBehavior": "oneDirection"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+room_key,room_name,department_name,is_active
+CLINIC-A,CLINIC-A,Khoa Khám bệnh Tổng quát,True
+ULTRASOUND-01,ULTRASOUND-01,Khoa Chẩn đoán hình ảnh,True
+XRAY-01,XRAY-01,Khoa Chẩn đoán hình ảnh,True

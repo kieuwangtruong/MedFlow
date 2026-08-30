@@ -1,0 +1,129 @@
+// =============================================================================
+// MedFlow Enterprise Power BI Semantic Model - Standard DAX Measures Library
+// Classification: Healthcare Operational Intelligence & Queue Performance
+// Standard: DAMA-DMBOK Star Schema Architecture
+// Version: 2.0.0
+// =============================================================================
+
+// --- 1. CORE VOLUME & THROUGHPUT MEASURES ---
+
+[Total Tasks] = 
+COUNTROWS('fact_task_execution')
+
+[Total Journeys] = 
+DISTINCTCOUNT('fact_patient_journey'[journey_key])
+
+[Total Unique Patients] = 
+DISTINCTCOUNT('fact_patient_journey'[patient_key])
+
+[Completed Tasks] = 
+CALCULATE(
+    COUNTROWS('fact_task_execution'),
+    'fact_task_execution'[status] = "COMPLETED"
+)
+
+[Task Completion Rate %] = 
+DIVIDE([Completed Tasks], [Total Tasks], 0)
+
+[Daily Completed Throughput] = 
+DIVIDE(
+    [Completed Tasks],
+    DISTINCTCOUNT('dim_date'[date_key]),
+    0
+)
+
+// --- 2. ADVANCED TIME & PERCENTILE MEASURES ---
+
+[Median Operational Wait (P50)] = 
+MEDIAN('fact_task_execution'[operational_wait_minutes])
+
+[P80 Operational Wait] = 
+PERCENTILE.INC('fact_task_execution'[operational_wait_minutes], 0.80)
+
+[P90 Operational Wait] = 
+PERCENTILE.INC('fact_task_execution'[operational_wait_minutes], 0.90)
+
+[P95 Operational Wait] = 
+PERCENTILE.INC('fact_task_execution'[operational_wait_minutes], 0.95)
+
+[Mean Operational Wait] = 
+AVERAGE('fact_task_execution'[operational_wait_minutes])
+
+[Average Physical Wait] = 
+AVERAGE('fact_task_execution'[physical_wait_minutes])
+
+[Average Service Duration Minutes] = 
+AVERAGE('fact_task_execution'[service_duration_minutes])
+
+[Diagnostic Result Turnaround Minutes] = 
+AVERAGE('fact_task_execution'[result_turnaround_minutes])
+
+// --- 3. SLA COMPLIANCE & PERFORMANCE BENCHMARKS ---
+
+[SLA Breach Count] = 
+CALCULATE(
+    COUNTROWS('fact_task_execution'),
+    'fact_task_execution'[is_sla_breach] = TRUE()
+)
+
+[SLA Breach Rate %] = 
+DIVIDE([SLA Breach Count], [Total Tasks], 0)
+
+[SLA Compliance Rate %] = 
+1 - [SLA Breach Rate %]
+
+[Emergency Priority Tasks] = 
+CALCULATE(
+    COUNTROWS('fact_task_execution'),
+    'fact_task_execution'[clinical_priority] = "EMERGENCY"
+)
+
+[Urgent Priority Tasks] = 
+CALCULATE(
+    COUNTROWS('fact_task_execution'),
+    'fact_task_execution'[clinical_priority] = "URGENT"
+)
+
+// --- 4. PATIENT JOURNEY & 3-STEP (A -> B -> A') FLOW MEASURES ---
+
+[3-Step A-B-A Journey Count] = 
+CALCULATE(
+    COUNTROWS('fact_patient_journey'),
+    'fact_patient_journey'[has_a_b_return] = TRUE()
+)
+
+[3-Step Journey Share %] = 
+DIVIDE([3-Step A-B-A Journey Count], [Total Journeys], 0)
+
+[Average Journey Length of Stay (LOS)] = 
+AVERAGE('fact_patient_journey'[journey_duration_minutes])
+
+[Median Journey Length of Stay (LOS)] = 
+MEDIAN('fact_patient_journey'[journey_duration_minutes])
+
+// --- 5. TIME INTELLIGENCE (MoM / WoW COMPARISONS) ---
+
+[Total Tasks MTD] = 
+TOTALMTD([Total Tasks], 'dim_date'[full_date])
+
+[Total Tasks Previous Month] = 
+CALCULATE(
+    [Total Tasks],
+    DATEADD('dim_date'[full_date], -1, MONTH)
+)
+
+[Task Volume MoM Growth %] = 
+DIVIDE(
+    [Total Tasks] - [Total Tasks Previous Month],
+    [Total Tasks Previous Month],
+    0
+)
+
+[Median Wait Previous Month] = 
+CALCULATE(
+    [Median Operational Wait (P50)],
+    DATEADD('dim_date'[full_date], -1, MONTH)
+)
+
+[Median Wait Reduction MoM (Minutes)] = 
+[Median Wait Previous Month] - [Median Operational Wait (P50)]
