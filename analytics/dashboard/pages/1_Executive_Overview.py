@@ -5,13 +5,23 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from analytics.dashboard.common import PALETTE, empty_guard, header, load_dashboard_data, sidebar_filters
-from analytics.src.metrics import kpis, sla_performance_by_priority, specialty_performance_breakdown
+
+from analytics.dashboard.common import (
+    PALETTE,
+    empty_guard,
+    header,
+    load_dashboard_data,
+    sidebar_filters,
+)
+from analytics.src.metrics import (
+    kpis,
+    sla_performance_by_priority,
+    specialty_performance_breakdown,
+)
 
 st.set_page_config(page_title="Executive Overview - MedFlow", page_icon="📊", layout="wide")
 
@@ -56,8 +66,8 @@ with left_col:
 
 with right_col:
     fig_wait = go.Figure()
-    fig_wait.add_trace(go.Scatter(x=daily["event_date"], y=daily["median_wait"], mode="lines+markers", name="Median Wait (P50)", line=dict(color=PALETTE['orange'], width=3)))
-    fig_wait.add_trace(go.Scatter(x=daily["event_date"], y=daily["p80_wait"], mode="lines+markers", name="P80 Wait", line=dict(color="#EF4444", dash="dash")))
+    fig_wait.add_trace(go.Scatter(x=daily["event_date"], y=daily["median_wait"], mode="lines+markers", name="Median Wait (P50)", line={"color": PALETTE['orange'], "width": 3}))
+    fig_wait.add_trace(go.Scatter(x=daily["event_date"], y=daily["p80_wait"], mode="lines+markers", name="P80 Wait", line={"color": "#EF4444", "dash": "dash"}))
     fig_wait.update_layout(title="⏱️ Xu Hướng Thời Gian Chờ Theo Ngày (P50 & P80)", xaxis_title="Ngày", yaxis_title="Phút", template="plotly_white")
     st.plotly_chart(fig_wait, use_container_width=True)
 

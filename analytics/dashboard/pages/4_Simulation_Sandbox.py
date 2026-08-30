@@ -10,8 +10,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from analytics.dashboard.common import PALETTE, empty_guard, header, load_dashboard_data
-from analytics.src.simulation_engine import SimulationConfig, evaluate_simulation_strategies
+
+from analytics.dashboard.common import header, load_dashboard_data
+from analytics.src.simulation_engine import (
+    SimulationConfig,
+    evaluate_simulation_strategies,
+)
 
 st.set_page_config(page_title="AI Forecast & Simulation Sandbox - MedFlow", page_icon="⚡", layout="wide")
 
@@ -123,10 +127,10 @@ with tab2:
     })
 
     fig_forecast = go.Figure()
-    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Ngưỡng Trên (Upper 95%)"], mode="lines", line=dict(width=0), showlegend=False))
-    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Ngưỡng Dưới (Lower 95%)"], mode="lines", fill="tonexty", fillcolor="rgba(59, 130, 246, 0.15)", line=dict(width=0), name="Dải Tin Cậy 95%"))
-    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Dự Báo AI"], mode="lines+markers", name="Dự Báo AI (Predicted)", line=dict(color="#2563EB", width=3)))
-    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Lưu Lượng Thực Tế"], mode="markers", name="Thực Tế Tiếp Đón (Actual)", marker=dict(color="#10B981", size=8)))
+    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Ngưỡng Trên (Upper 95%)"], mode="lines", line={"width": 0}, showlegend=False))
+    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Ngưỡng Dưới (Lower 95%)"], mode="lines", fill="tonexty", fillcolor="rgba(59, 130, 246, 0.15)", line={"width": 0}, name="Dải Tin Cậy 95%"))
+    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Dự Báo AI"], mode="lines+markers", name="Dự Báo AI (Predicted)", line={"color": "#2563EB", "width": 3}))
+    fig_forecast.add_trace(go.Scatter(x=forecast_df["Khung Giờ"], y=forecast_df["Lưu Lượng Thực Tế"], mode="markers", name="Thực Tế Tiếp Đón (Actual)", marker={"color": "#10B981", "size": 8}))
     
     fig_forecast.update_layout(title="Mô Hình Dự Báo Lượng Bệnh Nhân Đến Khám (Intraday Patient Arrival Demand)", xaxis_title="Khung Giờ 30 Phút", yaxis_title="Số Bệnh Nhân Tiếp Đón", template="plotly_white")
     st.plotly_chart(fig_forecast, use_container_width=True)

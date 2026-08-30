@@ -6,7 +6,7 @@ from pathlib import Path
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from analytics.dashboard.common import PALETTE, load_dashboard_data
+from analytics.dashboard.common import load_dashboard_data
 
 st.set_page_config(
     page_title="MedFlow Executive Control Center",
@@ -46,7 +46,7 @@ st.markdown("### Trung Tâm Giám Sát & Tối Ưu Hóa Vận Hành Hàng Đợi
 prefer_live = st.sidebar.toggle("Ưu tiên PostgreSQL Live", value=True)
 try:
     tasks, journeys, source = load_dashboard_data(prefer_live)
-except Exception as error:
+except Exception as error:  # noqa: BLE001
     st.error(f"Không thể nạp dữ liệu: {error}")
     st.stop()
 

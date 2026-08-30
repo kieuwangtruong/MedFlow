@@ -5,12 +5,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
-from analytics.dashboard.common import PALETTE, empty_guard, header, load_dashboard_data, sidebar_filters
+
+from analytics.dashboard.common import (
+    empty_guard,
+    header,
+    load_dashboard_data,
+    sidebar_filters,
+)
 
 st.set_page_config(page_title="Room Operations & Bottlenecks - MedFlow", page_icon="🏥", layout="wide")
 

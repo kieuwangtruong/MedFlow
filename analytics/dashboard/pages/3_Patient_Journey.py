@@ -10,7 +10,13 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from analytics.dashboard.common import PALETTE, empty_guard, header, load_dashboard_data, sidebar_filters
+
+from analytics.dashboard.common import (
+    empty_guard,
+    header,
+    load_dashboard_data,
+    sidebar_filters,
+)
 from analytics.src.metrics import bottleneck_3step_analysis, journey_summary
 
 st.set_page_config(page_title="Patient Journey & Bottlenecks - MedFlow", page_icon="🔄", layout="wide")
