@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedFlow - Project Showcase & CV Profile</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        @page {
+            size: A4;
+            margin: 15mm 15mm 15mm 15mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #1E293B;
+            background: #FFFFFF;
+            line-height: 1.5;
+            font-size: 13.5px;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Header / Title block */
+        .header {
+            border-bottom: 2px solid #0284C7;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0F172A;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #0284C7;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .links-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 12.5px;
+            margin-top: 6px;
+        }
+
+        .link-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            background: #F1F5F9;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            color: #0F172A;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-badge.primary {
+            background: #E0F2FE;
+            border-color: #7DD3FC;
+            color: #0369A1;
+        }
+
+        .link-badge.success {
+            background: #ECFDF5;
+            border-color: #6EE7B7;
+            color: #047857;
+        }
+
+        .link-badge:hover {
+            text-decoration: underline;
+        }
+
+        /* Section styles */
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0F172A;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #E2E8F0;
+            padding-bottom: 4px;
+            margin-top: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .project-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 6px;
+        }
+
+        .project-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0F172A;
+        }
+
+        .project-role {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0284C7;
+        }
+
+        .project-dates {
+            font-size: 12px;
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        .tech-stack {
+            font-size: 12px;
+            color: #475569;
+            background: #F8FAFC;
+            padding: 5px 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            border-left: 3px solid #0284C7;
+        }
+
+        .tech-stack strong {
+            color: #1E293B;
+        }
+
+        ul.achievements {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        ul.achievements li {
+            position: relative;
+            padding-left: 18px;
+            margin-bottom: 7px;
+            color: #334155;
+            text-align: justify;
+        }
+
+        ul.achievements li::before {
+            content: "▪";
+            position: absolute;
+            left: 2px;
+            color: #0284C7;
+            font-size: 14px;
+            top: -1px;
+        }
+
+        ul.achievements li strong {
+            color: #0F172A;
+        }
+
+        .highlight-box {
+            background: #F0FDF4;
+            border: 1px solid #BBF7D0;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #166534;
+        }
+
+        .highlight-box strong {
+            color: #14532D;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>MEDFLOW — CV & PORTFOLIO SHOWCASE</h1>
+            <div class="subtitle">Enterprise Hospital Queue Intelligence & Operational Analytics Platform</div>
+            <div class="links-bar">
+                <a class="link-badge primary" href="https://medflow-frontend-y3e6.onrender.com/login" target="_blank">🌐 Live Frontend Web App</a>
+                <a class="link-badge success" href="https://medflow-analytics.streamlit.app" target="_blank">📊 Live BI Analytics Dashboard</a>
+                <a class="link-badge" href="https://github.com/kieuwangtruong/MedFlow" target="_blank">💻 GitHub Repository</a>
+            </div>
+        </div>
+
+        <!-- SECTION 1: ENGLISH VERSION -->
+        <div class="section-title">📌 1. English Version (ATS & Global Tech Recruiter Ready)</div>
+        <div class="project-card">
+            <div class="project-header">
+                <div>
+                    <span class="project-title">MEDFLOW – Hospital Queue Intelligence & Operational Analytics Platform</span>
+                </div>
+                <span class="project-dates">Oct 2025 – Present</span>
+            </div>
+            <div class="project-role" style="margin-bottom: 6px;">Role: Data Analyst / Analytics Engineer</div>
+            <div class="tech-stack">
+                <strong>Tech Stack:</strong> Python (Pandas, Plotly, SciPy, Streamlit), SQL (PostgreSQL/Neon), Star Schema (DAMA-DMBOK), Power BI (DAX Measures), FastAPI, Node.js/Express, Docker.
+            </div>
+            <ul class="achievements">
+                <li><strong>Enterprise Data Modeling:</strong> Architected a 4-layer Medallion Data Platform and Star Schema (Fact/Dimension) compliant with DAMA-DMBOK, consolidating over 10,000+ patient journey records across 12 clinical specialties.</li>
+                <li><strong>DAX & Percentile Semantic Layer:</strong> Built a library of <strong>20+ advanced DAX measures</strong> and statistical distribution models (P50, P80, P90 percentiles via <code>PERCENTILE.INC</code>), replacing skewed mean averages to accurately capture the true wait experience of 85%+ of patients.</li>
+                <li><strong>Real-time Executive Control Center:</strong> Deployed a multi-page interactive Streamlit dashboard tracking the closed-loop 3-step patient journey (A &rarr; B &rarr; A': Initial Consult &rarr; Diagnostic Imaging &rarr; Return Review), intraday peak hour heatmaps, and priority-based SLA breach rates.</li>
+                <li><strong>AI What-If Simulation Sandbox:</strong> Engineered a discrete-event simulation engine benchmarking 3 patient routing strategies (<em>Round-Robin</em>, <em>Shortest Queue First</em>, and <em>AI Dynamic Routing</em>), demonstrating an <strong>18% reduction in median operational wait time</strong> under resource failure and emergency surge constraints.</li>
+            </ul>
+        </div>
+
+        <!-- SECTION 2: VIETNAMESE VERSION -->
+        <div class="section-title">📌 2. Bản Tiếng Việt (Doanh nghiệp trong nước & Khối Y tế)</div>
+        <div class="project-card">
+            <div class="project-header">
+                <div>
+                    <span class="project-title">MEDFLOW – Nền Tảng Giám Sát Vận Hành Hàng Đợi & Phân Tích Dữ Liệu Y Tế</span>
+                </div>
+                <span class="project-dates">10/2025 – Hiện tại</span>
+            </div>
+            <div class="project-role" style="margin-bottom: 6px;">Vai trò: Chuyên viên Phân tích Dữ liệu (Data Analyst / Analytics Engineer)</div>
+            <div class="tech-stack">
+                <strong>Công nghệ:</strong> Python (Pandas, Streamlit, Plotly, SciPy), SQL, PostgreSQL/Neon, Star Schema (DAMA-DMBOK), Power BI (DAX Measures), FastAPI, RESTful API.
+            </div>
+            <ul class="achievements">
+                <li><strong>Thiết Kế Kiến Trúc Dữ Liệu Chuẩn:</strong> Xây dựng mô hình Star Schema 4 tầng Medallion (Fact/Dimension) theo tiêu chuẩn DAMA-DMBOK, chuẩn hóa và làm sạch dữ liệu tiếp đón của 12 chuyên khoa lâm sàng.</li>
+                <li><strong>Mô Hình Tính Toán Phân Vị Nâng Cao:</strong> Xây dựng bộ thư viện <strong>20+ DAX Measures</strong> và thuật toán phân vị (P50, P80, P90), khắc phục hoàn toàn nhược điểm số trung bình (Mean), phản ánh chính xác 85% thời gian chờ thực tế của bệnh nhân.</li>
+                <li><strong>Trung Tâm Điều Hành Real-time (Executive Control Center):</strong> Triển khai Dashboard Streamlit trực quan hóa luồng khám 3 bước khép kín (A &rarr; B &rarr; A': Khám ban đầu &rarr; Cận lâm sàng &rarr; Tái khám kết luận), Heatmap tải buồng khám và ma trận tuân thủ SLA y tế.</li>
+                <li><strong>Mô Phỏng San Tải AI (What-If Simulation Sandbox):</strong> Lập trình công cụ mô phỏng ngẫu nhiên rời rạc (DES) so sánh 3 chiến lược điều phối hàng đợi (<em>Round-Robin, SQF, AI Dynamic Routing</em>), chứng minh khả năng <strong>giảm 18% thời gian chờ</strong> khi có ca cấp cứu hoặc sự cố thiết bị.</li>
+            </ul>
+        </div>
+
+        <div class="highlight-box">
+            <strong>💡 Hướng Dẫn Sử Dụng:</strong> File PDF này được thiết kế theo tỷ lệ chuẩn A4 và tích hợp sẵn 100% Hyperlink. Bạn có thể in trực tiếp, đính kèm vào hồ sơ ứng tuyển, hoặc copy nội dung phía trên vào template CV hiện tại của bạn.
+        </div>
+    </div>
+</body>
+</html>
