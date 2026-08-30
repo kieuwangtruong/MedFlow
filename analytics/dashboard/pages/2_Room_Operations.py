@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 import numpy as np
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
@@ -91,6 +92,9 @@ st.markdown("---")
 
 # Row 3: Room Summary Performance Table
 st.subheader("📋 Bảng Tổng Hợp Hiệu Suất Theo Buồng Khám")
+if "status" not in filtered:
+    filtered["status"] = filtered.get("readiness_status", pd.Series("COMPLETED", index=filtered.index)).fillna("COMPLETED")
+
 active_states = ["PENDING", "READY", "IN_QUEUE", "IN_SERVICE", "WAITING_RESULT"]
 rooms_table = filtered.groupby("room", as_index=False).agg(
     tasks=("task_id", "nunique"),

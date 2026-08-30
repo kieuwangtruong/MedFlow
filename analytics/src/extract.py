@@ -157,6 +157,9 @@ def _enrich_synthetic_dimensions(df: pd.DataFrame) -> pd.DataFrame:
         else:
             result["doctor_name"] = "BS. Trực lâm sàng"
 
+    if "status" not in result or result["status"].isna().all():
+        result["status"] = result.get("readiness_status", pd.Series("COMPLETED", index=result.index)).fillna("COMPLETED")
+
     return result
 
 
