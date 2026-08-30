@@ -1,5 +1,5 @@
 import os
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
@@ -16,23 +16,22 @@ def generate_pdf(output_path):
     
     styles = getSampleStyleSheet()
     
-    # Custom styles
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
         fontName='Helvetica-Bold',
-        fontSize=18,
-        leading=22,
+        fontSize=16,
+        leading=20,
         textColor=colors.HexColor('#0F172A'),
-        spaceAfter=4
+        spaceAfter=3
     )
     
     subtitle_style = ParagraphStyle(
         'DocSubtitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=14,
+        fontSize=10.5,
+        leading=13,
         textColor=colors.HexColor('#0284C7'),
         spaceAfter=8
     )
@@ -50,19 +49,19 @@ def generate_pdf(output_path):
         'SectionHeading',
         parent=styles['Heading2'],
         fontName='Helvetica-Bold',
-        fontSize=12,
-        leading=15,
+        fontSize=11.5,
+        leading=14,
         textColor=colors.HexColor('#0F172A'),
-        spaceBefore=12,
-        spaceAfter=6
+        spaceBefore=10,
+        spaceAfter=5
     )
     
     project_title = ParagraphStyle(
         'ProjectTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=11,
-        leading=14,
+        fontSize=10.5,
+        leading=13.5,
         textColor=colors.HexColor('#0F172A'),
     )
     
@@ -70,44 +69,44 @@ def generate_pdf(output_path):
         'RoleStyle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=10,
-        leading=13,
+        fontSize=9.5,
+        leading=12.5,
         textColor=colors.HexColor('#0284C7'),
-        spaceAfter=4
+        spaceAfter=3
     )
     
     tech_stack = ParagraphStyle(
         'TechStack',
         parent=styles['Normal'],
         fontName='Helvetica-Oblique',
-        fontSize=9,
-        leading=12,
+        fontSize=8.5,
+        leading=11.5,
         textColor=colors.HexColor('#334155'),
-        spaceAfter=6
+        spaceAfter=5
     )
     
     bullet_style = ParagraphStyle(
         'BulletStyle',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9.5,
-        leading=13.5,
+        fontSize=9,
+        leading=13,
         textColor=colors.HexColor('#1E293B'),
         leftIndent=12,
         firstLineIndent=-12,
-        spaceAfter=5
+        spaceAfter=4
     )
 
     story = []
     
     # Title & Subtitle
-    story.append(Paragraph("MEDFLOW — CV & PORTFOLIO SHOWCASE", title_style))
-    story.append(Paragraph("Enterprise Hospital Queue Intelligence & Operational Analytics Platform", subtitle_style))
+    story.append(Paragraph("MEDFLOW — DATA ANALYST CV SHOWCASE (VNPT / VAIC ALIGNED)", title_style))
+    story.append(Paragraph("Hospital Queue Intelligence & Operational Analytics Platform", subtitle_style))
     
     # Links Table
     links_data = [[
-        Paragraph('<a href="https://medflow-frontend-y3e6.onrender.com/login" color="#0284C7"><b>Live Frontend App</b></a>', link_style),
-        Paragraph('<a href="https://medflow-analytics.streamlit.app" color="#047857"><b>Live BI Dashboard (Streamlit)</b></a>', link_style),
+        Paragraph('<a href="https://medflow-frontend-y3e6.onrender.com/login" color="#0284C7"><b>Live Web App</b></a>', link_style),
+        Paragraph('<a href="https://medflow-analytics.streamlit.app" color="#047857"><b>Live Streamlit Dashboard</b></a>', link_style),
         Paragraph('<a href="https://github.com/kieuwangtruong/MedFlow" color="#0F172A"><b>GitHub Repository</b></a>', link_style),
     ]]
     link_table = Table(links_data, colWidths=[170, 190, 160])
@@ -115,39 +114,39 @@ def generate_pdf(output_path):
         ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#F1F5F9')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CBD5E1')),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
-        ('TOPPADDING', (0,0), (-1,-1), 6),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+        ('TOPPADDING', (0,0), (-1,-1), 5),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
         ('LEFTPADDING', (0,0), (-1,-1), 8),
         ('RIGHTPADDING', (0,0), (-1,-1), 8),
     ]))
     story.append(link_table)
-    story.append(Spacer(1, 10))
-    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0284C7'), spaceBefore=4, spaceAfter=8))
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0284C7'), spaceBefore=2, spaceAfter=6))
     
-    # SECTION 1: ENGLISH VERSION
-    story.append(Paragraph("1. ENGLISH RESUME SECTION (ATS & US TECH COMPLIANT)", section_heading))
-    story.append(Paragraph("<b>MEDFLOW – Hospital Queue Intelligence & Operational Analytics Platform</b>", project_title))
-    story.append(Paragraph("Role: Data Analyst / Analytics Engineer &nbsp;|&nbsp; Oct 2025 – Present", role_style))
-    story.append(Paragraph("<b>Tech Stack:</b> Python (Pandas, Plotly, SciPy, Streamlit), SQL (PostgreSQL/Neon), Star Schema (DAMA-DMBOK), Power BI (DAX), FastAPI, Node.js/Express, Docker.", tech_stack))
+    # SECTION 1: VIETNAMESE VERSION
+    story.append(Paragraph("1. BẢN TIẾNG VIỆT (TỐI ƯU ỨNG TUYỂN VNPT & DOANH NGHIỆP TRONG NƯỚC)", section_heading))
+    story.append(Paragraph("<b>MEDFLOW – Nền Tảng Phân Tích Dữ Liệu & Tối Ưu Hóa Vận Hành Hàng Đợi Bệnh Viện</b> (VNPT VAIC)", project_title))
+    story.append(Paragraph("Vai trò: Data Analyst (Fresher/Junior) &nbsp;|&nbsp; 10/2025 – Hiện tại", role_style))
+    story.append(Paragraph("<b>Công nghệ:</b> Python (Pandas, NumPy, SciPy, Streamlit, Plotly), PostgreSQL/Neon, Star Schema (Data Mart), Git.", tech_stack))
     
-    story.append(Paragraph("&bull; <b>Enterprise Data Modeling:</b> Architected a 4-layer Medallion Data Platform and Star Schema (Fact/Dimension) compliant with DAMA-DMBOK, consolidating over 10,000+ patient journey records across 12 clinical specialties.", bullet_style))
-    story.append(Paragraph("&bull; <b>DAX & Percentile Semantic Layer:</b> Built a library of <b>20+ advanced DAX measures</b> and statistical distribution models (P50, P80, P90 percentiles via <code>PERCENTILE.INC</code>), replacing skewed mean averages to accurately capture the true wait experience of 85%+ of patients.", bullet_style))
-    story.append(Paragraph("&bull; <b>Real-time Executive Control Center:</b> Deployed a multi-page interactive Streamlit dashboard tracking the closed-loop 3-step patient journey (A &rarr; B &rarr; A': Initial Consult &rarr; Diagnostic Imaging &rarr; Return Review), intraday peak hour heatmaps, and priority-based SLA breach rates.", bullet_style))
-    story.append(Paragraph("&bull; <b>AI What-If Simulation Sandbox:</b> Engineered a discrete-event simulation engine benchmarking 3 patient routing strategies (<i>Round-Robin</i>, <i>Shortest Queue First</i>, and <i>AI Dynamic Routing</i>), demonstrating an <b>18% reduction in median operational wait time</b> under resource failure and emergency surge constraints.", bullet_style))
+    story.append(Paragraph("&bull; <b>Data Modeling & Dictionary [MF-01]:</b> Khảo sát nghiệp vụ tiếp đón y tế số (Case study VNPT/VAIC), chuẩn hóa từ điển dữ liệu (Data Dictionary) và thiết kế Data Mart Star Schema (<code>fact_patient_journey</code>, <code>dim_departments</code>) quản lý hơn <b>10.000+ lượt khám</b> tại 12 chuyên khoa lâm sàng.", bullet_style))
+    story.append(Paragraph("&bull; <b>ETL & Data Cleaning Pipeline [MF-02]:</b> Xây dựng pipeline Python (Pandas) tự động xử lý missing values, loại bỏ bản ghi ngoại lai (thời gian chờ âm, service duration > 180 phút) và chuẩn hóa đồng bộ múi giờ từ ISO UTC sang <code>Asia/Ho_Chi_Minh</code>.", bullet_style))
+    story.append(Paragraph("&bull; <b>Phân Tích Thống Kê & Điểm Nghẽn Luồng Khám [MF-03]:</b> Ứng dụng SciPy/SQL tính toán các phân vị <b>P50, P80, P90</b> thay thế giá trị trung bình (Mean) bị lệch phải; cô lập và chỉ ra điểm nghẽn nghiêm trọng nhất tại khâu cận lâm sàng/CĐHA với thời gian chờ P80 kéo dài <b>48 phút</b> trong luồng khép kín 3 bước (A &rarr; B &rarr; A': Khám ban đầu &rarr; CLS &rarr; Tái khám).", bullet_style))
+    story.append(Paragraph("&bull; <b>Mô Phỏng San Tải & Dashboard Điều Hành [MF-04, MF-05]:</b> Lập trình thuật toán mô phỏng hàng đợi ngẫu nhiên rời rạc (Discrete-Event Simulation) chứng minh giải pháp <i>AI Dynamic Routing</i> giúp <b>giảm 18% – 25% thời gian chờ trung vị (P50)</b> trong khung giờ cao điểm; triển khai Streamlit Dashboard trực quan hóa Heatmap mật độ buồng khám và ma trận cảnh báo vi phạm cam kết SLA y tế theo thời gian thực.", bullet_style))
     
-    story.append(Spacer(1, 10))
-    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#E2E8F0'), spaceBefore=6, spaceAfter=8))
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1, color=colors.HexColor('#E2E8F0'), spaceBefore=4, spaceAfter=6))
     
-    # SECTION 2: VIETNAMESE VERSION
-    story.append(Paragraph("2. BẢN TIẾNG VIỆT (DÀNH CHO DOANH NGHIỆP TRONG NƯỚC / Y TẾ)", section_heading))
-    story.append(Paragraph("<b>MEDFLOW – Nền Tảng Giám Sát Vận Hành Hàng Đợi & Phân Tích Dữ Liệu Y Tế</b>", project_title))
-    story.append(Paragraph("Vai trò: Chuyên viên Phân tích Dữ liệu (Data Analyst / Analytics Engineer) &nbsp;|&nbsp; 10/2025 – Hiện tại", role_style))
-    story.append(Paragraph("<b>Công nghệ:</b> Python (Pandas, Streamlit, Plotly, SciPy), SQL, PostgreSQL/Neon, Star Schema (DAMA-DMBOK), Power BI (DAX Measures), FastAPI, RESTful API.", tech_stack))
+    # SECTION 2: ENGLISH VERSION
+    story.append(Paragraph("2. ENGLISH RESUME SECTION (ATS-FRIENDLY & US TECH COMPLIANT)", section_heading))
+    story.append(Paragraph("<b>MEDFLOW – Hospital Queue Intelligence & Operational Analytics Platform</b> (VAIC Case Study)", project_title))
+    story.append(Paragraph("Role: Junior Data Analyst &nbsp;|&nbsp; Oct 2025 – Present", role_style))
+    story.append(Paragraph("<b>Tech Stack:</b> Python (Pandas, NumPy, SciPy, Streamlit, Plotly), PostgreSQL/Neon, Star Schema (Data Mart), Git.", tech_stack))
     
-    story.append(Paragraph("&bull; <b>Thiết Kế Kiến Trúc Dữ Liệu Chuẩn:</b> Xây dựng mô hình Star Schema 4 tầng Medallion (Fact/Dimension) theo tiêu chuẩn DAMA-DMBOK, chuẩn hóa dữ liệu tiếp đón và điều phối của 12 chuyên khoa lâm sàng.", bullet_style))
-    story.append(Paragraph("&bull; <b>Mô Hình Tính Toán Phân Vị Nâng Cao:</b> Xây dựng bộ thư viện <b>20+ DAX Measures</b> và thuật toán phân vị (P50, P80, P90), khắc phục hoàn toàn nhược điểm số trung bình (Mean), phản ánh chính xác 85% thời gian chờ thực tế của bệnh nhân.", bullet_style))
-    story.append(Paragraph("&bull; <b>Trung Tâm Điều Hành Real-time (Executive Control Center):</b> Triển khai Dashboard Streamlit trực quan hóa luồng khám 3 bước khép kín (A &rarr; B &rarr; A': Khám ban đầu &rarr; Cận lâm sàng &rarr; Tái khám kết luận), Heatmap tải buồng khám và ma trận tuân thủ SLA y tế.", bullet_style))
-    story.append(Paragraph("&bull; <b>Mô Phỏng San Tải AI (What-If Simulation Sandbox):</b> Lập trình công cụ mô phỏng ngẫu nhiên rời rạc (DES) so sánh 3 chiến lược điều phối hàng đợi (<i>Round-Robin, SQF, AI Dynamic Routing</i>), chứng minh khả năng <b>giảm 18% thời gian chờ</b> khi có ca cấp cứu hoặc sự cố thiết bị.", bullet_style))
+    story.append(Paragraph("&bull; <b>Data Understanding & Data Mart Design [MF-01]:</b> Formulated an end-to-end Data Dictionary and designed a Star Schema Data Mart (<code>fact_patient_journey</code>, <code>dim_departments</code>) based on digital outpatient workflows (VNPT/VAIC case study), organizing <b>10,000+ patient records</b> across 12 clinical departments.", bullet_style))
+    story.append(Paragraph("&bull; <b>ETL & Data Preprocessing Pipeline [MF-02]:</b> Engineered an automated Python (Pandas) data cleansing pipeline handling missing values, filtering physiological/log anomalies (negative durations, tasks > 180 mins), and converting UTC timestamps to local timezone (<code>Asia/Ho_Chi_Minh</code>).", bullet_style))
+    story.append(Paragraph("&bull; <b>Descriptive & Percentile Bottleneck Analytics [MF-03]:</b> Computed robust statistical percentiles (<b>P50, P80, P90</b> via SciPy/SQL) to overcome right-skewed mean bias; isolated a critical diagnostic turnaround bottleneck of <b>48 minutes (P80 wait)</b> within the closed-loop 3-step pathway (A &rarr; B &rarr; A': Consult &rarr; Lab/Imaging &rarr; Review).", bullet_style))
+    story.append(Paragraph("&bull; <b>Discrete-Event Simulation & Operational Dashboard [MF-04, MF-05]:</b> Programmed a discrete-event simulation engine benchmarking routing strategies, quantifying an <b>18% – 25% reduction in median wait time (P50)</b> during peak arrival surges using <i>AI Dynamic Routing</i>; deployed a multi-page interactive Streamlit Control Center visualizing real-time room load heatmaps and clinical SLA breach matrices.", bullet_style))
     
     doc.build(story)
     print("PDF generated successfully at:", output_path)
