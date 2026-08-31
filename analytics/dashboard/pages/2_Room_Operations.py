@@ -55,16 +55,18 @@ c_left, c_right = st.columns(2)
 with c_left:
     st.subheader("📈 Tương Quan Độ Dài Hàng Đợi vs Thời Gian Chờ")
     if "queue_length" in filtered and filtered["queue_length"].notna().any():
-        fig_scatter = px.scatter(
-            filtered,
-            x="queue_length",
-            y="operational_wait_minutes",
-            color="clinical_priority",
-            trendline="ols",
-            title="Độ Dài Hàng Đợi Lúc Bệnh Nhân Đến vs Thời Gian Chờ Thực Tế",
-            labels={"queue_length": "Số Người Đang Xếp Hàng", "operational_wait_minutes": "Thời Gian Chờ (Phút)"},
-            color_discrete_map={"EMERGENCY": "#EF4444", "URGENT": "#F59E0B", "NORMAL": "#3B82F6", "NON_URGENT": "#10B981"},
-        )
+        scatter_kwargs = {
+            "x": "queue_length",
+            "y": "operational_wait_minutes",
+            "color": "clinical_priority",
+            "title": "Độ Dài Hàng Đợi Lúc Bệnh Nhân Đến vs Thời Gian Chờ Thực Tế",
+            "labels": {"queue_length": "Số Người Đang Xếp Hàng", "operational_wait_minutes": "Thời Gian Chờ (Phút)"},
+            "color_discrete_map": {"EMERGENCY": "#EF4444", "URGENT": "#F59E0B", "NORMAL": "#3B82F6", "NON_URGENT": "#10B981"},
+        }
+        try:
+            fig_scatter = px.scatter(filtered, trendline="ols", **scatter_kwargs)
+        except Exception:
+            fig_scatter = px.scatter(filtered, **scatter_kwargs)
         fig_scatter.update_layout(template="plotly_white")
         st.plotly_chart(fig_scatter, use_container_width=True)
     else:
