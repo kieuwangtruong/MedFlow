@@ -15,7 +15,7 @@ function buildPatientToken() {
 function toAuthUser(patient) {
   return {
     id: patient.id,
-    full_name: patient.fullName || `Benh nhan ${patient.identificationCode}`,
+    full_name: patient.fullName || `Bệnh nhân ${patient.identificationCode}`,
     role: 'PATIENT',
     cccd: patient.identificationCode,
     patient_token: patient.patientToken,

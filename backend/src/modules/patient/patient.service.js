@@ -3,6 +3,7 @@ const AppError = require('../../errors/app-error');
 const prisma = require('../../lib/prisma');
 const { emitAiEvents, taskEvent } = require('../shared/ai-events');
 const { activeAssignmentFilter, activeDoctorForRoom } = require('../shared/doctor-assignments');
+const { calculateEWT } = require('../shared/queue-calculations');
 const {
   currentQueueEntry,
   floorNumber,
@@ -267,7 +268,7 @@ async function submitSymptoms(patientToken, visitId, payload) {
       where: { id: visitId },
       data: {
         severityScore,
-        symptomDescription: payload.description.trim(),
+        symptomDescription: (payload.description || '').trim(),
         symptomPayload: payload,
         symptomsSubmittedAt: new Date(),
         intakeSource: journey.intakeSource || 'PATIENT_SELF',
@@ -361,7 +362,7 @@ async function confirmRouting(patientToken, visitId, payload) {
       where: { id: queueId },
       create: {
         id: queueId,
-        name: `Hang doi ${room.name}`,
+        name: `Hàng đợi ${room.name}`,
         roomId: room.id,
         serviceType: 'CLINICAL_CONSULT',
         isActive: true,
@@ -454,23 +455,75 @@ async function getPathway(patientToken, visitId) {
   const currentTask = journey.tasks.find((task) => activeTaskStatuses.includes(task.status))
     || journey.tasks.at(-1);
   const entry = currentTask ? currentQueueEntry(currentTask) : null;
-  const peopleAhead = entry?.queueNumber
-    ? await prisma.patientQueueEntry.count({
+
+  let peopleAhead = 0;
+  let estimatedWait = 0;
+
+  if (currentTask && currentTask.status !== 'COMPLETED' && currentTask.queueId && entry) {
+    peopleAhead = await prisma.patientQueueEntry.count({
       where: {
         queueId: entry.queueId,
         status: 'WAITING',
         queueNumber: { lt: entry.queueNumber },
       },
-    })
-    : 0;
-  const estimatedWait = Math.max(0, Math.round(currentTask?.queue?.estimatedWaitMinutes || 0));
+    });
+
+    const activeInService = await prisma.patientQueueEntry.findFirst({
+      where: {
+        queueId: entry.queueId,
+        status: 'IN_SERVICE',
+      },
+      orderBy: { serviceStartAt: 'desc' },
+    });
+
+    estimatedWait = calculateEWT({
+      patientsAhead: peopleAhead,
+      currentServiceStart: activeInService?.serviceStartAt || null,
+      serviceType: currentTask.serviceType,
+      taskType: currentTask.taskType,
+    });
+  }
+
   let offsetMinutes = 0;
-  const steps = journey.tasks.map((task) => {
+  const steps = [];
+
+  for (const task of journey.tasks) {
     const queueEntry = currentQueueEntry(task);
-    const wait = Math.max(0, Math.round(task.queue?.estimatedWaitMinutes || 0));
+    let wait = 0;
+
+    if (task.status === 'COMPLETED' || task.status === 'CANCELLED') {
+      wait = 0;
+    } else if (task.status === 'IN_SERVICE') {
+      wait = 0;
+    } else if (task.queueId && queueEntry) {
+      const stepAhead = await prisma.patientQueueEntry.count({
+        where: {
+          queueId: task.queueId,
+          status: 'WAITING',
+          queueNumber: { lt: queueEntry.queueNumber },
+        },
+      });
+
+      const stepInService = await prisma.patientQueueEntry.findFirst({
+        where: {
+          queueId: task.queueId,
+          status: 'IN_SERVICE',
+        },
+        orderBy: { serviceStartAt: 'desc' },
+      });
+
+      wait = calculateEWT({
+        patientsAhead: stepAhead,
+        currentServiceStart: stepInService?.serviceStartAt || null,
+        serviceType: task.serviceType,
+        taskType: task.taskType,
+      });
+    }
+
     offsetMinutes += wait;
     const estimatedStart = new Date(Date.now() + offsetMinutes * 60000).toISOString();
-    return {
+
+    steps.push({
       id: task.id,
       title: taskTitle(task),
       department: taskDepartment(task),
@@ -481,8 +534,8 @@ async function getPathway(patientToken, visitId) {
       estimatedStart,
       actualTime: task.completedAt?.toISOString(),
       directions: task.room ? `${task.room.floor || 'Tầng 1'} · ${task.room.name}` : 'Theo hướng dẫn của nhân viên',
-    };
-  });
+    });
+  }
 
   return {
     visitId,
@@ -545,7 +598,7 @@ async function getNotifications(patientToken) {
   const patientName = journey.patient.fullName || `Bệnh nhân ${journey.patient.identificationCode}`;
   const isCalled = entry?.status === 'CALLED';
   const waitingForResult = task?.taskType === 'DIAGNOSTIC_SERVICE' && task.status === 'WAITING_RESULT';
-  const returningForReview = task?.taskType === 'RETURN_REVIEW' && task.status === 'IN_QUEUE';
+  const returningForReview = task?.taskType === 'RETURN_REVIEW' && ['IN_QUEUE', 'READY', 'WAITING'].includes(task.status);
   return [
     {
       id: `${journey.id}-queue`,
@@ -554,7 +607,7 @@ async function getNotifications(patientToken) {
         : waitingForResult
           ? 'Kết quả đang được kiểm định'
           : returningForReview
-            ? 'Kết quả đã được kiểm định'
+            ? 'Kết quả đã hoàn tất'
             : 'Lượt khám đang hoạt động',
       message: isCalled
         ? `Mời ${patientName}, số ${formatQueueNumber(entry.queueNumber)}, vào ${taskRoom(task)}.`

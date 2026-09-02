@@ -41,11 +41,11 @@ export function ExaminationPage() {
   })
   const complete = useMutation({
     mutationFn: () => doctorApi.completeVisit(visitId),
-    onSuccess: (result: { status?: string }) => {
+    onSuccess: (result: { status?: string; returnRoom?: string }) => {
       void queryClient.invalidateQueries({ queryKey: ['doctor-queue'] })
       toast.success(
-        result.status === 'WAITING_RESULT'
-          ? 'Dịch vụ đã hoàn tất, kết quả đang chờ kiểm định'
+        result.status === 'WAITING_REVIEW'
+          ? `Đã hoàn thành dịch vụ kỹ thuật. Bệnh nhân được chuyển về ${result.returnRoom || 'bác sĩ ban đầu'}.`
           : 'Đã hoàn tất bước xử lý',
       )
       navigate('/doctor/queue')
@@ -60,6 +60,7 @@ export function ExaminationPage() {
 
   const data = query.data
   const isResultReview = data.queue.taskType === 'RETURN_REVIEW'
+  const isDiagnostic = data.queue.taskType === 'DIAGNOSTIC_SERVICE'
   const confirmCompletion = () => {
     complete.mutate()
     setConfirmComplete(false)
@@ -78,7 +79,7 @@ export function ExaminationPage() {
     return <>
       <PageHeader
         title={`Trả kết quả · ${data.queue.queueNumber}`}
-        description={`Lượt quay lại ${visitId} · chỉ mở sau khi kết quả đã được kiểm định`}
+        description={`Lượt quay lại ${visitId} · kết quả đã được xác nhận hoàn tất`}
         action={actions}
       />
       <div className="grid gap-5 xl:grid-cols-[.85fr_1.15fr]">
@@ -88,7 +89,7 @@ export function ExaminationPage() {
             <ShieldCheck/>
             <div>
               <p className="text-sm text-violet-100">Hồ sơ trả kết quả</p>
-              <h2 className="text-xl font-extrabold">Kết quả đã được phòng chỉ định kiểm định</h2>
+              <h2 className="text-xl font-extrabold">Kết quả cận lâm sàng đã hoàn tất</h2>
             </div>
           </div>
           <div className="space-y-3 p-5">
@@ -96,15 +97,15 @@ export function ExaminationPage() {
               <div key={result.id} className="flex flex-col justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:flex-row sm:items-center">
                 <div>
                   <p className="font-extrabold text-emerald-950">{result.serviceName}</p>
-                  <p className="mt-1 text-sm text-emerald-800">{result.room} · kiểm định lúc {formatDateTime(result.validatedAt)}</p>
+                  <p className="mt-1 text-sm text-emerald-800">{result.room} · hoàn thành lúc {formatDateTime(result.validatedAt)}</p>
                 </div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-bold text-emerald-700">
-                  <FileCheck2 size={16}/>Đã kiểm định
+                  <FileCheck2 size={16}/>Đã có kết quả
                 </span>
               </div>
             )) : (
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900">
-                Chưa có kết quả đã kiểm định. Không được trả kết quả cho bệnh nhân.
+                Đang chờ đồng bộ kết quả từ phòng cận lâm sàng.
               </div>
             )}
           </div>
@@ -113,7 +114,7 @@ export function ExaminationPage() {
       <section className="mt-5 card">
         <h2 className="section-title">Kết luận và hướng dẫn sau kết quả</h2>
         <p className="mt-2 text-sm text-slate-500">
-          Đây là lượt trả kết quả, không phải khám ban đầu. Bác sĩ đối chiếu kết quả đã kiểm định trước khi kết luận.
+          Đây là lượt trả kết quả, không phải khám ban đầu. Bác sĩ đối chiếu kết quả đã thực hiện trước khi kết luận.
         </p>
         <textarea
           value={notes}
@@ -126,7 +127,7 @@ export function ExaminationPage() {
       <ConfirmDialog
         open={confirmComplete}
         title="Hoàn tất trả kết quả?"
-        message="Bệnh nhân sẽ kết thúc lượt quay lại sau khi bác sĩ đã giải thích kết quả và hướng dẫn tiếp theo."
+        message="Bệnh nhân sẽ kết thúc lượt khám sau khi bác sĩ đã giải thích kết quả và hướng dẫn điều trị."
         onCancel={() => setConfirmComplete(false)}
         onConfirm={confirmCompletion}
       />
@@ -134,23 +135,32 @@ export function ExaminationPage() {
   }
 
   return <>
-    <PageHeader title={`Khám bệnh · ${data.queue.queueNumber}`} description={`Mã lượt khám ${visitId}`} action={actions}/>
+    <PageHeader
+      title={`${isDiagnostic ? 'Thực hiện dịch vụ' : 'Khám bệnh'} · ${data.queue.queueNumber}`}
+      description={`Mã lượt khám ${visitId} · ${data.queue.serviceType || ''}`}
+      action={actions}
+    />
     <div className="grid gap-5 xl:grid-cols-2">
       <PatientSummaryCard patient={data.queue}/>
-      <SymptomSummary symptom={data.queue.mainSymptom}/>
+      <SymptomSummary
+        symptom={data.queue.mainSymptom}
+        symptomPayload={data.queue.symptomPayload}
+        priority={data.queue.priority}
+        severityScore={data.queue.severityScore}
+      />
     </div>
     <div className="mt-5">
       <div className="card max-w-3xl space-y-4">
         <h2 className="section-title">Quyết định bác sĩ</h2>
         <PrioritySelector value={priority} onChange={setPriority}/>
         <label>
-          <span className="field-label">Ghi chú khám</span>
+          <span className="field-label">Ghi chú khám & Thực hiện</span>
           <textarea
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
             className="form-control"
             rows={5}
-            placeholder="Nhập nhận định, dấu hiệu lâm sàng..."
+            placeholder="Nhập nhận định, kết quả chẩn đoán hình ảnh / lâm sàng..."
           />
         </label>
         <AppButton variant="secondary" onClick={() => update.mutate()} loading={update.isPending}>
@@ -160,8 +170,12 @@ export function ExaminationPage() {
     </div>
     <ConfirmDialog
       open={confirmComplete}
-      title="Hoàn thành bước hiện tại?"
-      message="Nếu đây là dịch vụ chẩn đoán, kết quả sẽ chuyển sang trạng thái chờ kiểm định và chưa đưa bệnh nhân về phòng ban đầu."
+      title={isDiagnostic ? 'Hoàn thành dịch vụ kỹ thuật?' : 'Hoàn thành bước khám?'}
+      message={
+        isDiagnostic
+          ? 'Bấm xác nhận sẽ hoàn tất dịch vụ cận lâm sàng và ngay lập tức chuyển bệnh nhân trở lại danh sách chờ của bác sĩ ban đầu.'
+          : 'Bệnh nhân sẽ hoàn tất bước khám hiện tại và chuyển sang bước tiếp theo trong lộ trình.'
+      }
       onCancel={() => setConfirmComplete(false)}
       onConfirm={confirmCompletion}
     />

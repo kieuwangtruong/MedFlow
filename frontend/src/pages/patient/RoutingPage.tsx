@@ -14,14 +14,51 @@ export function RoutingPage() {
 
   if (!visitId || !recommendation) return <>
     <PageHeader title="Phân phòng" description="Chưa có kết quả phân luồng cho lượt khám hiện tại."/>
-    <div className="card mx-auto max-w-xl text-center"><p>Hãy khai báo triệu chứng để hệ thống tạo lộ trình thật.</p><Link to="/patient/symptoms" className="mt-4 inline-flex rounded-xl bg-primary px-5 py-3 font-bold text-white">Khai báo triệu chứng</Link></div>
+    <div className="card mx-auto max-w-xl text-center">
+      <p className="font-semibold text-slate-700">Hãy khai báo triệu chứng để hệ thống tạo lộ trình và phân phòng phù hợp.</p>
+      <Link to="/patient/symptoms" className="mt-4 inline-flex rounded-xl bg-primary px-5 py-3 font-bold text-white">
+        Khai báo triệu chứng
+      </Link>
+    </div>
   </>
   if (pathway.isLoading) return <LoadingSkeleton rows={6}/>
 
   return <>
-    <PageHeader title="Phòng bạn cần đến" description="Phòng và số thứ tự dưới đây đã được ghi vào backend cho đúng CCCD của bạn." action={<span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700"><Check size={16}/>Đã tạo lộ trình</span>}/>
+    <PageHeader
+      title="Phòng bạn cần đến"
+      description="Phòng khám và số thứ tự đã được hệ thống ghi nhận vào hồ sơ lượt khám."
+      action={
+        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+          <Check size={16}/>Đã tạo lộ trình
+        </span>
+      }
+    />
     <RoutingRecommendationCard recommendation={recommendation}/>
-    {pathway.data && <section className="card mt-5"><h2 className="text-lg font-extrabold">Lộ trình đã lưu</h2><div className="mt-4 space-y-3">{pathway.data.steps.map((step, index) => <div key={step.id} className="flex gap-3 rounded-xl border p-4"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">{index + 1}</span><div><p className="font-bold">{step.title}</p><p className="text-sm text-slate-500">{step.department} · {step.room}</p></div></div>)}</div></section>}
-    <AppButton className="mt-6 w-full text-base" onClick={() => navigate('/patient/pathway')}><Route/>Xem toàn bộ hành trình</AppButton>
+    {pathway.data && (
+      <section className="card mt-5">
+        <h2 className="text-lg font-extrabold text-slate-950">Lộ trình khám của bạn</h2>
+        <div className="mt-4 space-y-3">
+          {pathway.data.steps.map((step, index) => (
+            <div key={step.id} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+              <div className="flex items-center gap-3">
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-white">
+                  {index + 1}
+                </span>
+                <div>
+                  <p className="font-bold text-slate-900">{step.title}</p>
+                  <p className="text-sm text-slate-500">{step.department} · {step.room}</p>
+                </div>
+              </div>
+              <span className="text-xs font-semibold text-slate-600 bg-white border border-slate-200 px-3 py-1.5 rounded-lg">
+                Chờ dự kiến: {step.estimatedWait} phút
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+    <AppButton className="mt-6 w-full text-base" onClick={() => navigate('/patient/pathway')}>
+      <Route/>Xem toàn bộ hành trình
+    </AppButton>
   </>
 }

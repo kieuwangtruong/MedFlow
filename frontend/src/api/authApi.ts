@@ -65,7 +65,7 @@ export const authApi = {
       access_token: 'demo-patient-token',
       user: {
         id: `patient-${cccd}`,
-        full_name: fullName,
+        full_name: fullName || 'Bệnh nhân demo',
         role: 'PATIENT',
         cccd,
         patient_token: `pt-demo-${cccd}`,
@@ -83,7 +83,7 @@ export const authApi = {
       access_token: `demo-${role.toLowerCase()}-staff-token`,
       user: {
         id: `staff-${userName}`,
-        full_name: role === 'ADMIN' ? 'Quan tri vien demo' : 'Nhan vien demo',
+        full_name: role === 'ADMIN' ? 'Quản trị viên demo' : 'Bác sĩ demo',
         role,
         email: userName,
         staff_role: role,

@@ -306,7 +306,6 @@ async function seedDatabase(seedData) {
         status: 'ACTIVE',
       },
     });
-
     for (const journeyId of seedData.journeyIds) {
       const patientToken = seedData.journeyTasks.find((row) => row.journey_id === journeyId).patient_token;
       await prisma.patientJourney.upsert({

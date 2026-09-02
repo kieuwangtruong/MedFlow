@@ -2,17 +2,21 @@ import { rooms, routingRecommendation } from '../mocks/data'
 import type { AIRecommendation, Priority, Room, SymptomReport } from '../types'
 import axiosClient, { mockDelay, USE_MOCK_API } from './axiosClient'
 
+interface SymptomRoutingRecommendation {
+  department_code: string
+  department_name: string
+  clinic_room: string
+  confidence: number
+  estimated_wait?: number
+  waiting_count?: number
+}
+
 interface SymptomRoutingResponse {
   priority: string
   message: string
   is_red_flag: boolean
   requires_human_review: boolean
-  recommendations: {
-    department_code: string
-    department_name: string
-    clinic_room: string
-    confidence: number
-  }[]
+  recommendations: SymptomRoutingRecommendation[]
 }
 
 export interface SymptomRoutingContext {
@@ -24,10 +28,10 @@ export interface SymptomRoutingContext {
 const toSymptomRoutingPayload = (symptoms: SymptomReport, context?: SymptomRoutingContext) => ({
   symptom_text: [
     symptoms.description,
-    symptoms.commonSymptoms.length ? `Triệu chứng phổ biến: ${symptoms.commonSymptoms.join(', ')}` : '',
-    symptoms.dangerSigns.length ? `Dấu hiệu nguy hiểm: ${symptoms.dangerSigns.join(', ')}` : '',
+    symptoms.commonSymptoms?.length ? `Triệu chứng phổ biến: ${symptoms.commonSymptoms.join(', ')}` : '',
+    symptoms.dangerSigns?.length ? `Dấu hiệu nguy hiểm: ${symptoms.dangerSigns.join(', ')}` : '',
     symptoms.onset ? `Khởi phát: ${symptoms.onset}` : '',
-    `Mức độ đau: ${symptoms.painLevel}/10`,
+    `Mức độ đau: ${symptoms.painLevel ?? 0}/10`,
   ].filter(Boolean).join('. '),
   age: context?.age ?? 35,
   gender: context?.gender ?? 'UNKNOWN',
@@ -44,12 +48,19 @@ const toAIRecommendation = (response: SymptomRoutingResponse): AIRecommendation 
   const topRecommendation = response.recommendations[0]
   if (!topRecommendation) throw new Error('API không trả về phòng khám phù hợp')
 
+  const estimatedWait = topRecommendation.estimated_wait !== undefined
+    ? topRecommendation.estimated_wait
+    : (routingRecommendation.estimatedWait || 0)
+  const waitingCount = topRecommendation.waiting_count !== undefined
+    ? topRecommendation.waiting_count
+    : (routingRecommendation.waitingCount || 0)
+
   return {
     department: topRecommendation.department_name,
     room: topRecommendation.clinic_room,
-    floor: routingRecommendation.floor,
-    estimatedWait: routingRecommendation.estimatedWait,
-    waitingCount: routingRecommendation.waitingCount,
+    floor: routingRecommendation.floor || 1,
+    estimatedWait,
+    waitingCount,
     reason: response.message,
     confidence: topRecommendation.confidence,
     priority: toPriority(response.priority),
@@ -74,12 +85,16 @@ export const aiApi = {
     if (USE_MOCK_API) return mockDelay(routingRecommendation, 1200)
 
     const response = await axiosClient.post<SymptomRoutingResponse>('/symptom-routing', toSymptomRoutingPayload(symptoms, context))
-    if (!response.data.recommendations.length) throw new Error('Chưa tìm được phòng tiếp nhận phù hợp, cần nhân viên xác nhận')
+    const specialistRecommendations = response.data.recommendations.filter((item) => item.department_code !== 'GENERAL')
+    const finalRecs = specialistRecommendations.length ? specialistRecommendations : response.data.recommendations
+
+    if (!finalRecs.length) throw new Error('Chưa tìm được phòng chuyên khoa phù hợp, cần nhân viên xác nhận')
 
     return toAIRecommendation({
       ...response.data,
+      recommendations: finalRecs,
       message: response.data.requires_human_review
-        ? 'Đã chọn phương án phòng tiếp nhận phù hợp nhất; cần nhân viên xác nhận trước khi tạo lộ trình.'
+        ? 'Đã chọn phương án phòng phù hợp nhất; cần nhân viên xác nhận trước khi tạo lộ trình.'
         : response.data.message,
     })
   },

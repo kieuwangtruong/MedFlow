@@ -99,8 +99,6 @@ const EQUIPMENTS = [
   { id: 'EQUIP-ULTRASOUND-501', code: 'US-501', name: 'Máy Siêu âm 501', roomId: 'ROOM-IMAGING-501' },
 ];
 
-// A doctor may have several home rooms, but only one active room during a shift.
-// For demo data, each doctor receives the first room listed under their account.
 const ACTIVE_ROOM_ASSIGNMENTS = ROOMS.filter((room, index, rooms) => (
   rooms.findIndex((candidate) => candidate.doctorUsername === room.doctorUsername) === index
 ));
@@ -247,8 +245,6 @@ async function seedClinicDirectory() {
     }
 
     const now = new Date();
-    // Demo assignments remain usable across review sessions. A production
-    // deployment should replace these with roster-managed daily shifts.
     const shiftStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const shiftEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 

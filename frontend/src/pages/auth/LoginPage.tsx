@@ -17,6 +17,7 @@ export function LoginPage() {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("warming");
+
   const cccdValid = /^\d{9,12}$/.test(cccd);
   const fullNameValid = fullName.trim().length >= 2;
   const patientValid = cccdValid && fullNameValid;

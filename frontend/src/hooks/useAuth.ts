@@ -8,6 +8,7 @@ export const useAuth = () => {
   const navigate = useNavigate()
   const { user, token, setAuth, logout: clearAuth } = useAuthStore()
   const clearVisit = useVisitStore((state) => state.clearVisit)
+
   const login = useMutation({
     mutationFn: ({ cccd, fullName }: { cccd: string; fullName: string }) =>
       authApi.login(cccd, fullName),
@@ -18,6 +19,7 @@ export const useAuth = () => {
       navigate(`/${nextUser.role.toLowerCase()}`)
     },
   })
+
   const staffLogin = useMutation({
     mutationFn: ({ userName, password }: { userName: string; password: string }) =>
       authApi.staffLogin(userName, password),
@@ -27,10 +29,12 @@ export const useAuth = () => {
       navigate(`/${nextUser.role.toLowerCase()}`)
     },
   })
+
   const logout = () => {
     clearVisit()
     clearAuth()
     navigate('/login')
   }
+
   return { user, token, login, staffLogin, logout, isAuthenticated: Boolean(token && user) }
 }

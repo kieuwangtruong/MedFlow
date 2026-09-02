@@ -8,29 +8,23 @@ const HASH_ITERATIONS = 120000;
 const STAFF_USERS = [
   {
     username: 'adminamind',
-    passwordEnv: 'SEED_ADMIN_PASSWORD',
+    password: process.env.SEED_ADMIN_PASSWORD || '12345678',
     fullName: 'Quản trị viên',
     role: 'ADMIN',
   },
   {
     username: 'nam01@gmail.com',
-    passwordEnv: 'SEED_DOCTOR_PASSWORD',
+    password: process.env.SEED_DOCTOR_PASSWORD || '12345678',
     fullName: 'BS. Nguyễn Văn Nam',
     role: 'DOCTOR',
   },
   {
     username: 'ngan01@gmail.com',
-    passwordEnv: 'SEED_NURSE_PASSWORD',
+    password: process.env.SEED_NURSE_PASSWORD || '12345678',
     fullName: 'Nguyễn Thảo Ngân',
     role: 'NURSE',
   },
 ];
-
-function requiredSeedPassword(name) {
-  const value = process.env[name];
-  if (!value) throw new Error(`${name} is required to seed staff users`);
-  return value;
-}
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
@@ -59,18 +53,17 @@ async function seedStaffUsers() {
     const results = [];
 
     for (const user of STAFF_USERS) {
-      const passwordHash = hashPassword(requiredSeedPassword(user.passwordEnv));
       const staffUser = await prisma.staffUser.upsert({
         where: { username: user.username },
         create: {
           username: user.username,
-          passwordHash,
+          passwordHash: hashPassword(user.password),
           fullName: user.fullName,
           role: user.role,
           status: 'ACTIVE',
         },
         update: {
-          passwordHash,
+          passwordHash: hashPassword(user.password),
           fullName: user.fullName,
           role: user.role,
           status: 'ACTIVE',
@@ -88,12 +81,12 @@ async function seedStaffUsers() {
 
 async function main() {
   if (process.argv.includes('--dry-run')) {
-    console.log(JSON.stringify({ dryRun: true, staffUsers: STAFF_USERS.map(publicUserSummary) }, null, 2));
+    console.log(JSON.stringify({ dryRun: true, seeded: STAFF_USERS.map(publicUserSummary) }, null, 2));
     return;
   }
 
-  const staffUsers = await seedStaffUsers();
-  console.log(JSON.stringify({ dryRun: false, staffUsers }, null, 2));
+  const result = await seedStaffUsers();
+  console.log(JSON.stringify({ dryRun: false, seeded: result }, null, 2));
 }
 
 main().catch((error) => {

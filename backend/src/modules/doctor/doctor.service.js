@@ -17,7 +17,7 @@ const {
 } = require('../shared/presenters');
 
 const activeTaskStatuses = ['PENDING', 'READY', 'IN_QUEUE', 'IN_SERVICE', 'WAITING_RESULT'];
-const actionableTaskStatuses = ['PENDING', 'READY', 'IN_QUEUE', 'IN_SERVICE'];
+const actionableTaskStatuses = ['PENDING', 'READY', 'IN_QUEUE', 'IN_SERVICE', 'WAITING_RESULT'];
 
 const queueInclude = {
   task: {
@@ -50,6 +50,9 @@ function toQueueEntry(entry) {
     patientName: patient.fullName || `Bệnh nhân ${patient.identificationCode}`,
     age: patientAge(patient.dateOfBirth),
     mainSymptom: task.journey?.symptomDescription || taskTitle(task),
+    symptomPayload: task.journey?.symptomPayload || null,
+    severityScore: task.journey?.severityScore || null,
+    intakeSource: task.journey?.intakeSource || null,
     priority: toFrontendPriority(entry.priority || task.clinicalPriority),
     waitedMinutes,
     status: toVisitStatus(task.status, entry.status),
@@ -200,64 +203,38 @@ async function updatePriority(visitId, priority, auth) {
       data: { priority: databasePriority },
     }),
   ]);
-  return { visitId, priority: toFrontendPriority(databasePriority) };
+  const aiSync = await emitAiEvents([
+    taskEvent('PRIORITY_CHANGED', task, {
+      actorId: auth?.sub,
+      metadata: { clinical_priority: databasePriority },
+    }),
+  ]);
+  return { visitId, priority: toFrontendPriority(databasePriority), aiSynced: aiSync.synced };
 }
 
 async function callVisit(visitId, auth) {
-  const task = await findAccessibleTask(visitId, auth, ['PENDING', 'READY', 'IN_QUEUE']);
-  if (!task) throw new AppError('No assigned waiting task found', 404, 'WAITING_TASK_NOT_FOUND');
-  const entry = await prisma.patientQueueEntry.findFirst({
-    where: { taskId: task.id, status: { in: ['WAITING', 'CALLED'] } },
-  });
-  if (!entry) throw new AppError('Patient is not waiting in this room', 409, 'QUEUE_ENTRY_NOT_WAITING');
-
-  const patient = await prisma.patient.findUnique({ where: { patientToken: task.patientToken } });
-  if (entry.status === 'CALLED') {
-    return {
-      visitId,
-      queueNumber: formatQueueNumber(entry.queueNumber),
-      patientName: patient?.fullName || `Bệnh nhân ${patient?.identificationCode || ''}`.trim(),
-      status: 'CALLED',
-      calledAt: entry.calledAt?.toISOString(),
-    };
-  }
-
-  const nextEntry = await prisma.patientQueueEntry.findFirst({
-    where: { queueId: entry.queueId, status: 'WAITING' },
-    orderBy: [{ queueNumber: 'asc' }, { enqueuedAt: 'asc' }],
-  });
-  if (nextEntry?.id !== entry.id) {
-    throw new AppError('Call patients in queue-number order', 409, 'QUEUE_ORDER_VIOLATION');
-  }
-
+  const task = await findAccessibleTask(visitId, auth);
+  if (!task) throw new AppError('Visit is not assigned to your active room', 404, 'VISIT_NOT_ASSIGNED');
   const now = new Date();
-  await prisma.$transaction([
-    prisma.patientJourneyTask.update({
-      where: { id: task.id },
-      data: { status: 'READY' },
-    }),
-    prisma.patientQueueEntry.update({
-      where: { id: entry.id },
-      data: { status: 'CALLED', calledAt: now },
-    }),
+  await prisma.patientQueueEntry.updateMany({
+    where: { taskId: task.id, status: { in: ['WAITING', 'CALLED'] } },
+    data: { status: 'CALLED', calledAt: now },
+  });
+  const aiSync = await emitAiEvents([
+    taskEvent('PATIENT_CALLED', task, { actorId: auth?.sub, eventTime: now }),
   ]);
-  return {
-    visitId,
-    queueNumber: formatQueueNumber(entry.queueNumber),
-    patientName: patient?.fullName || `Bệnh nhân ${patient?.identificationCode || ''}`.trim(),
-    status: 'CALLED',
-    calledAt: now.toISOString(),
-  };
+  return { visitId, status: 'CALLED', calledAt: now.toISOString(), aiSynced: aiSync.synced };
 }
 
 async function startVisit(visitId, auth) {
-  const task = await findAccessibleTask(visitId, auth, ['PENDING', 'READY', 'IN_QUEUE']);
-  if (!task) throw new AppError('No assigned waiting task found', 404, 'WAITING_TASK_NOT_FOUND');
-  const calledEntry = await prisma.patientQueueEntry.findFirst({
-    where: { taskId: task.id, status: 'CALLED' },
+  const task = await findAccessibleTask(visitId, auth);
+  if (!task) throw new AppError('Visit is not assigned to your active room', 404, 'VISIT_NOT_ASSIGNED');
+  const activeEntry = await prisma.patientQueueEntry.findFirst({
+    where: { taskId: task.id, status: { in: ['CALLED', 'IN_SERVICE', 'WAITING'] } },
+    orderBy: { enqueuedAt: 'desc' },
   });
-  if (!calledEntry) {
-    throw new AppError('Call the patient before starting the examination', 409, 'PATIENT_NOT_CALLED');
+  if (!activeEntry) {
+    throw new AppError('You must call the patient before starting examination', 422, 'MUST_CALL_FIRST');
   }
   const now = new Date();
   await prisma.$transaction([
@@ -265,137 +242,100 @@ async function startVisit(visitId, auth) {
       where: { id: task.id },
       data: {
         status: 'IN_SERVICE',
-        serviceStart: now,
         doctorId: auth?.role === 'ADMIN' ? task.doctorId : auth?.sub,
+        serviceStart: task.serviceStart || now,
       },
     }),
     prisma.patientQueueEntry.updateMany({
-      where: { taskId: task.id, status: 'CALLED' },
+      where: { taskId: task.id, status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] } },
       data: { status: 'IN_SERVICE', serviceStartAt: now },
     }),
   ]);
   const aiSync = await emitAiEvents([
-    taskEvent('SERVICE_STARTED', task, {
-      actorId: auth?.sub,
-      eventTime: now,
-      metadata: { service_type: task.serviceType },
-    }),
+    taskEvent('SERVICE_STARTED', task, { actorId: auth?.sub, eventTime: now }),
   ]);
-  return { visitId, status: 'IN_EXAMINATION', aiSynced: aiSync.synced };
+  return { visitId, status: 'IN_EXAMINATION', startedAt: now.toISOString(), aiSynced: aiSync.synced };
 }
 
-async function createIntake(payload) {
-  const birthYear = new Date().getUTCFullYear() - payload.age;
-  const patient = await prisma.patient.upsert({
-    where: { identificationCode: payload.cccd },
-    create: {
-      identificationCode: payload.cccd,
-      patientToken: `pt_${crypto.randomBytes(16).toString('hex')}`,
-      fullName: payload.name.trim(),
-      dateOfBirth: new Date(Date.UTC(birthYear, 0, 1)),
-      status: 'ACTIVE',
-    },
-    update: {
-      fullName: payload.name.trim(),
-      dateOfBirth: new Date(Date.UTC(birthYear, 0, 1)),
-      status: 'ACTIVE',
-    },
+async function createIntake(payload, auth) {
+  const cccd = payload.cccd.trim();
+  const normalizedFullName = payload.name.trim().replace(/\s+/g, ' ');
+  const existingPatient = await prisma.patient.findUnique({
+    where: { identificationCode: cccd },
   });
+  const patient = existingPatient
+    ? await prisma.patient.update({
+      where: { id: existingPatient.id },
+      data: {
+        status: 'ACTIVE',
+        ...(!existingPatient.fullName ? { fullName: normalizedFullName } : {}),
+      },
+    })
+    : await prisma.patient.create({
+      data: {
+        identificationCode: cccd,
+        patientToken: `pt_${crypto.randomBytes(16).toString('hex')}`,
+        fullName: normalizedFullName,
+        status: 'ACTIVE',
+      },
+    });
+
   const checkedIn = await patientService.checkin(patient.patientToken, {
-    examinationType: 'GENERAL',
-    patientType: 'INSURANCE',
+    patientType: payload.symptomReport?.dangerSigns?.length ? 'PRIORITY' : 'NORMAL',
+    assignImmediately: false,
     intakeSource: 'STAFF_DESK',
   });
-  await patientService.submitSymptoms(patient.patientToken, checkedIn.visitId, payload.symptomReport);
+  if (payload.symptomReport) {
+    await patientService.submitSymptoms(patient.patientToken, checkedIn.visitId, payload.symptomReport);
+  }
   const routing = await patientService.confirmRouting(patient.patientToken, checkedIn.visitId, {
-    room: payload.room,
     department: payload.department,
+    room: payload.room,
     estimatedWait: payload.estimatedWait,
-    source: 'STAFF_DESK_SYMPTOM_ROUTING',
+    source: 'DOCTOR_INTAKE',
   });
   return {
-    patient: {
-      cccd: patient.identificationCode,
-      fullName: patient.fullName,
-    },
     visitId: checkedIn.visitId,
     queueNumber: routing.queueNumber,
     currentRoom: routing.currentRoom,
-    existing: Boolean(checkedIn.existing),
+    patient: {
+      cccd: patient.identificationCode,
+      fullName: patient.fullName || normalizedFullName,
+    },
   };
 }
 
 async function createOrder(visitId, payload, auth) {
   const sourceTask = await findAccessibleTask(visitId, auth);
   if (!sourceTask) throw new AppError('Visit is not assigned to your active room', 404, 'VISIT_NOT_ASSIGNED');
-  const service = getServiceDefinition(payload.type);
-  if (!service) {
-    throw new AppError('This service has no configured destination room', 422, 'UNSUPPORTED_SERVICE');
+  const serviceDefinition = getServiceDefinition(payload.type);
+  if (!serviceDefinition) {
+    throw new AppError(`Service type '${payload.type}' is not supported`, 422, 'UNSUPPORTED_SERVICE_TYPE');
   }
-  if (payload.room && payload.room === sourceTask.roomId) {
-    throw new AppError(
-      'Destination room must differ from the current examination room',
-      422,
-      'SAME_ROOM_REASSIGNMENT',
-    );
-  }
-  const journey = await prisma.patientJourney.findUnique({ where: { id: visitId } });
-  if (!journey) throw new AppError('Visit not found', 404, 'VISIT_NOT_FOUND');
-  const databasePriority = toDatabasePriority(payload.priority);
-  const now = new Date();
-  const staffedRoomWhere = {
-    isActive: true,
-    doctorAssignments: { some: activeAssignmentFilter({ now }) },
-    queues: { some: { isActive: true, serviceType: service.serviceType } },
-    specialty: {
-      department: { name: { contains: service.department, mode: 'insensitive' } },
+
+  const room = await prisma.clinicRoom.findFirst({
+    where: {
+      isActive: true,
+      OR: [
+        { id: payload.room },
+        { code: payload.room },
+        { name: { contains: payload.room, mode: 'insensitive' } },
+      ],
     },
-  };
+    include: {
+      specialty: { include: { department: true } },
+      queues: { where: { isActive: true }, take: 1 },
+    },
+  });
+  if (!room) throw new AppError(`Target room '${payload.room}' was not found`, 404, 'TARGET_ROOM_NOT_FOUND');
 
-  let room = null;
-  if (payload.room) {
-    room = await prisma.clinicRoom.findFirst({
-      where: { id: payload.room, ...staffedRoomWhere },
-      include: { specialty: { include: { department: true } }, queues: true },
-    });
-    if (!room) {
-      throw new AppError(
-        'The selected room does not support this service',
-        422,
-        'ROOM_SERVICE_INCOMPATIBLE',
-      );
-    }
-  }
-  if (!payload.room) {
-    room = await prisma.clinicRoom.findFirst({
-      where: {
-        ...staffedRoomWhere,
-        ...(sourceTask.roomId ? { id: { not: sourceTask.roomId } } : {}),
-      },
-      include: { specialty: { include: { department: true } }, queues: true },
-      orderBy: { code: 'asc' },
-    });
-  }
-  if (!room) {
-    throw new AppError(
-      'No open room supports this service',
-      422,
-      'COMPATIBLE_ROOM_NOT_FOUND',
-    );
-  }
+  const now = new Date();
+  const databasePriority = toDatabasePriority(payload.priority || sourceTask.clinicalPriority);
+  const journey = await patientService.loadJourney(visitId);
+  if (!journey) throw new AppError('Visit not found', 404, 'VISIT_NOT_FOUND');
 
-  const serviceQueue = room.queues.find((queue) => (
-    queue.isActive && queue.serviceType === service.serviceType
-  ));
-  if (!serviceQueue) {
-    throw new AppError(
-      'The selected room has no active queue for this service',
-      422,
-      'SERVICE_QUEUE_NOT_FOUND',
-    );
-  }
-  const queueId = serviceQueue.id;
-  const serviceType = service.serviceType;
+  const serviceType = serviceDefinition.serviceType;
+  const queueId = room.queues[0]?.id || `QUEUE-${room.id}`;
   const diagnosticTaskId = `TASK-${crypto.randomUUID()}`;
   const returnTaskId = `TASK-${crypto.randomUUID()}`;
   if (!sourceTask.roomId || !sourceTask.queueId) {
@@ -538,40 +478,112 @@ async function completeVisit(visitId, auth) {
   if (!task) throw new AppError('No assigned active task found', 404, 'ACTIVE_TASK_NOT_FOUND');
   const now = new Date();
 
+  // Handle Diagnostic Service Completion (X-ray, Ultrasound)
   if (task.taskType === 'DIAGNOSTIC_SERVICE') {
-    await prisma.$transaction([
-      prisma.patientJourneyTask.update({
+    const returnTask = await prisma.patientJourneyTask.findFirst({
+      where: {
+        journeyId: visitId,
+        taskType: 'RETURN_REVIEW',
+        OR: [
+          { sourceDependsOnTaskId: task.id },
+          { parentTaskId: task.parentTaskId },
+        ],
+      },
+      include: { room: true },
+    });
+
+    let returnQueueNumber = null;
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Complete the diagnostic task
+      await tx.patientJourneyTask.update({
         where: { id: task.id },
         data: {
-          status: 'WAITING_RESULT',
-          readinessStatus: 'RESULT_PENDING',
+          status: 'COMPLETED',
+          readinessStatus: 'COMPLETED',
           doctorId: auth?.role === 'ADMIN' ? task.doctorId : auth?.sub,
           serviceEnd: now,
-          completedAt: null,
-          resultReadyAt: null,
+          completedAt: now,
+          resultReadyAt: now,
+          resultUrgency: ['EMERGENCY', 'URGENT'].includes(task.clinicalPriority) ? 'URGENT' : 'NORMAL',
         },
-      }),
-      prisma.patientQueueEntry.updateMany({
+      });
+
+      // 2. Mark the diagnostic queue entry as DONE
+      await tx.patientQueueEntry.updateMany({
         where: { taskId: task.id, status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] } },
         data: { status: 'DONE', serviceEndAt: now },
-      }),
-    ]);
-    const aiSync = await emitAiEvents([
+      });
+
+      // 3. Immediately activate return review task and route back to originating doctor's queue
+      if (returnTask && returnTask.queueId) {
+        returnQueueNumber = await tx.patientQueueEntry.count({
+          where: {
+            queueId: returnTask.queueId,
+            status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] },
+          },
+        }) + 1;
+
+        await tx.patientJourneyTask.update({
+          where: { id: returnTask.id },
+          data: {
+            status: 'IN_QUEUE',
+            readinessStatus: 'COMPLETED',
+            readyAt: now,
+            arrivalTime: now,
+            resultReadyAt: now,
+          },
+        });
+
+        await tx.patientQueueEntry.create({
+          data: {
+            queueId: returnTask.queueId,
+            taskId: returnTask.id,
+            status: 'WAITING',
+            priority: returnTask.clinicalPriority,
+            queueNumber: returnQueueNumber,
+            position: returnQueueNumber,
+            enqueuedAt: now,
+          },
+        });
+      }
+    });
+
+    const aiEvents = [
       taskEvent('SERVICE_COMPLETED', task, { actorId: auth?.sub, eventTime: now }),
-    ]);
+    ];
+    if (returnTask) {
+      aiEvents.push(
+        taskEvent('OTHER_SERVICE_COMPLETED', returnTask, {
+          actorId: auth?.sub,
+          eventTime: now,
+          metadata: { completed_task_id: task.id },
+        }),
+        taskEvent('RESULT_READY', returnTask, { actorId: auth?.sub, eventTime: now }),
+        taskEvent('RETURN_STARTED', returnTask, { actorId: auth?.sub, eventTime: now }),
+        taskEvent('RETURN_ARRIVED', returnTask, { actorId: auth?.sub, eventTime: now })
+      );
+    }
+    const aiSync = await emitAiEvents(aiEvents);
+
     return {
       visitId,
-      status: 'WAITING_RESULT',
-      resultValidationRequired: true,
+      status: 'WAITING_REVIEW',
+      resultValidated: true,
+      completedDiagnostic: true,
+      returnRoom: returnTask?.room?.code || returnTask?.room?.name || returnTask?.roomId,
+      queueNumber: returnQueueNumber ? formatQueueNumber(returnQueueNumber) : undefined,
       aiSynced: aiSync.synced,
     };
   }
 
+  // Handle Regular Visit Completion (Initial Consult / Return Review)
   await prisma.$transaction([
     prisma.patientJourneyTask.update({
       where: { id: task.id },
       data: {
         status: 'COMPLETED',
+        readinessStatus: 'COMPLETED',
         doctorId: auth?.role === 'ADMIN' ? task.doctorId : auth?.sub,
         serviceEnd: now,
         completedAt: now,
@@ -582,6 +594,7 @@ async function completeVisit(visitId, auth) {
       data: { status: 'DONE', serviceEndAt: now },
     }),
   ]);
+
   const remaining = await prisma.patientJourneyTask.count({
     where: { journeyId: visitId, status: { in: activeTaskStatuses } },
   });
@@ -600,7 +613,7 @@ async function validateResult(visitId, auth) {
     where: {
       journeyId: visitId,
       taskType: 'DIAGNOSTIC_SERVICE',
-      status: 'WAITING_RESULT',
+      status: { in: ['WAITING_RESULT', 'COMPLETED', 'IN_SERVICE'] },
       ...doctorRoomScope(auth),
     },
     include: { room: true },
@@ -614,7 +627,6 @@ async function validateResult(visitId, auth) {
       journeyId: visitId,
       taskType: 'RETURN_REVIEW',
       sourceDependsOnTaskId: task.id,
-      status: 'WAITING_RESULT',
     },
     include: { room: true },
   });
@@ -623,20 +635,28 @@ async function validateResult(visitId, auth) {
   }
 
   const now = new Date();
-  const queueNumber = await prisma.patientQueueEntry.count({
-    where: {
-      queueId: returnTask.queueId,
-      status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] },
-    },
-  }) + 1;
+  const existingQueueEntry = await prisma.patientQueueEntry.findFirst({
+    where: { taskId: returnTask.id, status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] } },
+  });
+
+  let queueNumber = existingQueueEntry?.queueNumber;
+  if (!queueNumber) {
+    queueNumber = await prisma.patientQueueEntry.count({
+      where: {
+        queueId: returnTask.queueId,
+        status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] },
+      },
+    }) + 1;
+  }
+
   await prisma.$transaction([
     prisma.patientJourneyTask.update({
       where: { id: task.id },
       data: {
         status: 'COMPLETED',
         readinessStatus: 'COMPLETED',
-        completedAt: now,
-        resultReadyAt: now,
+        completedAt: task.completedAt || now,
+        resultReadyAt: task.resultReadyAt || now,
         resultUrgency: ['EMERGENCY', 'URGENT'].includes(task.clinicalPriority) ? 'URGENT' : 'NORMAL',
       },
     }),
@@ -650,17 +670,19 @@ async function validateResult(visitId, auth) {
         resultReadyAt: now,
       },
     }),
-    prisma.patientQueueEntry.create({
-      data: {
-        queueId: returnTask.queueId,
-        taskId: returnTask.id,
-        status: 'WAITING',
-        priority: returnTask.clinicalPriority,
-        queueNumber,
-        position: queueNumber,
-        enqueuedAt: now,
-      },
-    }),
+    ...(existingQueueEntry ? [] : [
+      prisma.patientQueueEntry.create({
+        data: {
+          queueId: returnTask.queueId,
+          taskId: returnTask.id,
+          status: 'WAITING',
+          priority: returnTask.clinicalPriority,
+          queueNumber,
+          position: queueNumber,
+          enqueuedAt: now,
+        },
+      }),
+    ]),
   ]);
 
   const aiSync = await emitAiEvents([

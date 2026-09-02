@@ -99,44 +99,51 @@ enum PatientTaskStatus {
   READY
   IN_QUEUE
   IN_SERVICE
-  WAITING_RESULT
   COMPLETED
+  WAITING_RESULT
   CANCELLED
-  SKIPPED
 }
 
 enum ServiceType {
   CLINICAL_CONSULT
+  BLOOD_TEST
   XRAY
   ABDOMINAL_ULTRASOUND
-  RESULT_REVIEW
+  MRI
+  CT
+  ENDOSCOPY
+  PRESCRIPTION_FILL
+  PAYMENT
 }
 
 enum ClinicalPriority {
-  NORMAL
-  URGENT
   EMERGENCY
-  NON_URGENT
+  URGENT
+  HIGH
+  NORMAL
+  LOW
 }
 
 enum ReadinessStatus {
+  READY
+  NOT_READY
   COMPLETED
-  RESULT_PENDING
 }
 
 enum SchedulingMode {
-  FAIR_QUEUE
-  SCHEDULED_WINDOW
+  WALK_IN
+  SCHEDULED
 }
 
 enum ResultUrgency {
-  NORMAL
-  URGENT
+  CRITICAL
+  HIGH
+  ROUTINE
 }
 
 enum ReturnTiming {
-  EARLY
-  ON_TIME
+  SAME_DAY
+  NEXT_DAY
   LATE
 }
 
@@ -262,16 +269,16 @@ model ServiceQueue {
 }
 
 model PatientJourney {
-  id            String               @id @map("journey_id")
-  patientToken  String               @map("patient_token")
-  checkinAt     DateTime?            @map("checkin_at") @db.Timestamptz(6)
-  severityScore Int?                 @map("severity_score")
-  symptomDescription String?         @map("symptom_description")
-  symptomPayload     Json?           @map("symptom_payload")
-  symptomsSubmittedAt DateTime?      @map("symptoms_submitted_at") @db.Timestamptz(6)
-  intakeSource       IntakeSource?   @map("intake_source")
-  patient       Patient              @relation(fields: [patientToken], references: [patientToken])
-  tasks         PatientJourneyTask[]
+  id                  String               @id @map("journey_id")
+  patientToken        String               @map("patient_token")
+  checkinAt           DateTime?            @map("checkin_at") @db.Timestamptz(6)
+  severityScore       Int?                 @map("severity_score")
+  symptomDescription String?              @map("symptom_description")
+  symptomPayload      Json?                @map("symptom_payload")
+  symptomsSubmittedAt DateTime?            @map("symptoms_submitted_at") @db.Timestamptz(6)
+  intakeSource        IntakeSource?        @map("intake_source")
+  patient             Patient              @relation(fields: [patientToken], references: [patientToken])
+  tasks               PatientJourneyTask[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

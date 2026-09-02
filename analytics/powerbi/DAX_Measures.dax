@@ -1,0 +1,109 @@
+// ==============================================================================
+// MedFlow Power BI Star Schema DAX Measures Library
+// Enterprise Analytics for Outpatient Flow, SLA Adherence & Queue Diagnostics
+// ==============================================================================
+
+// --- 1. CORE VOLUME & THROUGHPUT MEASURES ---
+
+Total Patient Journeys = 
+DISTINCTCOUNT(fact_patient_journey[journey_id])
+
+Total Tasks Executed = 
+COUNTROWS(fact_task_execution)
+
+Completed Tasks = 
+CALCULATE(
+    COUNTROWS(fact_task_execution),
+    fact_task_execution[status] = "COMPLETED"
+)
+
+Throughput Rate = 
+DIVIDE([Completed Tasks], [Total Tasks Executed], 0)
+
+// --- 2. OPERATIONAL WAIT TIME & PERCENTILES ---
+
+Average Wait Time (Minutes) = 
+AVERAGE(fact_task_execution[wait_time_minutes])
+
+Median Wait Time (P50) = 
+MEDIAN(fact_task_execution[wait_time_minutes])
+
+P80 Wait Time = 
+PERCENTILE.INC(fact_task_execution[wait_time_minutes], 0.80)
+
+P90 Wait Time = 
+PERCENTILE.INC(fact_task_execution[wait_time_minutes], 0.90)
+
+IQR Wait Time = 
+PERCENTILE.INC(fact_task_execution[wait_time_minutes], 0.75) - PERCENTILE.INC(fact_task_execution[wait_time_minutes], 0.25)
+
+Average Service Duration = 
+AVERAGE(fact_task_execution[duration_minutes])
+
+// --- 3. PATIENT JOURNEY (A -> B -> A') BREAKDOWN ---
+
+Initial Consult Average Wait = 
+CALCULATE(
+    AVERAGE(fact_task_execution[wait_time_minutes]),
+    fact_task_execution[task_type] = "INITIAL_CONSULT"
+)
+
+Diagnostic Average Wait = 
+CALCULATE(
+    AVERAGE(fact_task_execution[wait_time_minutes]),
+    fact_task_execution[task_type] = "DIAGNOSTIC_SERVICE"
+)
+
+Return Review Average Wait = 
+CALCULATE(
+    AVERAGE(fact_task_execution[wait_time_minutes]),
+    fact_task_execution[task_type] = "RETURN_REVIEW"
+)
+
+Total Length of Stay (LOS Minutes) = 
+AVERAGE(fact_patient_journey[total_journey_duration_minutes])
+
+// --- 4. SLA & CLINICAL PRIORITY COMPLIANCE ---
+
+SLA Target Minutes = 
+SWITCH(
+    SELECTEDVALUE(fact_task_execution[clinical_priority]),
+    "EMERGENCY", 5,
+    "URGENT", 15,
+    "HIGH", 20,
+    "NORMAL", 30,
+    "LOW", 60,
+    30
+)
+
+SLA Breach Count = 
+CALCULATE(
+    COUNTROWS(fact_task_execution),
+    fact_task_execution[wait_time_minutes] > [SLA Target Minutes]
+)
+
+SLA Breach Rate (%) = 
+DIVIDE([SLA Breach Count], [Total Tasks Executed], 0)
+
+SLA Compliance Rate (%) = 
+1 - [SLA Breach Rate (%)]
+
+// --- 5. TIME INTELLIGENCE & PEAK LOAD ---
+
+Peak Hour Checkin Volume = 
+CALCULATE(
+    [Total Patient Journeys],
+    dim_time_slot[is_peak_period] = TRUE
+)
+
+Peak vs Off-Peak Ratio = 
+DIVIDE(
+    [Peak Hour Checkin Volume],
+    CALCULATE([Total Patient Journeys], dim_time_slot[is_peak_period] = FALSE),
+    0
+)
+
+Journeys MoM Growth (%) = 
+VAR PrevMonth = CALCULATE([Total Patient Journeys], DATEADD(dim_date[full_date], -1, MONTH))
+RETURN
+DIVIDE([Total Patient Journeys] - PrevMonth, PrevMonth, 0)

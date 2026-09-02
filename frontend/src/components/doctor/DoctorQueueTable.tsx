@@ -40,6 +40,7 @@ export function DoctorQueueTable({ items }: { items: QueueEntry[] }) {
     },
     onError: (error) => toast.error(apiErrorMessage(error, 'Không thể gọi bệnh nhân')),
   })
+
   const start = useMutation({
     mutationFn: doctorApi.startVisit,
     onSuccess: (_result, visitId) => {
@@ -48,10 +49,11 @@ export function DoctorQueueTable({ items }: { items: QueueEntry[] }) {
     },
     onError: (error) => toast.error(apiErrorMessage(error, 'Cần gọi bệnh nhân trước khi bắt đầu khám')),
   })
+
   const validate = useMutation({
     mutationFn: doctorApi.validateResult,
     onSuccess: () => {
-      toast.success('Đã kiểm định kết quả và đưa bệnh nhân vào hàng đợi trả kết quả')
+      toast.success('Đã xác nhận kết quả và đưa bệnh nhân vào hàng đợi trả kết quả')
       void queryClient.invalidateQueries({ queryKey: ['doctor-queue'] })
     },
     onError: (error) => toast.error(apiErrorMessage(error, 'Không thể kiểm định kết quả')),
@@ -71,12 +73,12 @@ export function DoctorQueueTable({ items }: { items: QueueEntry[] }) {
     {
       key: 'type',
       header: 'Loại lượt',
-      render: (row) => <div><strong className={row.taskType === 'RETURN_REVIEW' ? 'text-violet-700' : 'text-slate-800'}>{taskTypeLabel[row.taskType]}</strong><p className="mt-0.5 text-xs text-slate-500">{row.department}</p></div>,
+      render: (row) => <div><strong className={row.taskType === 'RETURN_REVIEW' ? 'text-violet-700 font-extrabold' : 'text-slate-800 font-bold'}>{taskTypeLabel[row.taskType]}</strong><p className="mt-0.5 text-xs text-slate-500">{row.department}</p></div>,
     },
     {
       key: 'symptom',
       header: 'Thông tin chính',
-      render: (row) => <span className="line-clamp-2 max-w-xs leading-5 text-slate-700">{row.taskType === 'RETURN_REVIEW' ? 'Kết quả đã kiểm định, chờ bác sĩ trả kết quả' : row.mainSymptom}</span>,
+      render: (row) => <span className="line-clamp-2 max-w-xs leading-5 text-slate-700">{row.taskType === 'RETURN_REVIEW' ? 'Kết quả cận lâm sàng đã có, sẵn sàng trả kết quả' : row.mainSymptom}</span>,
     },
     { key: 'priority', header: 'Ưu tiên', render: (row) => <Badge className={priorityClass[row.priority]}>{priorityLabel[row.priority]}</Badge> },
     { key: 'wait', header: 'Đã chờ', render: (row) => <strong className={row.waitedMinutes > 30 ? 'text-red-600' : 'text-slate-800'}>{row.waitedMinutes} phút</strong> },

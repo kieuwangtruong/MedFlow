@@ -24,7 +24,9 @@ const allowedOrigins = Array.from(new Set([
   'http://localhost:3000',
   'http://localhost:5173',
 ]));
-const corsOptions = { origin: allowedOrigins, credentials: true };
+const corsOptions = envConfig.appOrigin === '*'
+  ? { origin: '*' }
+  : { origin: allowedOrigins, credentials: true };
 
 app.use(helmet());
 app.use(cors(corsOptions));

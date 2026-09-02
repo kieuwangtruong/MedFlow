@@ -15,14 +15,14 @@ function errorHandler(err, _req, res, _next) {
   res.status(statusCode).json({
     success: false,
     error: {
-      code: err.code || 'INTERNAL_SERVER_ERROR',
+      code: err.code || (isValidationError ? 'VALIDATION_ERROR' : 'INTERNAL_SERVER_ERROR'),
       message: isValidationError ? 'Validation failed' : err.message || 'Internal Server Error',
-      ...(isValidationError ? { details: err.flatten() } : {})
-    }
+      ...(isValidationError ? { details: err.flatten() } : {}),
+    },
   });
 }
 
 module.exports = {
   notFoundHandler,
-  errorHandler
+  errorHandler,
 };
