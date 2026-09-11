@@ -142,6 +142,23 @@ test('patient intake migration persists symptoms and intake source', () => {
   assert.match(sql, /intake_source/);
 });
 
+test('clinical workflow migration persists initial room, current room, queue status and priority bump', () => {
+  const migrationPath = path.join(
+    projectRoot,
+    'prisma',
+    'migrations',
+    '20260911140000_add_workflow_state_machine_columns',
+    'migration.sql',
+  );
+  const sql = require('node:fs').readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /initial_room_id/);
+  assert.match(sql, /current_room_id/);
+  assert.match(sql, /queue_status/);
+  assert.match(sql, /origin_room_id/);
+  assert.match(sql, /is_priority_bump/);
+});
+
 test('clinic directory seed includes a staffed imaging room and compatible queues', () => {
   const result = spawnSync(
     process.execPath,

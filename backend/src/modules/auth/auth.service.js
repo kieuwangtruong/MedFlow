@@ -115,7 +115,12 @@ async function loginWithCccd(cccd, fullName) {
       },
     });
   const user = toAuthUser(patient);
-  const activeVisit = await findActivePatientVisit(patient.patientToken);
+  let activeVisit = null;
+  try {
+    activeVisit = await findActivePatientVisit(patient.patientToken);
+  } catch (visitError) {
+    console.error('Non-fatal: could not query active patient visit:', visitError.message || visitError);
+  }
   const accessToken = createAccessToken({
     sub: patient.id,
     role: user.role,
