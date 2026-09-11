@@ -57,7 +57,7 @@ export const authApi = {
   warmup: warmupBackend,
   login: async (cccd: string, fullName: string): Promise<AuthResponse> => {
     if (!USE_MOCK_API) {
-      await warmupBackend().catch(() => undefined)
+      await Promise.race([warmupBackend(), delay(2_000)]).catch(() => undefined)
       return (await axiosClient.post<AuthResponse>('/auth/login', { cccd, fullName })).data
     }
 
@@ -74,7 +74,7 @@ export const authApi = {
   },
   staffLogin: async (userName: string, password: string): Promise<AuthResponse> => {
     if (!USE_MOCK_API) {
-      await warmupBackend().catch(() => undefined)
+      await Promise.race([warmupBackend(), delay(2_000)]).catch(() => undefined)
       return (await axiosClient.post<AuthResponse>('/auth/staff/login', { userName, password })).data
     }
 

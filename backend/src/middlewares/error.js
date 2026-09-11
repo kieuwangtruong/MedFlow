@@ -12,11 +12,16 @@ function errorHandler(err, _req, res, _next) {
     console.error(err);
   }
 
+  let message = isValidationError ? 'Validation failed' : err.message || 'Internal Server Error';
+  if (err.code === 'ECONNREFUSED' || (typeof err.code === 'string' && err.code.startsWith('P10'))) {
+    message = 'Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại dịch vụ máy chủ.';
+  }
+
   res.status(statusCode).json({
     success: false,
     error: {
       code: err.code || 'INTERNAL_SERVER_ERROR',
-      message: isValidationError ? 'Validation failed' : err.message || 'Internal Server Error',
+      message,
       ...(isValidationError ? { details: err.flatten() } : {})
     }
   });

@@ -1,4 +1,4 @@
-import { ArrowLeft, Hospital, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
+import { ArrowLeft, Hospital, Loader2, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
@@ -53,6 +53,26 @@ export function LoginPage() {
     if (staffValid) staffLogin.mutate({ userName, password });
   };
 
+  const handleCccdChange = (val: string) => {
+    if (login.isError) login.reset();
+    setCccd(val);
+  };
+
+  const handleFullNameChange = (val: string) => {
+    if (login.isError) login.reset();
+    setFullName(val);
+  };
+
+  const handleUserNameChange = (val: string) => {
+    if (staffLogin.isError) staffLogin.reset();
+    setUserName(val);
+  };
+
+  const handlePasswordChange = (val: string) => {
+    if (staffLogin.isError) staffLogin.reset();
+    setPassword(val);
+  };
+
   return (
     <main className="min-h-screen bg-[#edf2f6] p-4 sm:p-8">
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,.14)] lg:grid-cols-[.9fr_1.1fr]">
@@ -96,10 +116,12 @@ export function LoginPage() {
                 valid={patientValid}
                 pending={pending}
                 backendStatus={backendStatus}
-                onChangeCccd={setCccd}
-                onChangeFullName={setFullName}
+                errorMessage={getLoginErrorMessage(login.error, "patient")}
+                onChangeCccd={handleCccdChange}
+                onChangeFullName={handleFullNameChange}
                 onSubmit={submitPatient}
                 onStaffMode={() => {
+                  login.reset();
                   staffLogin.reset();
                   setMode("staff");
                 }}
@@ -110,11 +132,12 @@ export function LoginPage() {
                 password={password}
                 valid={staffValid}
                 pending={pending}
-                errorMessage={getLoginErrorMessage(staffLogin.error)}
-                onChangeUserName={setUserName}
-                onChangePassword={setPassword}
+                errorMessage={getLoginErrorMessage(staffLogin.error, "staff")}
+                onChangeUserName={handleUserNameChange}
+                onChangePassword={handlePasswordChange}
                 onSubmit={submitStaff}
                 onPatientMode={() => {
+                  login.reset();
                   staffLogin.reset();
                   setMode("patient");
                 }}
@@ -127,20 +150,43 @@ export function LoginPage() {
   );
 }
 
-function getLoginErrorMessage(error: unknown) {
+function getLoginErrorMessage(error: unknown, role: "patient" | "staff" = "staff") {
   if (!error || typeof error !== "object") return "";
-  const response = "response" in error ? error.response : undefined;
 
-  if (!response || typeof response !== "object") return "Tài khoản hoặc mật khẩu chưa đúng";
-  const data = "data" in response ? response.data : undefined;
+  const response = "response" in error && error.response && typeof error.response === "object" ? error.response : undefined;
+  const status = response && "status" in response && typeof response.status === "number" ? response.status : undefined;
+  const code = "code" in error && typeof error.code === "string" ? error.code : undefined;
+  const messageStr = "message" in error && typeof error.message === "string" ? error.message : "";
 
-  if (!data || typeof data !== "object") return "Tài khoản hoặc mật khẩu chưa đúng";
-  const errorBody = "error" in data ? data.error : undefined;
+  // Network error or server unreachable
+  if (!response) {
+    if (code === "ECONNABORTED" || messageStr.toLowerCase().includes("timeout")) {
+      return "Yêu cầu đăng nhập quá thời gian phản hồi. Máy chủ Render có thể đang thức dậy từ trạng thái ngủ. Vui lòng thử lại sau 30 giây.";
+    }
+    return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng hoặc đợi máy chủ khởi động (cold start).";
+  }
 
-  if (!errorBody || typeof errorBody !== "object") return "Tài khoản hoặc mật khẩu chưa đúng";
-  const message = "message" in errorBody ? errorBody.message : undefined;
+  // 502 / 503 / 504 gateway errors (common on Render cold start)
+  if (status === 502 || status === 503 || status === 504) {
+    return "Máy chủ đang khởi động lại từ trạng thái ngủ (cold start). Vui lòng đợi khoảng 30–60 giây rồi bấm 'Tiếp tục' lại.";
+  }
 
-  return typeof message === "string" && message ? message : "Tài khoản hoặc mật khẩu chưa đúng";
+  const data = "data" in response && response.data && typeof response.data === "object" ? response.data : undefined;
+  const errorBody = data && "error" in data && data.error && typeof data.error === "object" ? data.error : undefined;
+  const serverMsg = errorBody && "message" in errorBody && typeof errorBody.message === "string" ? errorBody.message : undefined;
+
+  if (serverMsg) {
+    if (serverMsg.includes("ECONNREFUSED") || serverMsg.toLowerCase().includes("database") || serverMsg.toLowerCase().includes("prisma")) {
+      return "Không thể kết nối cơ sở dữ liệu. Vui lòng kiểm tra lại dịch vụ máy chủ.";
+    }
+    return serverMsg;
+  }
+
+  if (status === 401) {
+    return role === "patient" ? "Thông tin bệnh nhân chưa hợp lệ." : "Tài khoản hoặc mật khẩu chưa đúng";
+  }
+
+  return role === "patient" ? "Đăng nhập không thành công. Vui lòng thử lại." : "Tài khoản hoặc mật khẩu chưa đúng";
 }
 
 function PatientLoginForm({
@@ -151,6 +197,7 @@ function PatientLoginForm({
   valid,
   pending,
   backendStatus,
+  errorMessage,
   onChangeCccd,
   onChangeFullName,
   onSubmit,
@@ -163,6 +210,7 @@ function PatientLoginForm({
   valid: boolean;
   pending: boolean;
   backendStatus: BackendStatus;
+  errorMessage: string;
   onChangeCccd: (value: string) => void;
   onChangeFullName: (value: string) => void;
   onSubmit: (event: FormEvent) => void;
@@ -181,16 +229,31 @@ function PatientLoginForm({
       </div>
 
       <form onSubmit={onSubmit} className="mt-8">
-        {backendStatus === "warming" && (
+        {backendStatus === "warming" && !errorMessage && (
           <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-800" role="status">
             Máy chủ đang khởi động. Bạn có thể nhập CCCD trong lúc chờ.
           </p>
         )}
-        {backendStatus === "unavailable" && (
+        {backendStatus === "unavailable" && !errorMessage && (
           <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700" role="alert">
             Chưa kết nối được máy chủ. Hệ thống sẽ thử lại khi bạn đăng nhập.
           </p>
         )}
+
+        {errorMessage && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3.5 text-sm font-semibold text-red-700" role="alert">
+            <p className="flex items-start gap-1.5">
+              <span className="shrink-0">⚠️</span>
+              <span>{errorMessage}</span>
+            </p>
+            {backendStatus === "unavailable" && (
+              <p className="mt-1.5 text-xs font-normal text-red-600">
+                Gợi ý: Nếu đang triển khai trên Render Free, máy chủ có thể đang trong quá trình Cold Start (30–60 giây). Vui lòng đợi một lát rồi bấm thử lại.
+              </p>
+            )}
+          </div>
+        )}
+
         <label className="block">
           <span className="field-label">Họ và tên</span>
           <input
@@ -224,11 +287,30 @@ function PatientLoginForm({
           </p>
         )}
         <button
+          type="submit"
           disabled={!valid || pending}
-          className="mt-6 h-12 w-full rounded-lg bg-[#176b9b] px-6 font-bold text-white hover:bg-[#145b84] disabled:bg-slate-300"
+          className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#176b9b] px-6 font-bold text-white transition hover:bg-[#145b84] disabled:cursor-not-allowed disabled:bg-slate-300"
         >
-          {pending && backendStatus === "warming" ? "Máy chủ đang khởi động..." : pending ? "Đang kiểm tra..." : "Tiếp tục"}
+          {pending ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>{backendStatus === "warming" ? "Máy chủ đang khởi động..." : "Đang kiểm tra..."}</span>
+            </>
+          ) : (
+            "Tiếp tục"
+          )}
         </button>
+        {!valid && (
+          <p className="mt-2 text-center text-xs text-slate-500">
+            {!fullName.trim()
+              ? "Vui lòng nhập họ và tên bệnh nhân (tối thiểu 2 ký tự)"
+              : !cccd
+              ? "Vui lòng nhập số căn cước công dân"
+              : !cccdValid
+              ? "Số CCCD cần có từ 9 đến 12 chữ số"
+              : "Vui lòng điền đầy đủ thông tin để tiếp tục"}
+          </p>
+        )}
       </form>
 
       <div className="mt-7 grid gap-3 border-t border-slate-200 pt-5 text-sm">
@@ -322,10 +404,18 @@ function StaffLoginForm({
           </p>
         )}
         <button
+          type="submit"
           disabled={!valid || pending}
-          className="h-12 w-full rounded-lg bg-[#176b9b] px-6 font-bold text-white hover:bg-[#145b84] disabled:bg-slate-300"
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#176b9b] px-6 font-bold text-white transition hover:bg-[#145b84] disabled:cursor-not-allowed disabled:bg-slate-300"
         >
-          {pending ? "Đang đăng nhập..." : "Đăng nhập"}
+          {pending ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Đang đăng nhập...</span>
+            </>
+          ) : (
+            "Đăng nhập"
+          )}
         </button>
       </form>
     </>
