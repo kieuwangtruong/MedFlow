@@ -48,10 +48,15 @@ const createOrder = asyncHandler(async (req, res) => {
 });
 const completeVisit = asyncHandler(async (req, res) => res.json(await service.completeVisit(req.params.visitId, req.auth)));
 const validateResult = asyncHandler(async (req, res) => res.json(await service.validateResult(req.params.visitId, req.auth)));
+const completeOrder = asyncHandler(async (req, res) => {
+  const taskId = req.params.taskId || req.body.taskId || null;
+  res.json(await service.completeOrder(req.params.visitId, taskId, req.body, req.auth));
+});
 
 module.exports = {
   assignment,
   callVisit,
+  completeOrder,
   completeVisit,
   createOrder,
   intake,

@@ -14,5 +14,7 @@ router.post('/visits/:visitId/start', controller.startVisit);
 router.post('/visits/:visitId/orders', controller.createOrder);
 router.post('/visits/:visitId/complete', controller.completeVisit);
 router.post('/visits/:visitId/results/validate', controller.validateResult);
+router.post('/visits/:visitId/orders/:taskId/complete', controller.completeOrder);
+router.post('/visits/:visitId/complete-order', controller.completeOrder);
 
 module.exports = router;

@@ -37,7 +37,8 @@ function toDatabasePriority(priority) {
     : 'NORMAL';
 }
 
-function toVisitStatus(taskStatus, queueStatus) {
+function toVisitStatus(taskStatus, queueStatus, isReview = false) {
+  if (taskStatus === 'WAITING_REVIEW' || queueStatus === 'WAITING_REVIEW' || isReview) return 'WAITING_REVIEW';
   if (taskStatus === 'WAITING_RESULT') return 'WAITING_RESULT';
   return QUEUE_STATUS_TO_FRONTEND[queueStatus] || TASK_STATUS_TO_FRONTEND[taskStatus] || 'WAITING';
 }

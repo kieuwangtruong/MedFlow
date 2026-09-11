@@ -12,6 +12,8 @@ const {
   toStepStatus,
   toVisitStatus,
 } = require('../shared/presenters');
+const { calculateEstimatedWaitTime } = require('../shared/wait-time');
+const { classifyTriage } = require('../shared/triage');
 
 const activeTaskStatuses = ['PENDING', 'READY', 'IN_QUEUE', 'IN_SERVICE', 'WAITING_RESULT'];
 
@@ -199,6 +201,9 @@ async function checkin(patientToken, payload) {
         patientToken,
         checkinAt: now,
         severityScore: priority === 'URGENT' ? 50 : 10,
+        initialRoomId: room.id,
+        currentRoomId: room.id,
+        queueStatus: 'WAITING',
       },
     });
     const task = await tx.patientJourneyTask.create({
@@ -257,10 +262,9 @@ async function submitSymptoms(patientToken, visitId, payload) {
   const journey = await prisma.patientJourney.findUnique({ where: { id: visitId } });
   assertPatientJourney(journey, patientToken);
 
-  const dangerCount = Array.isArray(payload.dangerSigns) ? payload.dangerSigns.length : 0;
-  const painLevel = Number(payload.painLevel) || 0;
-  const priority = dangerCount > 0 ? 'EMERGENCY' : painLevel >= 8 ? 'URGENT' : 'NORMAL';
-  const severityScore = Math.min(100, dangerCount * 40 + painLevel * 5 + 10);
+  const triage = classifyTriage(payload);
+  const priority = triage.priority;
+  const severityScore = triage.severityScore;
 
   await prisma.$transaction([
     prisma.patientJourney.update({
@@ -268,7 +272,7 @@ async function submitSymptoms(patientToken, visitId, payload) {
       data: {
         severityScore,
         symptomDescription: payload.description.trim(),
-        symptomPayload: payload,
+        symptomPayload: { ...payload, triage },
         symptomsSubmittedAt: new Date(),
         intakeSource: journey.intakeSource || 'PATIENT_SELF',
       },
@@ -283,7 +287,7 @@ async function submitSymptoms(patientToken, visitId, payload) {
     }),
   ]);
 
-  return { visitId, priority: toFrontendPriority(priority), severityScore };
+  return { visitId, priority: toFrontendPriority(priority), severityScore, triage };
 }
 
 async function findRoutingRoom(payload, now = new Date()) {
@@ -376,12 +380,21 @@ async function confirmRouting(patientToken, visitId, payload) {
     const queueNumber = await tx.patientQueueEntry.count({
       where: { queueId: queue.id, status: { in: ['WAITING', 'CALLED', 'IN_SERVICE'] } },
     }) + 1;
+    await tx.patientJourney.update({
+      where: { id: visitId },
+      data: {
+        initialRoomId: room.id,
+        currentRoomId: room.id,
+        queueStatus: 'WAITING',
+      },
+    });
     const updatedTask = await tx.patientJourneyTask.update({
       where: { id: task.id },
       data: {
         departmentId: room.specialty.departmentId,
         specialtyId: room.specialtyId,
         roomId: room.id,
+        originRoomId: room.id,
         queueId: queue.id,
         status: 'IN_QUEUE',
         assignedAt: now,
@@ -454,7 +467,7 @@ async function getPathway(patientToken, visitId) {
   const currentTask = journey.tasks.find((task) => activeTaskStatuses.includes(task.status))
     || journey.tasks.at(-1);
   const entry = currentTask ? currentQueueEntry(currentTask) : null;
-  const peopleAhead = entry?.queueNumber
+  let peopleAhead = entry?.queueNumber
     ? await prisma.patientQueueEntry.count({
       where: {
         queueId: entry.queueId,
@@ -463,7 +476,23 @@ async function getPathway(patientToken, visitId) {
       },
     })
     : 0;
-  const estimatedWait = Math.max(0, Math.round(currentTask?.queue?.estimatedWaitMinutes || 0));
+  let estimatedWait = Math.max(0, Math.round(currentTask?.queue?.estimatedWaitMinutes || 0));
+
+  if (entry?.queueId) {
+    const queueEntries = await prisma.patientQueueEntry.findMany({
+      where: { queueId: entry.queueId, status: 'WAITING' },
+      include: { task: true },
+    });
+    const waitCalc = calculateEstimatedWaitTime({
+      queueEntries,
+      activeDoctorsCount: currentTask?.room?.doctorAssignments?.length || 1,
+      targetEntryId: entry.id,
+    });
+    if (waitCalc.estimatedWaitMinutes > 0) {
+      estimatedWait = waitCalc.estimatedWaitMinutes;
+      peopleAhead = waitCalc.peopleAhead;
+    }
+  }
   let offsetMinutes = 0;
   const steps = journey.tasks.map((task) => {
     const queueEntry = currentQueueEntry(task);

@@ -270,6 +270,9 @@ model PatientJourney {
   symptomPayload     Json?           @map("symptom_payload")
   symptomsSubmittedAt DateTime?      @map("symptoms_submitted_at") @db.Timestamptz(6)
   intakeSource       IntakeSource?   @map("intake_source")
+  initialRoomId      String?         @map("initial_room_id")
+  currentRoomId      String?         @map("current_room_id")
+  queueStatus        String?         @map("queue_status")
   patient       Patient              @relation(fields: [patientToken], references: [patientToken])
   tasks         PatientJourneyTask[]
 
@@ -291,6 +294,7 @@ model PatientJourneyTask {
   specialtyId            String?           @map("specialty_id")
   queueId                String?           @map("queue_id")
   roomId                 String?           @map("room_id")
+  originRoomId           String?           @map("origin_room_id")
   taskType               PatientTaskType   @map("task_type")
   status                 PatientTaskStatus @default(PENDING)
   serviceType            ServiceType       @map("service_type")
@@ -378,6 +382,7 @@ model PatientQueueEntry {
 
   status   QueueEntryStatus @default(WAITING)
   priority ClinicalPriority @default(NORMAL)
+  isPriorityBump Boolean    @default(false) @map("is_priority_bump")
 
   queueNumber Int? @map("queue_number")
   position    Int?

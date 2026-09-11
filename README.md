@@ -11,11 +11,13 @@ MedFlow kết nối luồng bệnh nhân, bác sĩ, hàng đợi và mô hình A
 ## Điểm nổi bật
 
 - Check-in bằng CCCD tại cổng bệnh nhân hoặc kiosk tự phục vụ.
-- Khai báo triệu chứng, mức độ đau và dấu hiệu nguy hiểm.
+- **Workflow State Machine chu trình 3 bước ($A \to B \to A'$):** Tự động phát hiện khi tất cả chỉ định cận lâm sàng (Lab, X-quang, Siêu âm) hoàn thành để chuyển bệnh nhân về hàng đợi buồng khám ban đầu với trạng thái `WAITING_REVIEW`.
+- **Cơ chế Priority Bump:** Bệnh nhân quay lại đọc kết quả được ưu tiên gọi trước bệnh nhân khám mới thường nhưng sau ca cấp cứu.
+- **Thuật toán Phân loại ESI 5 Cấp Độ (Triage Engine):** Tích hợp SpO2, Mạch, Huyết áp, Nhịp thở, Glasgow/AVPU, mức độ đau, đi kèm cơ chế bảo vệ kép chống *Under-triage* (bỏ sót ca nguy kịch) và *Anti-Over-triage* (chống chiếm dụng giường cấp cứu).
+- **Bộ máy Ước lượng Thời gian Chờ Động (Wait-Time Engine):** Phản ánh tải thực tế, chia tải theo số bác sĩ active, loại trừ bệnh nhân đang đi làm xét nghiệm và xử lý ca cấp cứu xen ngang ($EWT \ge 0$).
 - AI phân loại khoa/phòng, phát hiện red flag và trả mức độ tin cậy.
 - Tạo số thứ tự và lưu lộ trình khám theo từng bệnh nhân.
-- Hàng đợi bác sĩ theo phòng và ca trực đang hoạt động.
-- Quản lý khám bệnh, chỉ định dịch vụ và luồng chờ kết quả.
+- Hàng đợi bác sĩ theo phòng và ca trực đang hoạt động với thứ tự gọi số chuẩn y tế: Cấp cứu (P1) > Đọc kết quả (Priority Bump) > Khám mới (P3/P4).
 - Ước lượng thời gian chờ theo P50/P80/P90 và mô phỏng tác động khi đổi phòng.
 - Dự báo khung giờ check-in cao điểm và dashboard phân tích vận hành.
 - Triển khai monorepo bằng Render Blueprint, dữ liệu lưu trên Neon PostgreSQL.
@@ -210,6 +212,55 @@ $env:SMOKE_PATIENT_CCCD='090000000123'
 node scripts\smoke\e2e.mjs
 ```
 
+## 🏥 Phân Hệ Điều Phối Khám Bệnh & Phân Loại Cấp Cứu Y Tế (Clinical Workflow & Triage Engine)
+
+MedFlow hiện thực hóa kiến trúc lõi của hệ thống **HIS/EMR (Hospital Information System / Electronic Medical Record)** hiện đại, giải quyết triệt để bài toán đứt gãy luồng bệnh nhân và phân loại cấp cứu sai lệch:
+
+```mermaid
+stateDiagram-v2
+    [*] --> CHECKED_IN: Check-in & Triage ESI (P1-P5)
+    CHECKED_IN --> WAITING_CONSULTATION: Xếp vào buồng khám ban đầu (A)
+    WAITING_CONSULTATION --> IN_CONSULTATION: Bác sĩ gọi khám (Ưu tiên P1 > Priority Bump > P3-P5)
+    IN_CONSULTATION --> IN_PARACLINICAL: Bác sĩ chỉ định Cận lâm sàng (B)
+    IN_PARACLINICAL --> WAITING_REVIEW: Tất cả CLS hoàn thành (Atomic Transaction)
+    note right of WAITING_REVIEW: Auto-return buồng khám ban đầu (A)<br/>Kèm cờ Priority Bump (isPriorityBump=true)
+    WAITING_REVIEW --> IN_CONSULTATION: Bác sĩ đọc kết quả & kết luận
+    IN_CONSULTATION --> COMPLETED: Hoàn thành lượt khám
+    COMPLETED --> [*]
+```
+
+### 1. Chu trình Điều phối 3 Bước ($A \to B \to A'$) & State Machine
+- **Khắc phục lỗi đứt gãy luồng khám:** Mỗi encounter ghi nhận `initialRoomId` và `currentRoomId`. Khi bệnh nhân đi làm xét nghiệm/chẩn đoán hình ảnh tại phòng (B), hệ thống lưu vết `originRoomId`.
+- **Atomic Transaction & Tự động quay về:** API `POST /api/v1/doctor/orders/:id/complete` thực hiện trong một Prisma Transaction duy nhất. Ngay khi tất cả chỉ định cận lâm sàng của lượt khám hoàn thành (`COMPLETED`), hệ thống:
+  1. Cập nhật `PatientJourney.queueStatus = 'WAITING_REVIEW'`.
+  2. Tự động chuyển `PatientJourney.currentRoomId` quay lại `initialRoomId`.
+  3. Kích hoạt cờ `isPriorityBump = true` trên hàng đợi của buồng khám ban đầu.
+
+### 2. Thuật toán Sắp xếp Hàng đợi với Cơ chế Priority Bump
+Hàng đợi buồng khám sắp xếp theo thứ tự ưu tiên kép chuẩn y khoa:
+$$\text{Cấp cứu (P1 / P2)} \;\succ\; \text{Bệnh nhân đọc kết quả CLS (Priority Bump)} \;\succ\; \text{Khám mới (P3 / P4 / P5)} \;\succ\; \text{Thời gian đến (FIFO)}$$
+- Giúp bệnh nhân đã làm xong xét nghiệm không phải xếp hàng lại từ đầu sau hàng dài bệnh nhân mới, giảm thiểu triệt để thời gian lưu viện (Length of Stay - LOS).
+
+### 3. Bộ máy Phân loại Cấp cứu ESI 5 Cấp Độ (Triage Engine)
+Tích hợp thang đo quốc tế **ESI (Emergency Severity Index)** kết hợp chỉ số sinh tồn (Vital Signs: SpO2, Pulse, SBP, RR, GCS/AVPU, Pain):
+- **P1 - Resuscitation (Hồi sức cấp cứu):** Ngừng tuần hoàn, suy hô hấp nặng, hôn mê ($GCS \le 8$, Unresponsive).
+- **P2 - Emergent (Khẩn cấp):** Đau ngực kiểu mạch vành, đột quỵ cấp, lơ mơ ($GCS < 13$), SpO2 tụt, huyết áp tụt.
+- **P3 - Urgent (Cấp bách):** Cần $\ge 2$ nguồn lực cận lâm sàng, sinh hiệu ổn định.
+- **P4 - Less Urgent (Ít cấp bách):** Cần 1 nguồn lực (ví dụ chỉ định X-quang hoặc xét nghiệm nước tiểu).
+- **P5 - Non-urgent (Không cấp bách):** Khám thông thường, tái kê đơn, không cần cận lâm sàng.
+
+> **Hai Chốt An Toàn Lâm Sàng (Clinical Guardrails):**
+> - **Anti-Under-Triage Safeguard (Chống bỏ sót nguy kịch):** Tự động nâng lên **P1/P2** nếu phát hiện *Silent Hypoxia* ($\text{SpO2} < 88\%$), tụt huyết áp ($\text{SBP} < 80\text{ mmHg}$), thở nhanh/chậm bất thường ($\text{RR} > 30$ hoặc $< 8$), bất kể triệu chứng mô tả ban đầu nhẹ thế nào.
+> - **Anti-Over-Triage Safeguard (Chống quá tải khu cấp cứu):** Bệnh nhân đau dữ dội ($\text{Pain} \ge 7/10$) nhưng các dấu hiệu sinh tồn hoàn toàn ổn định được giới hạn ở **P3** (thay vì nâng bừa bãi lên P2), tránh làm tê liệt buồng cấp cứu bởi các ca đau cơ xương khớp/đau răng thông thường.
+
+### 4. Bộ máy Ước Lượng Thời Gian Chờ Động (Dynamic Wait-Time Engine)
+- **Loại trừ bệnh nhân cận lâm sàng:** Không tính thời gian chờ của những bệnh nhân đang ở phòng xét nghiệm/chẩn đoán hình ảnh vào hàng đợi buồng khám (`isAwayInParaclinical = true`), loại bỏ thời gian ảo.
+- **Chia tải theo Bác sĩ Active:** Tính toán theo năng lực phục vụ thực tế: $W_i = \frac{\sum_{j=1}^{i-1} T_j}{N_{\text{active\_doctors}}}$.
+- **Xử lý Preemption:** Khi có ca P1/P2 xen ngang, thời gian chờ được cập nhật linh hoạt và đảm bảo $EWT \ge 0$.
+- **Đo lường thời gian thực:** Lưu vết `actual_wait_time = completed_at - arrival_time` để phục vụ retraining mô hình hồi quy (Wait-Time Regressor).
+
+---
+
 ## Phân hệ Dữ liệu & Phân tích Nâng cao (Enterprise Data Platform)
 
 Phân hệ Data Platform của MedFlow được thiết kế theo chuẩn **Enterprise Data Analyst / Data Engineer**, kết hợp hoàn chỉnh giữa **Data Engineering (Medallion & Star Schema, Data Quality, ETL/ELT Pipeline)**, **Advanced Analytics (EDA, Phân vị P50/P80/P90, Mô phỏng San tải AI)** và **Executive BI Dashboarding (Streamlit 4 trang & Power BI DAX)**:
@@ -288,6 +339,7 @@ Xem hướng dẫn chi tiết tại [`DEPLOYMENT.md`](DEPLOYMENT.md) và danh s�
 
 ## Tài liệu Kỹ thuật & Data Governance
 
+- [Tài liệu Bảo vệ Kỹ thuật Phỏng vấn (HIS/EMR, Triage, Queuing & Data Platform)](docs/INTERVIEW_TECHNICAL_DEFENSE.md)
 - [Kiến trúc dữ liệu & Medallion Pipeline](docs/ARCHITECTURE_DATA.md)
 - [Từ điển dữ liệu chuẩn DAMA-DMBOK](docs/DATA_DICTIONARY.md)
 - [Enterprise Data Platform & Phân tích chuyên sâu](analytics/README.md)
