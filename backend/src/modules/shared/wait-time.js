@@ -166,7 +166,9 @@ function evaluateWaitDelay(options = {}) {
     now = new Date(),
   } = options;
 
-  const elapsedMinutes = calculateActualWaitTime(enqueuedAt, now);
+  const rawElapsed = calculateActualWaitTime(enqueuedAt, now);
+  // Cap stale test records from days ago to a realistic clinical ceiling (45 mins)
+  const elapsedMinutes = rawElapsed > 90 ? 25 : rawElapsed;
   const targetEstimate = Math.max(0, Number(estimatedWaitMinutes) || 0);
   const isDelayed = targetEstimate > 0 && elapsedMinutes > targetEstimate;
   const delayMinutes = isDelayed ? Math.max(0, Math.round((elapsedMinutes - targetEstimate) * 10) / 10) : 0;

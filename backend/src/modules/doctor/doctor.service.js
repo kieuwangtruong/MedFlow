@@ -46,7 +46,17 @@ function toQueueEntry(entry) {
   const patient = task.patient || {};
   const isReview = Boolean(entry.isPriorityBump || task.taskType === 'RETURN_REVIEW' || task.journey?.queueStatus === 'WAITING_REVIEW');
   const enqueuedTime = entry.enqueuedAt ? entry.enqueuedAt.getTime() : Date.now();
-  const waitedMinutes = Math.max(0, Math.round((Date.now() - enqueuedTime) / 60000));
+  let waitedMinutes = 0;
+  if (task.actualWaitTime != null && task.actualWaitTime > 0) {
+    waitedMinutes = Math.round(task.actualWaitTime);
+  } else if (entry.calledAt && entry.enqueuedAt) {
+    waitedMinutes = Math.max(0, Math.round((new Date(entry.calledAt).getTime() - new Date(entry.enqueuedAt).getTime()) / 60000));
+  } else if (['DONE', 'COMPLETED'].includes(entry.status) && entry.serviceStartAt && entry.enqueuedAt) {
+    waitedMinutes = Math.max(0, Math.round((new Date(entry.serviceStartAt).getTime() - new Date(entry.enqueuedAt).getTime()) / 60000));
+  } else if (entry.enqueuedAt) {
+    const rawElapsed = Math.max(0, Math.round((Date.now() - enqueuedTime) / 60000));
+    waitedMinutes = Math.min(rawElapsed, 45);
+  }
   return {
     visitId: task.journeyId,
     queueNumber: formatQueueNumber(entry.queueNumber),
