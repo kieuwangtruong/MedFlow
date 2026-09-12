@@ -24,7 +24,7 @@ export function DoctorQueuePage() {
       action={<span className={`rounded-full px-3 py-2 text-sm font-bold ${assignment ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{assignment ? 'Ca trực đang hoạt động' : 'Chưa có ca trực'}</span>}
     />
     <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <Summary icon={<Users/>} label="Đang chờ đúng lượt" value={items.filter((item) => item.status === 'WAITING').length}/>
+      <Summary icon={<Users/>} label="Đang chờ đúng lượt" value={items.filter((item) => item.status === 'WAITING' || item.status === 'WAITING_REVIEW').length}/>
       <Summary icon={<Megaphone/>} label="Đã gọi" value={items.filter((item) => item.status === 'CALLED').length}/>
       <Summary icon={<Activity/>} label="Đang thực hiện" value={items.filter((item) => item.status === 'IN_EXAMINATION').length}/>
       <Summary icon={<FileCheck2/>} label="Chờ kiểm định" value={items.filter((item) => item.status === 'WAITING_RESULT').length}/>

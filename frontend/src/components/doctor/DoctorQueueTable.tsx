@@ -28,7 +28,8 @@ function announcePatient(patientName: string, queueNumber: string, room: string)
 export function DoctorQueueTable({ items }: { items: QueueEntry[] }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const firstWaitingVisitId = items.find((item) => item.status === 'WAITING')?.visitId
+  const isWaiting = (status: QueueEntry['status']) => status === 'WAITING' || status === 'WAITING_REVIEW'
+  const firstWaitingVisitId = items.find((item) => isWaiting(item.status))?.visitId
 
   const call = useMutation({
     mutationFn: doctorApi.callVisit,
@@ -83,17 +84,75 @@ export function DoctorQueueTable({ items }: { items: QueueEntry[] }) {
     {
       key: 'status',
       header: 'Trạng thái',
-      render: (row) => <span className="inline-flex items-center gap-2 font-semibold text-slate-700"><span className={`h-2.5 w-2.5 rounded-full ${row.status === 'CALLED' ? 'animate-pulse bg-violet-500' : row.status === 'WAITING_RESULT' ? 'bg-amber-500' : row.status === 'IN_EXAMINATION' ? 'bg-emerald-500' : 'bg-sky-500'}`}/>{visitStatusLabel[row.status]}</span>,
+      render: (row) => <span className="inline-flex items-center gap-2 font-semibold text-slate-700"><span className={`h-2.5 w-2.5 rounded-full ${row.status === 'CALLED' ? 'animate-pulse bg-violet-500' : row.status === 'WAITING_RESULT' ? 'bg-amber-500' : row.status === 'IN_EXAMINATION' ? 'bg-emerald-500' : row.status === 'WAITING_REVIEW' ? 'bg-violet-600' : 'bg-sky-500'}`}/>{visitStatusLabel[row.status] || 'Đang chờ'}</span>,
     },
     {
       key: 'action',
       header: 'Thao tác',
       render: (row) => <div className="flex min-w-[250px] flex-wrap gap-2">
-        {row.status === 'WAITING' && <button disabled={row.visitId !== firstWaitingVisitId || call.isPending} onClick={() => call.mutate(row.visitId)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#176b9b] px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:bg-slate-300"><Megaphone size={14}/>{row.visitId === firstWaitingVisitId ? 'Gọi bệnh nhân' : 'Chờ đúng lượt'}</button>}
-        {row.status === 'CALLED' && <><button onClick={() => call.mutate(row.visitId)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700"><Megaphone size={14}/>Gọi lại</button><button disabled={start.isPending} onClick={() => start.mutate(row.visitId)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white"><Play size={14}/>Bắt đầu</button></>}
-        {row.status === 'IN_EXAMINATION' && <button onClick={() => navigate(`/doctor/examination/${row.visitId}`)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white"><Stethoscope size={14}/>Mở hồ sơ</button>}
-        {row.status === 'WAITING_RESULT' && row.taskType === 'DIAGNOSTIC_SERVICE' && <button disabled={validate.isPending} onClick={() => validate.mutate(row.visitId)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold text-white"><FileCheck2 size={14}/>Kiểm định kết quả</button>}
-        {row.status === 'IN_EXAMINATION' && row.taskType === 'INITIAL_CONSULT' && <button onClick={() => navigate(`/doctor/orders/${row.visitId}`)} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#efc8b8] bg-[#fff8f4] px-3 py-2 text-xs font-bold text-[#9f4b2d]"><ClipboardPlus size={14}/>Chỉ định</button>}
+        {isWaiting(row.status) && (
+          <button
+            disabled={row.visitId !== firstWaitingVisitId || call.isPending}
+            onClick={() => call.mutate(row.visitId)}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-[#176b9b] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#145b84] disabled:cursor-not-allowed disabled:bg-slate-300"
+          >
+            <Megaphone size={14}/>
+            {row.visitId === firstWaitingVisitId
+              ? (row.taskType === 'RETURN_REVIEW' ? 'Gọi trả kết quả' : 'Gọi bệnh nhân')
+              : 'Chờ đúng lượt'}
+          </button>
+        )}
+        {row.status === 'CALLED' && (
+          <>
+            <button
+              onClick={() => call.mutate(row.visitId)}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 transition hover:bg-violet-100"
+            >
+              <Megaphone size={14}/>Gọi lại
+            </button>
+            <button
+              disabled={start.isPending}
+              onClick={() => start.mutate(row.visitId)}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-primary/90"
+            >
+              <Play size={14}/>{row.taskType === 'RETURN_REVIEW' ? 'Xem kết quả' : 'Bắt đầu'}
+            </button>
+          </>
+        )}
+        {row.status === 'IN_EXAMINATION' && (
+          <>
+            <button
+              onClick={() => navigate(`/doctor/examination/${row.visitId}`)}
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white transition hover:bg-primary/90"
+            >
+              <Stethoscope size={14}/>{row.taskType === 'RETURN_REVIEW' ? 'Xem kết quả' : 'Mở hồ sơ'}
+            </button>
+            {row.taskType === 'INITIAL_CONSULT' && (
+              <button
+                onClick={() => navigate(`/doctor/orders/${row.visitId}`)}
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#efc8b8] bg-[#fff8f4] px-3 py-2 text-xs font-bold text-[#9f4b2d] transition hover:bg-[#ffece2]"
+              >
+                <ClipboardPlus size={14}/>Chỉ định
+              </button>
+            )}
+          </>
+        )}
+        {row.status === 'WAITING_RESULT' && row.taskType === 'DIAGNOSTIC_SERVICE' && (
+          <button
+            disabled={validate.isPending}
+            onClick={() => validate.mutate(row.visitId)}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-amber-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-amber-700"
+          >
+            <FileCheck2 size={14}/>Kiểm định kết quả
+          </button>
+        )}
+        <button
+          onClick={() => navigate(`/doctor/examination/${row.visitId}`)}
+          className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+          title="Xem hồ sơ bệnh nhân"
+        >
+          <Stethoscope size={14}/>Hồ sơ
+        </button>
       </div>,
     },
   ]
