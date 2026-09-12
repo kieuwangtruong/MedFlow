@@ -696,6 +696,12 @@ async function completeVisit(visitId, auth) {
   const remaining = await prisma.patientJourneyTask.count({
     where: { journeyId: visitId, status: { in: activeTaskStatuses } },
   });
+  if (!remaining) {
+    await prisma.patientJourney.update({
+      where: { id: visitId },
+      data: { queueStatus: 'DONE' },
+    });
+  }
   const aiSync = await emitAiEvents([
     taskEvent('SERVICE_COMPLETED', task, { actorId: auth?.sub, eventTime: now }),
   ]);

@@ -38,8 +38,12 @@ function toDatabasePriority(priority) {
 }
 
 function toVisitStatus(taskStatus, queueStatus, isReview = false) {
-  if (taskStatus === 'WAITING_REVIEW' || queueStatus === 'WAITING_REVIEW' || isReview) return 'WAITING_REVIEW';
   if (taskStatus === 'WAITING_RESULT') return 'WAITING_RESULT';
+  if (queueStatus === 'DONE' || taskStatus === 'COMPLETED') return 'COMPLETED';
+  if (queueStatus === 'IN_SERVICE' || taskStatus === 'IN_SERVICE') return 'IN_EXAMINATION';
+  if (queueStatus === 'CALLED') return 'CALLED';
+  if (taskStatus === 'WAITING_REVIEW' || queueStatus === 'WAITING_REVIEW') return 'WAITING_REVIEW';
+  if (isReview && (queueStatus === 'WAITING' || taskStatus === 'IN_QUEUE' || taskStatus === 'READY')) return 'WAITING_REVIEW';
   return QUEUE_STATUS_TO_FRONTEND[queueStatus] || TASK_STATUS_TO_FRONTEND[taskStatus] || 'WAITING';
 }
 

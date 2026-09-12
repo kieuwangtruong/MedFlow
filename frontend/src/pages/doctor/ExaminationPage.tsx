@@ -122,6 +122,22 @@ export function ExaminationPage() {
           rows={6}
           placeholder="Nhập kết luận, hướng điều trị và lịch tái khám..."
         />
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          <button
+            type="button"
+            onClick={() => navigate('/doctor/queue')}
+            className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+          >
+            ← Về hàng đợi
+          </button>
+          <AppButton
+            variant="primary"
+            onClick={() => setConfirmComplete(true)}
+            loading={complete.isPending}
+          >
+            <CheckCircle2 size={18}/>Hoàn tất lượt khám & trả kết quả
+          </AppButton>
+        </div>
       </section>
       <ConfirmDialog
         open={confirmComplete}
@@ -153,9 +169,14 @@ export function ExaminationPage() {
             placeholder="Nhập nhận định, dấu hiệu lâm sàng..."
           />
         </label>
-        <AppButton variant="secondary" onClick={() => update.mutate()} loading={update.isPending}>
-          Lưu mức ưu tiên
-        </AppButton>
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <AppButton variant="secondary" onClick={() => update.mutate()} loading={update.isPending}>
+            Lưu mức ưu tiên
+          </AppButton>
+          <AppButton variant="primary" onClick={() => setConfirmComplete(true)} loading={complete.isPending}>
+            <CheckCircle2 size={18}/>Hoàn thành khám
+          </AppButton>
+        </div>
       </div>
     </div>
     <ConfirmDialog
