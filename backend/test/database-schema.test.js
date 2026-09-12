@@ -174,6 +174,20 @@ test('doctor shift refresh migration activates shifts and covers room 301', () =
   assert.match(sql, /SHIFT-ROOM-PED-301-COVERING-KHANG/);
 });
 
+test('remove covering assignment migration removes Khang covering room 301', () => {
+  const migrationPath = path.join(
+    projectRoot,
+    'prisma',
+    'migrations',
+    '20260912103000_remove_covering_khang_room_301',
+    'migration.sql',
+  );
+  const sql = require('node:fs').readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /DELETE FROM "doctor_room_assignments"/);
+  assert.match(sql, /SHIFT-ROOM-PED-301-COVERING-KHANG/);
+});
+
 test('clinic directory seed includes a staffed imaging room and compatible queues', () => {
   const result = spawnSync(
     process.execPath,
