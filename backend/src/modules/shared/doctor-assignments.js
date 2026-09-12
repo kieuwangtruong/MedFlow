@@ -1,26 +1,30 @@
-function activeAssignmentFilter({ doctorId, roomId, now = new Date() } = {}) {
+function activeAssignmentFilter({ doctorId, roomId, _now = new Date() } = {}) {
   return {
     ...(doctorId ? { doctorId } : {}),
     ...(roomId ? { roomId } : {}),
     status: 'ACTIVE',
-    shiftStart: { lte: now },
-    shiftEnd: { gt: now },
   };
 }
 
-function activeRoomFilter(doctorId, now = new Date()) {
+function activeRoomFilter(doctorId, _now = new Date()) {
   return {
-    doctorAssignments: {
-      some: activeAssignmentFilter({ doctorId, now }),
-    },
+    OR: [
+      {
+        doctorAssignments: {
+          some: {
+            ...(doctorId ? { doctorId } : {}),
+            status: 'ACTIVE',
+          },
+        },
+      },
+      ...(doctorId ? [{ doctorId }] : []),
+    ],
   };
 }
 
-function activeDoctorForRoom(room, now = new Date()) {
+function activeDoctorForRoom(room, _now = new Date()) {
   const assignment = room?.doctorAssignments?.find((candidate) => (
     candidate.status === 'ACTIVE'
-    && new Date(candidate.shiftStart) <= now
-    && new Date(candidate.shiftEnd) > now
   ));
   return assignment?.doctor || room?.doctor || null;
 }

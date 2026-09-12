@@ -104,26 +104,71 @@ async function findAccessibleTask(visitId, auth, statuses = actionableTaskStatus
 
 async function getAssignment(auth) {
   if (auth?.role === 'ADMIN') return null;
+
+  // 1. Check for explicit ACTIVE assignment in doctor_room_assignments
   const assignment = await prisma.doctorRoomAssignment.findFirst({
-    where: activeAssignmentFilter({ doctorId: auth?.sub }),
-    include: { room: { include: { specialty: { include: { department: true } } } } },
-    orderBy: { shiftStart: 'desc' },
-  });
-  if (!assignment) return null;
-  return {
-    id: assignment.id,
-    role: assignment.role,
-    status: assignment.status,
-    shiftStart: assignment.shiftStart.toISOString(),
-    shiftEnd: assignment.shiftEnd.toISOString(),
-    room: {
-      id: assignment.room.id,
-      code: assignment.room.code || assignment.room.id,
-      name: assignment.room.name,
-      floor: floorNumber(assignment.room.floor),
-      department: assignment.room.specialty.department.name,
+    where: {
+      doctorId: auth?.sub,
+      status: 'ACTIVE',
     },
-  };
+    include: { room: { include: { specialty: { include: { department: true } } } } },
+    orderBy: [
+      { role: 'desc' }, // PRIMARY before COVERING / SUPPORT
+      { shiftStart: 'desc' },
+    ],
+  });
+
+  if (assignment && assignment.room) {
+    const now = new Date();
+    const isShiftValid = assignment.shiftEnd && new Date(assignment.shiftEnd) > now;
+    const shiftStart = isShiftValid ? assignment.shiftStart : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 0, 0);
+    const shiftEnd = isShiftValid ? assignment.shiftEnd : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0, 0);
+
+    return {
+      id: assignment.id,
+      role: assignment.role,
+      status: assignment.status,
+      shiftStart: shiftStart.toISOString(),
+      shiftEnd: shiftEnd.toISOString(),
+      room: {
+        id: assignment.room.id,
+        code: assignment.room.code || assignment.room.id,
+        name: assignment.room.name,
+        floor: floorNumber(assignment.room.floor),
+        department: assignment.room.specialty?.department?.name || 'Khám bệnh',
+      },
+    };
+  }
+
+  // 2. Fallback to room directly assigned to this doctor in clinic_rooms
+  const defaultRoom = await prisma.clinicRoom.findFirst({
+    where: { doctorId: auth?.sub, isActive: true },
+    include: { specialty: { include: { department: true } } },
+    orderBy: { code: 'asc' },
+  });
+
+  if (defaultRoom) {
+    const now = new Date();
+    const shiftStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 0, 0);
+    const shiftEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0, 0);
+
+    return {
+      id: `DEFAULT-${defaultRoom.id}`,
+      role: 'PRIMARY',
+      status: 'ACTIVE',
+      shiftStart: shiftStart.toISOString(),
+      shiftEnd: shiftEnd.toISOString(),
+      room: {
+        id: defaultRoom.id,
+        code: defaultRoom.code || defaultRoom.id,
+        name: defaultRoom.name,
+        floor: floorNumber(defaultRoom.floor),
+        department: defaultRoom.specialty?.department?.name || 'Khám bệnh',
+      },
+    };
+  }
+
+  return null;
 }
 
 async function getQueue(auth) {

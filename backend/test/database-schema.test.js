@@ -159,6 +159,21 @@ test('clinical workflow migration persists initial room, current room, queue sta
   assert.match(sql, /is_priority_bump/);
 });
 
+test('doctor shift refresh migration activates shifts and covers room 301', () => {
+  const migrationPath = path.join(
+    projectRoot,
+    'prisma',
+    'migrations',
+    '20260912100000_refresh_doctor_room_shift_assignments',
+    'migration.sql',
+  );
+  const sql = require('node:fs').readFileSync(migrationPath, 'utf8');
+
+  assert.match(sql, /SHIFT-ROOM-GENERAL-101/);
+  assert.match(sql, /SHIFT-ROOM-PED-301/);
+  assert.match(sql, /SHIFT-ROOM-PED-301-COVERING-KHANG/);
+});
+
 test('clinic directory seed includes a staffed imaging room and compatible queues', () => {
   const result = spawnSync(
     process.execPath,
