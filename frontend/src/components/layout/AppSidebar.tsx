@@ -8,6 +8,7 @@ const roleName: Record<UserRole, string> = {
   PATIENT: 'Cổng bệnh nhân',
   DOCTOR: 'Không gian bác sĩ',
   ADMIN: 'Trung tâm vận hành',
+  RECEPTION: 'Bàn tiếp đón & Phân luồng',
 }
 
 export function AppSidebar({ role, open, onClose }: { role: UserRole; open: boolean; onClose: () => void }) {

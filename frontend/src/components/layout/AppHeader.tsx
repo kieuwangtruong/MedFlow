@@ -7,8 +7,20 @@ import type { UserRole } from '../../types'
 
 const roleMeta: Record<UserRole, { label: string; context: string }> = {
   PATIENT: { label: 'Bệnh nhân', context: 'Cổng thông tin bệnh nhân' },
-  DOCTOR: { label: 'Nhân viên y tế', context: 'Điều phối ca trực' },
+  DOCTOR: { label: 'Bác sĩ điều trị', context: 'Buồng khám chuyên khoa' },
   ADMIN: { label: 'Quản trị vận hành', context: 'Trung tâm điều hành' },
+  RECEPTION: { label: 'Nhân viên y tế tiếp nhận', context: 'Bàn tiếp đón & Phân luồng' },
+}
+
+function getUserBadgeLabel(role: UserRole, staffRole?: string): string {
+  if (role === 'DOCTOR') return 'Bác sĩ điều trị'
+  if (role === 'ADMIN') return 'Quản trị vận hành'
+  if (role === 'RECEPTION') {
+    if (staffRole === 'NURSE') return 'Điều dưỡng tiếp đón'
+    if (staffRole === 'RECEPTIONIST') return 'Nhân viên tiếp đón'
+    return 'Nhân viên y tế tiếp nhận'
+  }
+  return 'Bệnh nhân'
 }
 
 const notifications: Record<UserRole, Array<{ title: string; message: string; to: string; tone: string }>> = {
@@ -23,6 +35,10 @@ const notifications: Record<UserRole, Array<{ title: string; message: string; to
   ADMIN: [
     { title: 'Tải phòng đang tăng', message: 'Khu Nội có thời gian chờ vượt ngưỡng theo dõi.', to: '/admin/rooms', tone: 'bg-amber-500' },
     { title: 'Sắp đến giờ cao điểm', message: 'Lượng check-in dự báo tăng trong 30 phút tới.', to: '/admin', tone: 'bg-sky-500' },
+  ],
+  RECEPTION: [
+    { title: 'Tiếp đón bệnh nhân mới', message: 'Vui lòng kiểm tra thông tin và triệu chứng trước khi phân buồng khám.', to: '/reception', tone: 'bg-emerald-500' },
+    { title: 'Theo dõi tiến độ khám', message: 'Xem danh sách lượt khám để phân phối phòng tối ưu.', to: '/reception/live-visits', tone: 'bg-sky-500' },
   ],
 }
 
@@ -79,8 +95,8 @@ export function AppHeader({ role, onMenu }: { role: UserRole; onMenu: () => void
         {notificationOpen && <div className="absolute right-0 top-12 w-[min(370px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-border bg-white shadow-[0_20px_55px_rgba(15,23,42,.16)]"><div className="border-b border-border px-4 py-3.5"><p className="font-extrabold text-foreground">Thông báo vận hành</p><p className="mt-0.5 text-xs text-muted-foreground">Các cập nhật cần chú ý trong phiên hiện tại</p></div><div className="p-2">{notifications[role].map((item) => <Link key={item.title} to={item.to} onClick={() => setNotificationOpen(false)} className="flex gap-3 rounded-xl px-3 py-3 transition hover:bg-slate-50"><span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${item.tone}`}/><span><span className="block text-sm font-bold text-foreground">{item.title}</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">{item.message}</span></span></Link>)}</div></div>}
       </div>
       <div className="relative">
-        <button aria-label="Mở menu tài khoản" aria-expanded={profileOpen} onClick={() => { setProfileOpen((value) => !value); setNotificationOpen(false) }} className="flex items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-muted"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#126b86] text-xs font-black text-white shadow-sm">{initials}</span><span className="hidden md:block"><span className="block max-w-40 truncate text-sm font-bold leading-4 text-foreground">{user?.full_name ?? 'Người dùng'}</span><span className="mt-0.5 block text-xs text-muted-foreground">{roleMeta[role].label}</span></span><ChevronDown size={16} className="hidden text-muted-foreground md:block"/></button>
-        {profileOpen && <div className="absolute right-0 top-12 w-64 rounded-2xl border border-border bg-white p-2 shadow-[0_20px_55px_rgba(15,23,42,.16)]"><div className="border-b border-border px-3 py-3"><p className="truncate font-extrabold text-foreground">{user?.full_name}</p><p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck size={14} className="text-emerald-600"/>{roleMeta[role].label}</p></div><Link to={roleHome[role]} onClick={() => setProfileOpen(false)} className="mt-2 block rounded-xl px-3 py-2.5 text-sm font-bold text-foreground transition hover:bg-slate-50">Về trang tổng quan</Link><button onClick={logout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-destructive transition hover:bg-red-50"><LogOut size={17}/>Đăng xuất an toàn</button></div>}
+        <button aria-label="Mở menu tài khoản" aria-expanded={profileOpen} onClick={() => { setProfileOpen((value) => !value); setNotificationOpen(false) }} className="flex items-center gap-3 rounded-xl p-1.5 text-left transition hover:bg-muted"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#126b86] text-xs font-black text-white shadow-sm">{initials}</span><span className="hidden md:block"><span className="block max-w-40 truncate text-sm font-bold leading-4 text-foreground">{user?.full_name ?? 'Người dùng'}</span><span className="mt-0.5 block text-xs text-muted-foreground">{getUserBadgeLabel(role, user?.staff_role)}</span></span><ChevronDown size={16} className="hidden text-muted-foreground md:block"/></button>
+        {profileOpen && <div className="absolute right-0 top-12 w-64 rounded-2xl border border-border bg-white p-2 shadow-[0_20px_55px_rgba(15,23,42,.16)]"><div className="border-b border-border px-3 py-3"><p className="truncate font-extrabold text-foreground">{user?.full_name}</p><p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"><ShieldCheck size={14} className="text-emerald-600"/>{getUserBadgeLabel(role, user?.staff_role)}</p></div><Link to={roleHome[role]} onClick={() => setProfileOpen(false)} className="mt-2 block rounded-xl px-3 py-2.5 text-sm font-bold text-foreground transition hover:bg-slate-50">Về trang tổng quan</Link><button onClick={logout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold text-destructive transition hover:bg-red-50"><LogOut size={17}/>Đăng xuất an toàn</button></div>}
       </div>
     </div>
   </header>

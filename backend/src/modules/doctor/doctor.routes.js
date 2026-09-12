@@ -3,7 +3,7 @@ const { authenticate, authorize } = require('../../middlewares/auth');
 const controller = require('./doctor.controller');
 
 const router = express.Router();
-router.use(authenticate, authorize('DOCTOR', 'ADMIN'));
+router.use(authenticate, authorize('DOCTOR', 'ADMIN', 'RECEPTION'));
 router.get('/assignment', controller.assignment);
 router.get('/queue', controller.queue);
 router.post('/intake', controller.intake);

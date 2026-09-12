@@ -13,6 +13,6 @@ router.get('/journeys/:journeyId/estimate', controller.journeyEstimate);
 router.post('/events', controller.events);
 router.post('/assignment-impact', controller.assignmentImpact);
 router.post('/simulations/scenario', controller.scenario);
-router.post('/fastest-room', authenticate, authorize('DOCTOR', 'ADMIN'), controller.fastestRoom);
+router.post('/fastest-room', authenticate, authorize('DOCTOR', 'ADMIN', 'RECEPTION'), controller.fastestRoom);
 
 module.exports = router;

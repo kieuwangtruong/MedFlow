@@ -4,6 +4,7 @@ import { LoadingSkeleton } from '../components/common/LoadingSkeleton'
 import { AdminLayout } from '../components/layout/AdminLayout'
 import { DoctorLayout } from '../components/layout/DoctorLayout'
 import { PatientLayout } from '../components/layout/PatientLayout'
+import { ReceptionLayout } from '../components/layout/ReceptionLayout'
 import { useAuthStore } from '../stores/authStore'
 import type { UserRole } from '../types'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -30,4 +31,40 @@ const DoctorManagementPage = page(() => import('../pages/admin/DoctorManagementP
 
 const Guard = ({ role, children }: { role: UserRole; children: ReactNode }) => <ProtectedRoute><RoleRoute role={role}>{children}</RoleRoute></ProtectedRoute>
 function HomeRedirect() { const user = useAuthStore((state) => state.user); return <Navigate to={user ? `/${user.role.toLowerCase()}` : '/login'} replace/> }
-export function AppRoutes() { return <Suspense fallback={<div className="mx-auto max-w-6xl p-6"><LoadingSkeleton rows={6}/></div>}><Routes><Route path="/login" element={<LoginPage/>}/><Route path="/kiosk" element={<KioskCheckinPage/>}/><Route path="/patient" element={<Guard role="PATIENT"><PatientLayout/></Guard>}><Route index element={<PatientDashboardPage/>}/><Route path="checkin" element={<CheckinPage/>}/><Route path="symptoms" element={<SymptomPage/>}/><Route path="routing" element={<RoutingPage/>}/><Route path="pathway" element={<CarePathwayPage/>}/><Route path="results" element={<PatientResultsPage/>}/></Route><Route path="/doctor" element={<Guard role="DOCTOR"><DoctorLayout/></Guard>}><Route index element={<DoctorDashboardPage/>}/><Route path="intake" element={<PatientIntakePage/>}/><Route path="queue" element={<DoctorQueuePage/>}/><Route path="examination/:visitId" element={<ExaminationPage/>}/><Route path="orders/:visitId" element={<ServiceOrderPage/>}/></Route><Route path="/admin" element={<Guard role="ADMIN"><AdminLayout/></Guard>}><Route index element={<AdminDashboardPage/>}/><Route path="live-visits" element={<LivePatientManagementPage/>}/><Route path="rooms" element={<RoomManagementPage/>}/><Route path="doctors" element={<DoctorManagementPage/>}/></Route><Route path="/" element={<HomeRedirect/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes></Suspense> }
+export function AppRoutes() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-6xl p-6"><LoadingSkeleton rows={6}/></div>}>
+      <Routes>
+        <Route path="/login" element={<LoginPage/>}/>
+        <Route path="/kiosk" element={<KioskCheckinPage/>}/>
+        <Route path="/patient" element={<Guard role="PATIENT"><PatientLayout/></Guard>}>
+          <Route index element={<PatientDashboardPage/>}/>
+          <Route path="checkin" element={<CheckinPage/>}/>
+          <Route path="symptoms" element={<SymptomPage/>}/>
+          <Route path="routing" element={<RoutingPage/>}/>
+          <Route path="pathway" element={<CarePathwayPage/>}/>
+          <Route path="results" element={<PatientResultsPage/>}/>
+        </Route>
+        <Route path="/doctor" element={<Guard role="DOCTOR"><DoctorLayout/></Guard>}>
+          <Route index element={<DoctorDashboardPage/>}/>
+          <Route path="queue" element={<DoctorQueuePage/>}/>
+          <Route path="examination/:visitId" element={<ExaminationPage/>}/>
+          <Route path="orders/:visitId" element={<ServiceOrderPage/>}/>
+          <Route path="intake" element={<Navigate to="/doctor" replace/>}/>
+        </Route>
+        <Route path="/reception" element={<Guard role="RECEPTION"><ReceptionLayout/></Guard>}>
+          <Route index element={<PatientIntakePage/>}/>
+          <Route path="live-visits" element={<LivePatientManagementPage/>}/>
+        </Route>
+        <Route path="/admin" element={<Guard role="ADMIN"><AdminLayout/></Guard>}>
+          <Route index element={<AdminDashboardPage/>}/>
+          <Route path="live-visits" element={<LivePatientManagementPage/>}/>
+          <Route path="rooms" element={<RoomManagementPage/>}/>
+          <Route path="doctors" element={<DoctorManagementPage/>}/>
+        </Route>
+        <Route path="/" element={<HomeRedirect/>}/>
+        <Route path="*" element={<Navigate to="/" replace/>}/>
+      </Routes>
+    </Suspense>
+  )
+}

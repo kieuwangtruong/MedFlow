@@ -418,6 +418,54 @@ function StaffLoginForm({
           )}
         </button>
       </form>
+
+      <div className="mt-6 border-t border-slate-200 pt-5">
+        <p className="mb-2 text-xs font-bold text-slate-500">Chọn nhanh tài khoản để kiểm thử phân quyền:</p>
+        <div className="grid gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              onChangeUserName("bs.nguyen.minh.khang@vaic.vn");
+              onChangePassword("12345678");
+            }}
+            className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs transition hover:border-[#176b9b] hover:bg-sky-50"
+          >
+            <div>
+              <strong className="block text-slate-900">BS. Nguyễn Minh Khang</strong>
+              <span className="text-slate-500">Phòng khám Tổng quát 101</span>
+            </div>
+            <span className="rounded bg-sky-100 px-2 py-0.5 font-bold text-[#176b9b]">Bác sĩ khám</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onChangeUserName("ngan01@gmail.com");
+              onChangePassword("12345678");
+            }}
+            className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs transition hover:border-emerald-600 hover:bg-emerald-50"
+          >
+            <div>
+              <strong className="block text-slate-900">ĐD. Nguyễn Thảo Ngân</strong>
+              <span className="text-slate-500">Quầy tiếp đón & phân luồng</span>
+            </div>
+            <span className="rounded bg-emerald-100 px-2 py-0.5 font-bold text-emerald-800">Nhân viên tiếp nhận</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onChangeUserName("adminamind");
+              onChangePassword("12345678");
+            }}
+            className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs transition hover:border-purple-600 hover:bg-purple-50"
+          >
+            <div>
+              <strong className="block text-slate-900">Quản trị viên</strong>
+              <span className="text-slate-500">Trung tâm điều hành</span>
+            </div>
+            <span className="rounded bg-purple-100 px-2 py-0.5 font-bold text-purple-800">Quản trị</span>
+          </button>
+        </div>
+      </div>
     </>
   );
 }

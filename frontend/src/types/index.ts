@@ -1,4 +1,4 @@
-export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN'
+export type UserRole = 'PATIENT' | 'DOCTOR' | 'ADMIN' | 'RECEPTION'
 export type Priority = 'EMERGENCY' | 'URGENT' | 'HIGH' | 'NORMAL' | 'LOW'
 export type VisitStatus = 'CHECKED_IN' | 'SYMPTOM_SUBMITTED' | 'WAITING_TRIAGE' | 'ROUTED' | 'WAITING' | 'CALLED' | 'IN_EXAMINATION' | 'WAITING_SERVICE' | 'IN_SERVICE' | 'WAITING_RESULT' | 'RESULT_READY' | 'COMPLETED' | 'CANCELLED'
 export type StepStatus = 'PENDING' | 'WAITING' | 'CALLED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'

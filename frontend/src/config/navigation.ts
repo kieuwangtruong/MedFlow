@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import type { UserRole } from '../types'
 
-export type NavigationSection = 'Hành trình khám' | 'Ca trực' | 'Chăm sóc' | 'Điều hành' | 'Nguồn lực'
+export type NavigationSection = 'Hành trình khám' | 'Ca trực' | 'Chăm sóc' | 'Điều hành' | 'Nguồn lực' | 'Tiếp đón'
 
 export interface NavigationItem {
   to: string
@@ -39,7 +39,6 @@ export const roleNavigation: Record<UserRole, NavigationItem[]> = {
   DOCTOR: [
     { to: '/doctor', label: 'Tổng quan ca trực', shortLabel: 'Tổng quan', description: 'Hàng đợi và hiệu suất ca trực', section: 'Ca trực', icon: LayoutDashboard, end: true },
     { to: '/doctor/queue', label: 'Hàng đợi phòng khám', shortLabel: 'Hàng đợi', description: 'Quản lý thứ tự và mức ưu tiên', section: 'Ca trực', icon: Users },
-    { to: '/doctor/intake', label: 'Tiếp nhận tại quầy', shortLabel: 'Quầy tiếp nhận', description: 'Nhân viên y tế nhập triệu chứng và tạo lộ trình ban đầu', section: 'Ca trực', icon: UserPlus },
   ],
   ADMIN: [
     { to: '/admin', label: 'Tổng quan bệnh viện', shortLabel: 'Tổng quan', description: 'Chỉ số và dự báo toàn bệnh viện', section: 'Điều hành', icon: LayoutDashboard, end: true },
@@ -47,12 +46,17 @@ export const roleNavigation: Record<UserRole, NavigationItem[]> = {
     { to: '/admin/rooms', label: 'Quản lý phòng', shortLabel: 'Phòng', description: 'Tải, hàng đợi và trạng thái phòng', section: 'Nguồn lực', icon: Bed },
     { to: '/admin/doctors', label: 'Quản lý nhân viên', shortLabel: 'Nhân viên', description: 'Ca trực và hiệu suất nhân sự', section: 'Nguồn lực', icon: UserRound },
   ],
+  RECEPTION: [
+    { to: '/reception', label: 'Tiếp nhận tại quầy', shortLabel: 'Tiếp nhận', description: 'Nhân viên y tế nhập thông tin và phân luồng vào phòng ban đầu', section: 'Tiếp đón', icon: UserPlus, end: true },
+    { to: '/reception/live-visits', label: 'Theo dõi lượt khám', shortLabel: 'Lượt khám', description: 'Theo dõi tiến độ các ca bệnh nhân theo thời gian thực', section: 'Tiếp đón', icon: Activity },
+  ],
 }
 
 export const roleHome: Record<UserRole, string> = {
   PATIENT: '/patient',
   DOCTOR: '/doctor',
   ADMIN: '/admin',
+  RECEPTION: '/reception',
 }
 
 export function isNavigationItemActive(item: NavigationItem, pathname: string) {

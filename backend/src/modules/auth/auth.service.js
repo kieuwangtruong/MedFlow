@@ -25,7 +25,14 @@ function toAuthUser(patient) {
 }
 
 function toStaffAuthUser(staffUser) {
-  const appRole = staffUser.role === 'ADMIN' ? 'ADMIN' : 'DOCTOR';
+  let appRole = 'DOCTOR';
+  if (staffUser.role === 'ADMIN') {
+    appRole = 'ADMIN';
+  } else if (staffUser.role === 'NURSE' || staffUser.role === 'RECEPTIONIST' || staffUser.role === 'STAFF') {
+    appRole = 'RECEPTION';
+  } else {
+    appRole = 'DOCTOR';
+  }
 
   return {
     id: staffUser.id,
