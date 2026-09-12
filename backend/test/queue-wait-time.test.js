@@ -3,6 +3,7 @@ const { test } = require('node:test');
 const {
   calculateActualWaitTime,
   calculateEstimatedWaitTime,
+  evaluateWaitDelay,
   getPriorityTier,
 } = require('../src/modules/shared/wait-time');
 
@@ -112,4 +113,56 @@ test('Actual wait time calculation correctly records minutes elapsed', () => {
   // Edge case: called before enqueued (clock skew) -> clamped to 0
   const futureEnqueued = new Date(Date.now() + 5000);
   assert.equal(calculateActualWaitTime(futureEnqueued, calledAt), 0);
+});
+
+test('Wait delay detection: triggers alert when elapsed time exceeds estimated wait time', () => {
+  const enqueuedAt = new Date(Date.now() - 25 * 60 * 1000); // 25 minutes ago
+  const now = new Date();
+  const estimatedWaitMinutes = 15; // expected only 15 minutes
+
+  const delay = evaluateWaitDelay({
+    enqueuedAt,
+    estimatedWaitMinutes,
+    now,
+  });
+
+  assert.equal(delay.isDelayed, true);
+  assert.equal(delay.delayMinutes, 10);
+  assert.equal(delay.elapsedMinutes, 25);
+  assert.ok(delay.title.includes('+10 phút'));
+  assert.ok(delay.reason.length > 0);
+});
+
+test('Wait delay reason: clearly informs patient when emergency preemption causes the delay', () => {
+  const enqueuedAt = new Date(Date.now() - 20 * 60 * 1000); // 20 minutes ago
+  const now = new Date();
+  const estimatedWaitMinutes = 10;
+
+  const delay = evaluateWaitDelay({
+    enqueuedAt,
+    estimatedWaitMinutes,
+    breakdown: { emergencyAhead: 2, reviewAhead: 0 },
+    now,
+  });
+
+  assert.equal(delay.isDelayed, true);
+  assert.equal(delay.delayMinutes, 10);
+  assert.ok(delay.reason.includes('ưu tiên cấp cứu 2 ca'));
+  assert.ok(delay.reason.includes('Số thứ tự của bạn được đảm bảo'));
+});
+
+test('Wait delay evaluation: no delay alert when patient wait duration is within estimated time', () => {
+  const enqueuedAt = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes ago
+  const now = new Date();
+  const estimatedWaitMinutes = 15;
+
+  const delay = evaluateWaitDelay({
+    enqueuedAt,
+    estimatedWaitMinutes,
+    now,
+  });
+
+  assert.equal(delay.isDelayed, false);
+  assert.equal(delay.delayMinutes, 0);
+  assert.equal(delay.elapsedMinutes, 5);
 });

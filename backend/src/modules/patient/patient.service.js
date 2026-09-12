@@ -12,7 +12,7 @@ const {
   toStepStatus,
   toVisitStatus,
 } = require('../shared/presenters');
-const { calculateEstimatedWaitTime } = require('../shared/wait-time');
+const { calculateEstimatedWaitTime, evaluateWaitDelay } = require('../shared/wait-time');
 const { classifyTriage } = require('../shared/triage');
 
 const activeTaskStatuses = ['PENDING', 'READY', 'IN_QUEUE', 'IN_SERVICE', 'WAITING_RESULT'];
@@ -478,6 +478,7 @@ async function getPathway(patientToken, visitId) {
     : 0;
   let estimatedWait = Math.max(0, Math.round(currentTask?.queue?.estimatedWaitMinutes || 0));
 
+    let waitBreakdown = {};
   if (entry?.queueId) {
     const queueEntries = await prisma.patientQueueEntry.findMany({
       where: { queueId: entry.queueId, status: 'WAITING' },
@@ -492,7 +493,28 @@ async function getPathway(patientToken, visitId) {
       estimatedWait = waitCalc.estimatedWaitMinutes;
       peopleAhead = waitCalc.peopleAhead;
     }
+    waitBreakdown = waitCalc.breakdown || {};
   }
+
+  const enqueuedAt = entry?.enqueuedAt || currentTask?.readyAt || currentTask?.arrivalTime || journey.createdAt;
+  const isWaiting = entry?.status === 'WAITING' || currentTask?.status === 'IN_QUEUE';
+  const delayEval = evaluateWaitDelay({
+    enqueuedAt,
+    estimatedWaitMinutes: estimatedWait,
+    breakdown: waitBreakdown,
+    now: new Date(),
+  });
+
+  if (delayEval.isDelayed && isWaiting && currentTask?.id) {
+    await prisma.patientJourneyTask.update({
+      where: { id: currentTask.id },
+      data: {
+        actualWaitTime: delayEval.elapsedMinutes,
+        resultDelayMinutes: delayEval.delayMinutes,
+      },
+    }).catch(() => {});
+  }
+
   let offsetMinutes = 0;
   const steps = journey.tasks.map((task) => {
     const queueEntry = currentQueueEntry(task);
@@ -531,6 +553,17 @@ async function getPathway(patientToken, visitId) {
     ),
     peopleAhead,
     estimatedWait,
+    waitedMinutes: delayEval.elapsedMinutes,
+    isDelayed: delayEval.isDelayed,
+    delayMinutes: delayEval.delayMinutes,
+    delayAlert: delayEval.isDelayed ? {
+      isDelayed: true,
+      delayMinutes: delayEval.delayMinutes,
+      elapsedWaitMinutes: delayEval.elapsedMinutes,
+      originalEstimatedWait: estimatedWait,
+      title: delayEval.title,
+      reason: delayEval.reason,
+    } : null,
     steps,
   };
 }
@@ -575,7 +608,25 @@ async function getNotifications(patientToken) {
   const isCalled = entry?.status === 'CALLED';
   const waitingForResult = task?.taskType === 'DIAGNOSTIC_SERVICE' && task.status === 'WAITING_RESULT';
   const returningForReview = task?.taskType === 'RETURN_REVIEW' && task.status === 'IN_QUEUE';
+
+  const enqueuedAt = entry?.enqueuedAt || task?.readyAt || task?.arrivalTime || journey.createdAt;
+  const estimatedWait = Math.max(0, Math.round(task?.queue?.estimatedWaitMinutes || 0));
+  const delayEval = evaluateWaitDelay({
+    enqueuedAt,
+    estimatedWaitMinutes: estimatedWait,
+    now: new Date(),
+  });
+
+  const delayNotifications = (delayEval.isDelayed && entry?.status === 'WAITING') ? [{
+    id: `${journey.id}-delay-alert`,
+    title: `Thời gian chờ lâu hơn dự kiến (+${Math.round(delayEval.delayMinutes)} phút)`,
+    message: delayEval.reason,
+    createdAt: now,
+    read: false,
+  }] : [];
+
   return [
+    ...delayNotifications,
     {
       id: `${journey.id}-queue`,
       title: isCalled

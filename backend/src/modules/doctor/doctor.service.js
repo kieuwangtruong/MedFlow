@@ -301,6 +301,10 @@ async function callVisit(visitId, auth) {
 
   const now = new Date();
   const actualWait = calculateActualWaitTime(entry.enqueuedAt || task.arrivalTime || task.readyAt, now);
+  const estimatedWait = Math.max(0, Math.round(task.queue?.estimatedWaitMinutes || 0));
+  const delayMinutes = (actualWait > estimatedWait && estimatedWait > 0)
+    ? Math.max(0, Math.round((actualWait - estimatedWait) * 10) / 10)
+    : 0;
 
   await prisma.$transaction([
     prisma.patientJourneyTask.update({
@@ -308,6 +312,7 @@ async function callVisit(visitId, auth) {
       data: {
         status: 'READY',
         actualWaitTime: actualWait,
+        resultDelayMinutes: delayMinutes,
       },
     }),
     prisma.patientQueueEntry.update({

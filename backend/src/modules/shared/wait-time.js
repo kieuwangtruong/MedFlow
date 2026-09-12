@@ -147,8 +147,54 @@ function calculateActualWaitTime(enqueuedAt, calledAt = new Date()) {
   return Math.max(0, Math.round(minutes * 10) / 10);
 }
 
+/**
+ * Evaluates whether a patient's waiting duration has exceeded the estimated wait time.
+ * Generates clinical reasons and transparent communication for the patient.
+ *
+ * @param {Object} options
+ * @param {Date|string} options.enqueuedAt - Timestamp when patient joined queue
+ * @param {number} [options.estimatedWaitMinutes=0] - Estimated wait minutes
+ * @param {Object} [options.breakdown={}] - Breakdown of queue ahead (emergencyAhead, reviewAhead, etc.)
+ * @param {Date} [options.now=new Date()] - Current timestamp
+ * @returns {Object} { isDelayed, delayMinutes, elapsedMinutes, estimatedWaitMinutes, title, reason }
+ */
+function evaluateWaitDelay(options = {}) {
+  const {
+    enqueuedAt,
+    estimatedWaitMinutes = 0,
+    breakdown = {},
+    now = new Date(),
+  } = options;
+
+  const elapsedMinutes = calculateActualWaitTime(enqueuedAt, now);
+  const targetEstimate = Math.max(0, Number(estimatedWaitMinutes) || 0);
+  const isDelayed = targetEstimate > 0 && elapsedMinutes > targetEstimate;
+  const delayMinutes = isDelayed ? Math.max(0, Math.round((elapsedMinutes - targetEstimate) * 10) / 10) : 0;
+
+  let reason = 'Phòng khám đang trong khung giờ cao điểm, lượt khám trước cần thêm thời gian xử lý chu đáo.';
+  if (breakdown.emergencyAhead > 0) {
+    reason = `Phòng khám đang ưu tiên cấp cứu ${breakdown.emergencyAhead} ca khẩn cấp phía trước. Số thứ tự của bạn được đảm bảo ngay sau đó.`;
+  } else if (breakdown.reviewAhead > 0) {
+    reason = 'Bác sĩ đang hội chẩn trả kết quả cận lâm sàng cho người bệnh trước.';
+  } else if (delayMinutes >= 15) {
+    reason = 'Ca bệnh đang khám có diễn tiến phức tạp cần hội chẩn kỹ lưỡng. Bác sĩ sẽ gọi bạn ngay khi hoàn tất.';
+  }
+
+  return {
+    isDelayed,
+    delayMinutes,
+    elapsedMinutes,
+    estimatedWaitMinutes: targetEstimate,
+    reason,
+    title: isDelayed
+      ? `Thời gian chờ đang lâu hơn dự kiến (+${Math.round(delayMinutes)} phút)`
+      : 'Thời gian chờ dự kiến',
+  };
+}
+
 module.exports = {
   calculateActualWaitTime,
   calculateEstimatedWaitTime,
+  evaluateWaitDelay,
   getPriorityTier,
 };
