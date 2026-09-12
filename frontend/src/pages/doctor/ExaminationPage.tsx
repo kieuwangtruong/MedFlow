@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { FileCheck2, ShieldCheck } from 'lucide-react'
+import { CheckCircle2, FileCheck2, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
