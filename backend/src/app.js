@@ -31,6 +31,11 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Ultra-lightweight keep-alive health check for Render free tier (No auth, no DB queries)
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'medflow-backend' });
+});
+
 app.use('/api/v1', routes);
 
 app.use(notFoundHandler);

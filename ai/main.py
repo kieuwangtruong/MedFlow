@@ -65,6 +65,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/health", tags=["System"])
+def health() -> dict:
+    return {"status": "ok", "service": "medflow-ai"}
+
+
 app.include_router(forecast_router)
 app.include_router(wait_time_app.router, tags=["Wait Time & Queue"])
 app.include_router(
