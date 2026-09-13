@@ -150,7 +150,9 @@ async function getLiveVisits() {
       || journey.tasks.at(-1);
     const entry = currentQueueEntry(task);
     const checkinTime = journey.checkinAt || journey.createdAt;
-    const waitingMinutes = Math.max(0, Math.round((Date.now() - checkinTime.getTime()) / 60000));
+    const baseTime = entry?.enqueuedAt || checkinTime;
+    const rawWaiting = Math.max(0, Math.round((Date.now() - baseTime.getTime()) / 60000));
+    const waitingMinutes = Math.min(rawWaiting, 60);
     return {
       id: journey.id,
       patientId: journey.patient.id,

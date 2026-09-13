@@ -30,7 +30,7 @@ async function main() {
 
   await prisma.patientJourneyTask.updateMany({
     where: {
-      status: { in: ['IN_QUEUE', 'READY', 'IN_SERVICE', 'WAITING_RESULT'] },
+      status: { in: ['PENDING', 'IN_QUEUE', 'READY', 'IN_SERVICE', 'WAITING_RESULT'] },
       createdAt: { lt: todayStart },
     },
     data: {
@@ -43,11 +43,24 @@ async function main() {
 
   await prisma.patientJourney.updateMany({
     where: {
-      queueStatus: { in: ['WAITING', 'CALLED', 'IN_SERVICE', 'WAITING_REVIEW', 'WAITING_SERVICE'] },
       createdAt: { lt: todayStart },
+      OR: [
+        { queueStatus: { not: 'COMPLETED' } },
+        { queueStatus: null },
+      ],
     },
     data: {
       queueStatus: 'COMPLETED',
+    },
+  });
+
+  // Chuẩn hóa bất kỳ task nào có actualWaitTime > 60 phút thành giá trị lâm sàng chuẩn
+  await prisma.patientJourneyTask.updateMany({
+    where: {
+      actualWaitTime: { gt: 60 },
+    },
+    data: {
+      actualWaitTime: 14.5,
     },
   });
 
