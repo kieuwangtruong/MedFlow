@@ -66,7 +66,8 @@ app.add_middleware(
 )
 
 
-@app.get("/health", tags=["System"])
+@app.api_route("/health", methods=["GET", "HEAD"], tags=["System"])
+@app.api_route("/health/live", methods=["GET", "HEAD"], tags=["System"])
 def health() -> dict:
     return {"status": "ok", "service": "medflow-ai"}
 
