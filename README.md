@@ -1,11 +1,11 @@
 # MedFlow
 
 [![Live Demo Frontend](https://img.shields.io/badge/Render-Live_Frontend-46E3B7?logo=render&logoColor=white)](https://medflow-frontend-y3e6.onrender.com/)
-[![Streamlit Analytics](https://img.shields.io/badge/Streamlit-Clinic_Analytics-FF4B4B?logo=streamlit&logoColor=white)](https://medflow-analytics.streamlit.app/)
+[![Render Live Analytics](https://img.shields.io/badge/Render-Streamlit_Analytics-FF4B4B?logo=streamlit&logoColor=white)](https://medflow-1-hiud-k3hp.onrender.com/)
 [![VAIC 2026 Top 20](https://img.shields.io/badge/Award-Top_20_VAIC_2026-F59E0B?logo=trophy&logoColor=white)](https://github.com/kieuwangtruong/MedFlow)
 
 > 🌐 **Live Web Application (Render Cloud):** [https://medflow-frontend-y3e6.onrender.com/](https://medflow-frontend-y3e6.onrender.com/)  
-> 📊 **Live Operational Analytics Hub:** [https://medflow-analytics.streamlit.app/](https://medflow-analytics.streamlit.app/)
+> 📊 **Live Operational Analytics Hub (Render Cloud):** [https://medflow-1-hiud-k3hp.onrender.com/](https://medflow-1-hiud-k3hp.onrender.com/)
 
 
 **Nền tảng số hóa hành trình khám bệnh và hỗ trợ điều phối phòng khám bằng AI.**
