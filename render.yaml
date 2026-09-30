@@ -125,3 +125,22 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+
+  - type: web
+    name: medflow-analytics
+    runtime: python
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r analytics/requirements.txt
+    startCommand: streamlit run analytics/dashboard/app.py --server.port $PORT --server.address 0.0.0.0
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: STREAMLIT_SERVER_HEADLESS
+        value: "true"
+      - key: STREAMLIT_SERVER_ENABLE_CORS
+        value: "false"
+      - key: STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION
+        value: "false"
+      - key: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+        value: "false"
