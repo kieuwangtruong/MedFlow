@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,6 +19,13 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
     host: str = "0.0.0.0"
     port: int = 8000
+
+    @field_validator("port", mode="before")
+    @classmethod
+    def parse_port(cls, v: any) -> any:
+        if v is None or v == "":
+            return 8000
+        return v
 
     model_path: str = Field(
         default="models/checkin_forecast_model.joblib",

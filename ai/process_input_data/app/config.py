@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import AliasChoices, Field
+from pydantic import AliasChoices, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     app_version: str = "1.0.0"
     host: str = "0.0.0.0"
     port: int = 8001
+
+    @field_validator("port", mode="before")
+    @classmethod
+    def parse_port(cls, v: any) -> any:
+        if v is None or v == "":
+            return 8001
+        return v
     confidence_threshold: float = 0.45
     top_k_default: int = 3
     model_path: str = Field(

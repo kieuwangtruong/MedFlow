@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+import os
+
+# Clean up empty PORT if passed by environment/Render UI to avoid Pydantic int validation errors
+if os.environ.get("PORT") == "":
+    os.environ.pop("PORT", None)
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
