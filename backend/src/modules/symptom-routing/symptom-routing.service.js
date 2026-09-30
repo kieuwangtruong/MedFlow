@@ -117,7 +117,7 @@ function fallbackRouting(payload) {
 }
 
 function isAiAvailabilityError(error) {
-  return error instanceof AppError && error.statusCode >= 500;
+  return error instanceof AppError && (error.statusCode >= 500 || error.statusCode === 404);
 }
 
 async function routeSymptoms(payload, aiRequest = requestAi) {
