@@ -87,7 +87,7 @@ app.include_router(
 )
 
 
-@app.get("/", tags=["System"])
+@app.api_route("/", methods=["GET", "HEAD"], tags=["System"])
 def root() -> dict:
     return {
         "message": "Smart Hospital Unified AI API",

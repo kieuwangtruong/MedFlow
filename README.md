@@ -1,5 +1,13 @@
 # MedFlow
 
+[![Live Demo Frontend](https://img.shields.io/badge/Render-Live_Frontend-46E3B7?logo=render&logoColor=white)](https://medflow-frontend-y3e6.onrender.com/)
+[![Streamlit Analytics](https://img.shields.io/badge/Streamlit-Clinic_Analytics-FF4B4B?logo=streamlit&logoColor=white)](https://medflow-analytics.streamlit.app/)
+[![VAIC 2026 Top 20](https://img.shields.io/badge/Award-Top_20_VAIC_2026-F59E0B?logo=trophy&logoColor=white)](https://github.com/kieuwangtruong/MedFlow)
+
+> 🌐 **Live Web Application (Render Cloud):** [https://medflow-frontend-y3e6.onrender.com/](https://medflow-frontend-y3e6.onrender.com/)  
+> 📊 **Live Operational Analytics Hub:** [https://medflow-analytics.streamlit.app/](https://medflow-analytics.streamlit.app/)
+
+
 **Nền tảng số hóa hành trình khám bệnh và hỗ trợ điều phối phòng khám bằng AI.**
 
 MedFlow kết nối luồng bệnh nhân, bác sĩ, hàng đợi và mô hình AI trong một hệ thống thống nhất. Bệnh nhân có thể check-in, khai báo triệu chứng, nhận phòng phù hợp và theo dõi hành trình khám; bác sĩ theo dõi hàng đợi, gọi bệnh nhân, khám và tạo chỉ định; bộ máy AI hỗ trợ phân luồng triệu chứng, dự báo giờ cao điểm và ước lượng thời gian chờ.
