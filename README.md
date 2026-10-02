@@ -330,7 +330,7 @@ File [`render.yaml`](render.yaml) tạo ba service:
 - `medflow-backend`: Node/Express API và Prisma migration.
 - `medflow-ai`: FastAPI unified AI service.
 
-Xem hướng dẫn chi tiết tại [`DEPLOYMENT.md`](DEPLOYMENT.md) và danh sách biến môi trường tại [`RENDER_ENV_VARS.md`](RENDER_ENV_VARS.md).
+Xem hướng dẫn chi tiết tại [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) và danh sách biến môi trường tại [`docs/RENDER_ENV_VARS.md`](docs/RENDER_ENV_VARS.md).
 
 ## Cấu trúc repository
 
