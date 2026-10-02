@@ -64,9 +64,19 @@ flowchart LR
 
 Nhập họ tên và CCCD mới sẽ tự tạo hồ sơ bệnh nhân demo. Chỉ sử dụng thông tin giả lập, không nhập dữ liệu định danh thật.
 
-### Bác sĩ
+### Nhân viên y tế & Quản trị
 
-Mật khẩu chung cho toàn bộ tài khoản bác sĩ demo: **`12345678`**
+Mật khẩu chung cho toàn bộ tài khoản nội bộ demo: **`12345678`**
+
+Trên giao diện **Đăng nhập nhân viên**, hệ thống cung cấp **3 nút chọn nhanh** để kiểm thử phân quyền ngay lập tức:
+
+| Vai trò | Tài khoản | Tên hiển thị | Vị trí phụ trách |
+|---|---|---|---|
+| **Bác sĩ khám (Quick select)** | `bs.nguyen.minh.khang@vaic.vn` | BS. Nguyễn Minh Khang | Khám bệnh Tổng quát 101 (`PK-TQ-101`) |
+| **Tiếp nhận / Điều dưỡng (Quick select)** | `ngan01@gmail.com` | ĐD. Nguyễn Thảo Ngân | Quầy tiếp đón & phân luồng tiếp nhận |
+| **Quản trị viên (Quick select)** | `adminamind` | Quản trị viên | Trung tâm điều hành & giám sát hệ thống |
+
+#### Danh sách bác sĩ trực theo chuyên khoa (Mật khẩu: `12345678`)
 
 | Tài khoản | Bác sĩ | Phòng trực demo |
 |---|---|---|

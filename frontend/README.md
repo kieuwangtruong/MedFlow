@@ -19,14 +19,18 @@ Mở `http://localhost:5173`.
 
 ## Tài khoản demo
 
-Trang đăng nhập có ba nút truy cập nhanh:
+### 1. Cổng bệnh nhân (Mặc định)
+- Đăng nhập bằng **Họ và tên** + **Số CCCD** (9–12 chữ số, không cần mật khẩu).
+- **CCCD demo có sẵn:** `001204012345` — Nguyễn Văn An
+- **Tạo lượt khám mới:** Nhập họ tên bất kỳ cùng số CCCD mới (ví dụ `090000000123`).
 
-- Bệnh nhân: `patient@demo.vn`
-- Bác sĩ: `doctor@demo.vn`
-- Quản trị: `admin@demo.vn`
-- Mật khẩu chung: `123456`
+### 2. Cổng nhân viên (Bấm "Đăng nhập nhân viên")
+Giao diện có sẵn 3 nút chọn nhanh để kiểm thử phân quyền (mật khẩu chung: **`12345678`**):
 
-Mặc định ứng dụng sử dụng mock API nên chạy được khi backend chưa hoàn thành.
+- **Bác sĩ khám:** `bs.nguyen.minh.khang@vaic.vn` (BS. Nguyễn Minh Khang - Phòng khám Tổng quát 101)
+- **Nhân viên tiếp nhận / Điều dưỡng:** `ngan01@gmail.com` (ĐD. Nguyễn Thảo Ngân - Quầy tiếp đón & phân luồng)
+- **Quản trị viên:** `adminamind` (Quản trị viên - Trung tâm điều hành)
+
 
 ## Kết nối backend thật
 
