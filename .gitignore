@@ -69,3 +69,14 @@ yarn-error.log*
 *.bak
 *.swp
 *~
+
+# Portfolio, Showcase & Personal Documents
+CV_MEDFLOW_SHOWCASE.*
+Phần kiến thức cần ôn trong Medflow.pdf
+BAO_CAO_TONG_HOP_TIEN_DO_MEDFLOW.docx
+
+# Assistant and AI tool instructions
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+QODER.md
