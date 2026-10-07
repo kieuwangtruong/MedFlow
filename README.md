@@ -273,7 +273,7 @@ Tích hợp thang đo quốc tế **ESI (Emergency Severity Index)** kết hợp
 
 ### 4. Bộ máy Ước Lượng Thời Gian Chờ Động (Dynamic Wait-Time Engine)
 - **Loại trừ bệnh nhân cận lâm sàng:** Không tính thời gian chờ của những bệnh nhân đang ở phòng xét nghiệm/chẩn đoán hình ảnh vào hàng đợi buồng khám (`isAwayInParaclinical = true`), loại bỏ thời gian ảo.
-- **Chia tải theo Bác sĩ Active:** Tính toán theo năng lực phục vụ thực tế: $W_i = \frac{\sum_{j=1}^{i-1} T_j}{N_{\text{active\_doctors}}}$.
+- **Chia tải theo Bác sĩ Active:** Tính toán theo năng lực phục vụ thực tế: $W_i = \frac{\sum_{j=1}^{i-1} T_j}{N_{\text{active doctors}}}$.
 - **Xử lý Preemption:** Khi có ca P1/P2 xen ngang, thời gian chờ được cập nhật linh hoạt và đảm bảo $EWT \ge 0$.
 - **Đo lường thời gian thực:** Lưu vết `actual_wait_time = completed_at - arrival_time` để phục vụ retraining mô hình hồi quy (Wait-Time Regressor).
 
