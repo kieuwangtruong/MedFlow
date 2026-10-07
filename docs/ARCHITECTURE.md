@@ -369,7 +369,7 @@ Hệ thống biểu diễn khuôn viên bệnh viện thành **Đồ thị vô h
   - Khác tầng (Thang máy / Cầu thang): $W \approx 3.0 - 4.5\text{ phút}$.
 
 ```mermaid
-graph TD
+flowchart TD
     %% Tầng 1
     subgraph Floor1["TẦNG 1: Tiếp Đón, Cấp Cứu & Xét Nghiệm"]
         REC["Sảnh Tiếp Đón (Reception)"]
@@ -378,11 +378,11 @@ graph TD
         LAB103["Phòng Lấy Máu & Xét Nghiệm (LAB-103)"]
         ELEV1["Sảnh Thang Máy Tầng 1"]
         
-        REC <-->|1.5p| TQ101
-        REC <-->|1.0p| CC102
-        TQ101 <-->|1.0p| LAB103
-        LAB103 <-->|1.0p| ELEV1
-        REC <-->|1.5p| ELEV1
+        REC <-->|"1.5p"| TQ101
+        REC <-->|"1.0p"| CC102
+        TQ101 <-->|"1.0p"| LAB103
+        LAB103 <-->|"1.0p"| ELEV1
+        REC <-->|"1.5p"| ELEV1
     end
 
     %% Tầng 2 & 3
@@ -392,9 +392,9 @@ graph TD
         TK202["Thần Kinh (TK-202)"]
         NK301["Nhi Khoa (NK-301)"]
         
-        ELEV2 <-->|1.0p| TM201
-        TM201 <-->|1.0p| TK202
-        ELEV2 <-->|1.0p| NK301
+        ELEV2 <-->|"1.0p"| TM201
+        TM201 <-->|"1.0p"| TK202
+        ELEV2 <-->|"1.0p"| NK301
     end
 
     %% Tầng 5
@@ -404,16 +404,16 @@ graph TD
         US502["Phòng Siêu Âm Ổ Bụng (US-502)"]
         CT503["Phòng Chụp CT-Scanner (CT-503)"]
         
-        ELEV5 <-->|1.0p| US502
-        US502 <-->|1.0p| XRAY501
-        XRAY501 <-->|1.0p| CT503
-        ELEV5 <-->|1.0p| CT503
+        ELEV5 <-->|"1.0p"| US502
+        US502 <-->|"1.0p"| XRAY501
+        XRAY501 <-->|"1.0p"| CT503
+        ELEV5 <-->|"1.0p"| CT503
     end
 
     %% Trục thang máy kết nối liên tầng
-    ELEV1 <===>|3.0p (Thang máy)| ELEV2
-    ELEV2 <===>|3.0p (Thang máy)| ELEV5
-    ELEV1 <===>|4.5p (Thang máy cao tốc)| ELEV5
+    ELEV1 <-->|"3.0p - Thang máy"| ELEV2
+    ELEV2 <-->|"3.0p - Thang máy"| ELEV5
+    ELEV1 <-->|"4.5p - Thang máy cao tốc"| ELEV5
 ```
 
 ---
